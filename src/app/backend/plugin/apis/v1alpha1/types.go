@@ -34,6 +34,13 @@ type Plugin struct {
 type PluginSpec struct {
 	Source       Source   `json:"source"`
 	Dependencies []string `json:"dependencies,omitempty"`
+	// Global makes the plugin available in every namespace (and always listed),
+	// not just in its own namespace.
+	Global bool `json:"global,omitempty"`
+	// Description is long text shown in the Plugins list.
+	Description string `json:"description,omitempty"`
+	// Icon is an image URL or data-URI shown next to the plugin in the list.
+	Icon string `json:"icon,omitempty"`
 }
 
 // Source holds the information about the plugin's source code origin

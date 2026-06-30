@@ -1,0 +1,24 @@
+# Run insecure HTTP on 9090 (TLS is terminated at the nginx ingress), in our
+# namespace. Drop --auto-generate-certificates (that forces HTTPS-only on 8443).
+# Liveness moved to the insecure HTTP port.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-dashboard
+spec:
+  template:
+    spec:
+      containers:
+        - name: kubernetes-dashboard
+          imagePullPolicy: IfNotPresent
+          args:
+            - --namespace=dashboard-plugins
+            - --insecure-bind-address=0.0.0.0
+            - --insecure-port=9090
+            - --enable-insecure-login
+            - --enable-skip-login
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: 9090

@@ -1,0 +1,7 @@
+$patch: replace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dashboard-plugins
+  labels:
+    k8s-app: kubernetes-dashboard

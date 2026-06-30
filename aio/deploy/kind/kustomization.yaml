@@ -1,0 +1,22 @@
+# kind deployment of the PRE-SPLIT dashboard WITH the plugin system, in its own
+# dedicated namespace (dashboard-plugins), behind dash.west...
+#   docker build -f Dockerfile.kind -t k8s-dashboard-plugins:dev .   (repo root)
+#   kind load docker-image k8s-dashboard-plugins:dev --name west
+#   kubectl apply -k aio/deploy/kind
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dashboard-plugins
+resources:
+  - recommended.yaml      # ns, SA, svc, secrets, RBAC, deployment, metrics-scraper
+  - plugin-crd-v1.yaml       # Plugin CRD (v1) — cluster-scoped
+  - plugin-rbac.yaml         # plugins + configmaps read access
+  - ingress.yaml             # http Service + Ingress (dash.west...)
+patches:
+  - path: namespace-arg.yaml
+    target: { kind: Deployment, name: kubernetes-dashboard }
+  - path: namespace-rename.yaml
+    target: { kind: Namespace, name: kubernetes-dashboard }
+images:
+  - name: kubernetesui/dashboard
+    newName: k8s-dashboard-plugins
+    newTag: dev

@@ -181,7 +181,10 @@ limitations under the License.
         <kd-nav-item class="kd-nav-group-item"
                      state="/plugin"
                      id="nav-plugin"
+                     [exact]="true"
                      i18n>Plugins </kd-nav-item>
+        <!-- pinned plugins appear as sub-items, like Custom Resource Definitions -->
+        <kd-pinner-nav kind="plugin"></kd-pinner-nav>
       </ng-container>
 
       <mat-divider></mat-divider>

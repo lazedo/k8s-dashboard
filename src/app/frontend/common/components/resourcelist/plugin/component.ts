@@ -14,37 +14,41 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {Plugin, PluginList} from '@api/root.api';
-import {Observable} from 'rxjs';
+import {EMPTY, Observable} from 'rxjs';
 import {ResourceListBase} from '@common/resources/list';
 import {NotificationsService} from '@common/services/global/notifications';
+import {PinnerService} from '@common/services/global/pinner';
 import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {NamespacedResourceService} from '@common/services/resource/resource';
-import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+
+const PLUGIN_KIND = 'plugin';
 
 @Component({
   selector: 'kd-plugin-list',
   templateUrl: './template.html',
+  styleUrls: ['./style.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
   @Input() endpoint = EndpointManager.resource(Resource.plugin, true).list();
 
+  // The card grid renders the data source's RENDERED page (filtered + sorted +
+  // paginated), so the cards respect the MatPaginator the base wires up.
+  readonly pagedPlugins$: Observable<readonly Plugin[]> = this.getData().connect({viewChange: EMPTY});
+
   constructor(
     private readonly plugin_: NamespacedResourceService<PluginList>,
+    private readonly pinner_: PinnerService,
+    private readonly sanitizer_: DomSanitizer,
     notifications: NotificationsService,
     cdr: ChangeDetectorRef
   ) {
     super('plugin', notifications, cdr);
     this.id = ListIdentifier.plugin;
     this.groupId = ListGroupIdentifier.none;
-
-    // Register action columns.
-    this.registerActionColumn<MenuComponent>('menu', MenuComponent);
-
-    // Register dynamic columns.
-    this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
   }
 
   getResourceObservable(params?: HttpParams): Observable<PluginList> {
@@ -52,14 +56,35 @@ export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
   }
 
   map(pluginList: PluginList): Plugin[] {
-    return pluginList.items;
+    return pluginList.items || [];
   }
 
   getDisplayColumns(): string[] {
-    return ['name', 'dependencies', 'created'];
+    return ['name'];
   }
 
-  private shouldShowNamespaceColumn_(): boolean {
-    return this.namespaceService_.areMultipleNamespacesSelected();
+  // --- card helpers ---
+  detailsHref(p: Plugin): string {
+    return this.getDetailsHref(p.objectMeta.name, p.objectMeta.namespace);
+  }
+
+  icon(p: Plugin): SafeUrl | null {
+    // Angular strips data:image/svg+xml from [src] (XSS guard); trust the
+    // plugin-declared icon explicitly. (Dev: plugins are cluster-admin authored.)
+    return p.icon ? this.sanitizer_.bypassSecurityTrustUrl(p.icon) : null;
+  }
+
+  isPinned(p: Plugin): boolean {
+    return this.pinner_.isPinned(PLUGIN_KIND, p.objectMeta.name, p.objectMeta.namespace);
+  }
+
+  togglePin(p: Plugin, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.isPinned(p)) {
+      this.pinner_.unpin(PLUGIN_KIND, p.objectMeta.name, p.objectMeta.namespace);
+    } else {
+      this.pinner_.pin(PLUGIN_KIND, p.objectMeta.name, p.objectMeta.namespace, p.objectMeta.name, true);
+    }
   }
 }

@@ -42,6 +42,9 @@ type Plugin struct {
 	Name         string         `json:"name"`
 	Path         string         `json:"path"`
 	Dependencies []string       `json:"dependencies"`
+	Global       bool           `json:"global"`
+	Description  string         `json:"description,omitempty"`
+	Icon         string         `json:"icon,omitempty"`
 }
 
 type PluginCell v1alpha1.Plugin
@@ -97,6 +100,9 @@ func toPlugin(plugin v1alpha1.Plugin) Plugin {
 		Name:         plugin.ObjectMeta.Name,
 		Path:         fmt.Sprintf("/api/v1/%s/%s/%s.js", api.ResourceKindPlugin, plugin.Namespace, plugin.Name),
 		Dependencies: append([]string{}, plugin.Spec.Dependencies...),
+		Global:       plugin.Spec.Global,
+		Description:  plugin.Spec.Description,
+		Icon:         plugin.Spec.Icon,
 	}
 }
 

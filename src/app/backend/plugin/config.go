@@ -34,6 +34,10 @@ type Metadata struct {
 	Name         string   `json:"name"`
 	Path         string   `json:"path"`
 	Dependencies []string `json:"dependencies"`
+	Namespace    string   `json:"namespace"`
+	Global       bool     `json:"global"`
+	Description  string   `json:"description,omitempty"`
+	Icon         string   `json:"icon,omitempty"`
 }
 
 func toPluginMetadata(vs []Plugin, f func(plugin Plugin) Metadata) []Metadata {
@@ -75,6 +79,10 @@ func (h *Handler) handleConfig(request *restful.Request, response *restful.Respo
 			Name:         plugin.Name,
 			Path:         plugin.Path,
 			Dependencies: plugin.Dependencies,
+			Namespace:    plugin.ObjectMeta.Namespace,
+			Global:       plugin.Global,
+			Description:  plugin.Description,
+			Icon:         plugin.Icon,
 		}
 	})
 	cfg.Errors = result.Errors

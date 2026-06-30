@@ -17,6 +17,7 @@ import {Route, RouterModule} from '@angular/router';
 import {BREADCRUMBS} from '../index.messages';
 import {PluginListComponent} from './list/component';
 import {PluginDetailComponent} from './detail/component';
+import {PIN_DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
 
 export const PLUGIN_LIST_ROUTE: Route = {
   path: '',
@@ -26,13 +27,21 @@ export const PLUGIN_LIST_ROUTE: Route = {
   },
 };
 
+// children + PIN_DEFAULT_ACTIONBAR gives the detail the same actionbar as CRDs
+// (pin + edit + delete), driven by ActionbarService from the component.
 export const PLUGIN_DETAIL_ROUTE: Route = {
   path: ':pluginNamespace/:pluginName',
-  component: PluginDetailComponent,
-  data: {
-    breadcrumb: '{{ pluginName }}',
-    parent: PLUGIN_LIST_ROUTE,
-  },
+  children: [
+    {
+      path: '',
+      component: PluginDetailComponent,
+      data: {
+        breadcrumb: '{{ pluginName }}',
+        parent: PLUGIN_LIST_ROUTE,
+      },
+    },
+    PIN_DEFAULT_ACTIONBAR,
+  ],
 };
 
 @NgModule({

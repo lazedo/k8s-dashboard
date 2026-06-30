@@ -9,6 +9,9 @@ _tmp/
 node_modules/
 vendor/
 
+# Plugin example build output (kind/plugins dev):
+hack/plugin-example/out-tsc/
+
 # Build and test artifacts:
 .go_workspace/
 .sass-cache/

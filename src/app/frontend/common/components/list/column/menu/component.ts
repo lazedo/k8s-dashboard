@@ -30,7 +30,7 @@ const loggableResources: string[] = [
   Resource.statefulSet,
 ];
 
-const pinnableResources: string[] = [Resource.crdFull];
+const pinnableResources: string[] = [Resource.crdFull, Resource.plugin];
 const executableResources: string[] = [Resource.pod];
 const triggerableResources: string[] = [Resource.cronJob];
 

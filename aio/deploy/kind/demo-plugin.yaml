@@ -1,0 +1,142 @@
+apiVersion: v1
+data:
+  plugin.js: "define('plugin', ['exports', 'ng.core', 'ng.common'], (function (exports,
+    i0, i1) { 'use strict';\n\n  function _interopNamespace(e) {\n    if (e && e.__esModule)
+    return e;\n    var n = Object.create(null);\n    if (e) {\n      Object.keys(e).forEach(function
+    (k) {\n        if (k !== 'default') {\n          var d = Object.getOwnPropertyDescriptor(e,
+    k);\n          Object.defineProperty(n, k, d.get ? d : {\n            enumerable:
+    true,\n            get: function () { return e[k]; }\n          });\n        }\n
+    \     });\n    }\n    n[\"default\"] = e;\n    return Object.freeze(n);\n  }\n\n
+    \ var i0__namespace = /*#__PURE__*/_interopNamespace(i0);\n  var i1__namespace
+    = /*#__PURE__*/_interopNamespace(i1);\n\n  // Copyright 2026 The Kubernetes Authors.\n
+    \ function DemoPluginComponent_p_8_Template(rf, ctx) { if (rf & 1) {\n      i0__namespace.ɵɵelementStart(0,
+    \"p\", 6);\n      i0__namespace.ɵɵtext(1, \"Loading Kazoo clusters\\u2026\");\n
+    \     i0__namespace.ɵɵelementEnd();\n  } }\n  function DemoPluginComponent_p_9_Template(rf,
+    ctx) { if (rf & 1) {\n      i0__namespace.ɵɵelementStart(0, \"p\", 7);\n      i0__namespace.ɵɵtext(1);\n
+    \     i0__namespace.ɵɵelementEnd();\n  } if (rf & 2) {\n      const ctx_r1 = i0__namespace.ɵɵnextContext();\n
+    \     i0__namespace.ɵɵadvance(1);\n      i0__namespace.ɵɵtextInterpolate1(\"Error:
+    \", ctx_r1.error, \"\");\n  } }\n  function DemoPluginComponent_table_10_tr_14_Template(rf,
+    ctx) { if (rf & 1) {\n      i0__namespace.ɵɵelementStart(0, \"tr\", 12)(1, \"td\",
+    13);\n      i0__namespace.ɵɵtext(2);\n      i0__namespace.ɵɵelementEnd();\n      i0__namespace.ɵɵelementStart(3,
+    \"td\", 10);\n      i0__namespace.ɵɵtext(4);\n      i0__namespace.ɵɵelementEnd();\n
+    \     i0__namespace.ɵɵelementStart(5, \"td\", 10);\n      i0__namespace.ɵɵtext(6);\n
+    \     i0__namespace.ɵɵelementEnd();\n      i0__namespace.ɵɵelementStart(7, \"td\",
+    10);\n      i0__namespace.ɵɵtext(8);\n      i0__namespace.ɵɵelementEnd();\n      i0__namespace.ɵɵelementStart(9,
+    \"td\", 14);\n      i0__namespace.ɵɵtext(10);\n      i0__namespace.ɵɵelementEnd()();\n
+    \ } if (rf & 2) {\n      const k_r5 = ctx.$implicit;\n      const ctx_r4 = i0__namespace.ɵɵnextContext(2);\n
+    \     i0__namespace.ɵɵadvance(2);\n      i0__namespace.ɵɵtextInterpolate(k_r5.objectMeta.name);\n
+    \     i0__namespace.ɵɵadvance(2);\n      i0__namespace.ɵɵtextInterpolate(ctx_r4.count(k_r5,
+    \"governedApplications\"));\n      i0__namespace.ɵɵadvance(2);\n      i0__namespace.ɵɵtextInterpolate(ctx_r4.count(k_r5,
+    \"governedMedia\"));\n      i0__namespace.ɵɵadvance(2);\n      i0__namespace.ɵɵtextInterpolate(ctx_r4.count(k_r5,
+    \"governedProxy\"));\n      i0__namespace.ɵɵadvance(2);\n      i0__namespace.ɵɵtextInterpolate(k_r5.objectMeta.creationTimestamp);\n
+    \ } }\n  function DemoPluginComponent_table_10_Template(rf, ctx) { if (rf & 1)
+    {\n      i0__namespace.ɵɵelementStart(0, \"table\", 8)(1, \"thead\")(2, \"tr\",
+    9)(3, \"th\", 10);\n      i0__namespace.ɵɵtext(4, \"Kazoo\");\n      i0__namespace.ɵɵelementEnd();\n
+    \     i0__namespace.ɵɵelementStart(5, \"th\", 10);\n      i0__namespace.ɵɵtext(6,
+    \"Apps\");\n      i0__namespace.ɵɵelementEnd();\n      i0__namespace.ɵɵelementStart(7,
+    \"th\", 10);\n      i0__namespace.ɵɵtext(8, \"Media\");\n      i0__namespace.ɵɵelementEnd();\n
+    \     i0__namespace.ɵɵelementStart(9, \"th\", 10);\n      i0__namespace.ɵɵtext(10,
+    \"Proxy\");\n      i0__namespace.ɵɵelementEnd();\n      i0__namespace.ɵɵelementStart(11,
+    \"th\", 10);\n      i0__namespace.ɵɵtext(12, \"Created\");\n      i0__namespace.ɵɵelementEnd()()();\n
+    \     i0__namespace.ɵɵelementStart(13, \"tbody\");\n      i0__namespace.ɵɵtemplate(14,
+    DemoPluginComponent_table_10_tr_14_Template, 11, 5, \"tr\", 11);\n      i0__namespace.ɵɵelementEnd()();\n
+    \ } if (rf & 2) {\n      const ctx_r2 = i0__namespace.ɵɵnextContext();\n      i0__namespace.ɵɵadvance(14);\n
+    \     i0__namespace.ɵɵproperty(\"ngForOf\", ctx_r2.kazoos);\n  } }\n  function
+    DemoPluginComponent_p_11_Template(rf, ctx) { if (rf & 1) {\n      i0__namespace.ɵɵelementStart(0,
+    \"p\", 6);\n      i0__namespace.ɵɵtext(1, \"No Kazoo clusters found.\");\n      i0__namespace.ɵɵelementEnd();\n
+    \ } }\n  class DemoPluginComponent {\n      constructor() {\n          this.kazoos
+    = [];\n          this.loading = true;\n          this.error = '';\n      }\n      ngOnInit()
+    {\n          // cluster-scoped CRD → namespace is a single space (%20).\n          fetch('api/v1/crd/%20/kazoos.cluster.kazoo.io/object',
+    { headers: { Accept: 'application/json' } })\n              .then(r => (r.ok ?
+    r.json() : Promise.reject(new Error('HTTP ' + r.status))))\n              .then(d
+    => {\n              this.kazoos = (d && d.items) || [];\n              this.loading
+    = false;\n          })\n              .catch(e => {\n              this.error
+    = String(e && e.message ? e.message : e);\n              this.loading = false;\n
+    \         });\n      }\n      count(k, field) {\n          const v = k && k.status
+    ? k.status[field] : undefined;\n          return v === undefined || v === null
+    ? '—' : String(v);\n      }\n  }\n  DemoPluginComponent.ɵfac = function DemoPluginComponent_Factory(t)
+    { return new (t || DemoPluginComponent)(); };\n  DemoPluginComponent.ɵcmp = /*@__PURE__*/
+    i0__namespace.ɵɵdefineComponent({ type: DemoPluginComponent, selectors: [[\"kd-demo-plugin\"]],
+    decls: 12, vars: 4, consts: [[2, \"padding\", \"24px\", \"font-family\", \"system-ui,sans-serif\"],
+    [2, \"margin\", \"0 0 4px\", \"color\", \"#326ce5\"], [2, \"margin\", \"0 0 16px\",
+    \"color\", \"#666\"], [\"style\", \"color:#888\", 4, \"ngIf\"], [\"style\", \"color:#b00020\",
+    4, \"ngIf\"], [\"style\", \"border-collapse:collapse;width:100%;max-width:720px\",
+    4, \"ngIf\"], [2, \"color\", \"#888\"], [2, \"color\", \"#b00020\"], [2, \"border-collapse\",
+    \"collapse\", \"width\", \"100%\", \"max-width\", \"720px\"], [2, \"text-align\",
+    \"left\", \"border-bottom\", \"2px solid #326ce5\"], [2, \"padding\", \"8px\"],
+    [\"style\", \"border-bottom:1px solid #eee\", 4, \"ngFor\", \"ngForOf\"], [2,
+    \"border-bottom\", \"1px solid #eee\"], [2, \"padding\", \"8px\", \"font-weight\",
+    \"600\"], [2, \"padding\", \"8px\", \"color\", \"#888\"]], template: function
+    DemoPluginComponent_Template(rf, ctx) { if (rf & 1) {\n          i0__namespace.ɵɵelementStart(0,
+    \"div\", 0)(1, \"h2\", 1);\n          i0__namespace.ɵɵtext(2, \"\\uD83D\\uDD0C
+    Kazoo plugin \\u2014 clusters from the CRD API\");\n          i0__namespace.ɵɵelementEnd();\n
+    \         i0__namespace.ɵɵelementStart(3, \"p\", 2);\n          i0__namespace.ɵɵtext(4,
+    \" Loaded at runtime from a ConfigMap (Plugin CRD), calling \");\n          i0__namespace.ɵɵelementStart(5,
+    \"code\");\n          i0__namespace.ɵɵtext(6, \"/api/v1/crd/\\u00A0/kazoos.cluster.kazoo.io/object\");\n
+    \         i0__namespace.ɵɵelementEnd();\n          i0__namespace.ɵɵtext(7, \"
+    with your token. \");\n          i0__namespace.ɵɵelementEnd();\n          i0__namespace.ɵɵtemplate(8,
+    DemoPluginComponent_p_8_Template, 2, 0, \"p\", 3);\n          i0__namespace.ɵɵtemplate(9,
+    DemoPluginComponent_p_9_Template, 2, 1, \"p\", 4);\n          i0__namespace.ɵɵtemplate(10,
+    DemoPluginComponent_table_10_Template, 15, 1, \"table\", 5);\n          i0__namespace.ɵɵtemplate(11,
+    DemoPluginComponent_p_11_Template, 2, 0, \"p\", 3);\n          i0__namespace.ɵɵelementEnd();\n
+    \     } if (rf & 2) {\n          i0__namespace.ɵɵadvance(8);\n          i0__namespace.ɵɵproperty(\"ngIf\",
+    ctx.loading);\n          i0__namespace.ɵɵadvance(1);\n          i0__namespace.ɵɵproperty(\"ngIf\",
+    ctx.error);\n          i0__namespace.ɵɵadvance(1);\n          i0__namespace.ɵɵproperty(\"ngIf\",
+    !ctx.loading && !ctx.error && ctx.kazoos.length);\n          i0__namespace.ɵɵadvance(1);\n
+    \         i0__namespace.ɵɵproperty(\"ngIf\", !ctx.loading && !ctx.error && !ctx.kazoos.length);\n
+    \     } }, directives: [i1__namespace.NgIf, i1__namespace.NgForOf], encapsulation:
+    2 });\n  (function () { (typeof ngDevMode === \"undefined\" || ngDevMode) && i0__namespace.ɵsetClassMetadata(DemoPluginComponent,
+    [{\n          type: i0.Component,\n          args: [{\n                  selector:
+    'kd-demo-plugin',\n                  template: `\n    <div style=\"padding:24px;font-family:system-ui,sans-serif\">\n
+    \     <h2 style=\"margin:0 0 4px;color:#326ce5\">\U0001F50C Kazoo plugin — clusters
+    from the CRD API</h2>\n      <p style=\"margin:0 0 16px;color:#666\">\n        Loaded
+    at runtime from a ConfigMap (Plugin CRD), calling\n        <code>/api/v1/crd/&nbsp;/kazoos.cluster.kazoo.io/object</code>
+    with your token.\n      </p>\n\n      <p *ngIf=\"loading\" style=\"color:#888\">Loading
+    Kazoo clusters…</p>\n      <p *ngIf=\"error\" style=\"color:#b00020\">Error: {{
+    error }}</p>\n\n      <table *ngIf=\"!loading && !error && kazoos.length\" style=\"border-collapse:collapse;width:100%;max-width:720px\">\n
+    \       <thead>\n          <tr style=\"text-align:left;border-bottom:2px solid
+    #326ce5\">\n            <th style=\"padding:8px\">Kazoo</th>\n            <th
+    style=\"padding:8px\">Apps</th>\n            <th style=\"padding:8px\">Media</th>\n
+    \           <th style=\"padding:8px\">Proxy</th>\n            <th style=\"padding:8px\">Created</th>\n
+    \         </tr>\n        </thead>\n        <tbody>\n          <tr *ngFor=\"let
+    k of kazoos\" style=\"border-bottom:1px solid #eee\">\n            <td style=\"padding:8px;font-weight:600\">{{
+    k.objectMeta.name }}</td>\n            <td style=\"padding:8px\">{{ count(k, 'governedApplications')
+    }}</td>\n            <td style=\"padding:8px\">{{ count(k, 'governedMedia') }}</td>\n
+    \           <td style=\"padding:8px\">{{ count(k, 'governedProxy') }}</td>\n            <td
+    style=\"padding:8px;color:#888\">{{ k.objectMeta.creationTimestamp }}</td>\n          </tr>\n
+    \       </tbody>\n      </table>\n\n      <p *ngIf=\"!loading && !error && !kazoos.length\"
+    style=\"color:#888\">No Kazoo clusters found.</p>\n    </div>\n  `,\n              }]\n
+    \     }], null, null); })();\n  class DemoPluginModule {\n  }\n  DemoPluginModule.entry
+    = DemoPluginComponent;\n  DemoPluginModule.ɵfac = function DemoPluginModule_Factory(t)
+    { return new (t || DemoPluginModule)(); };\n  DemoPluginModule.ɵmod = /*@__PURE__*/
+    i0__namespace.ɵɵdefineNgModule({ type: DemoPluginModule });\n  DemoPluginModule.ɵinj
+    = /*@__PURE__*/ i0__namespace.ɵɵdefineInjector({ imports: [[i1.CommonModule]]
+    });\n  (function () { (typeof ngDevMode === \"undefined\" || ngDevMode) && i0__namespace.ɵsetClassMetadata(DemoPluginModule,
+    [{\n          type: i0.NgModule,\n          args: [{\n                  declarations:
+    [DemoPluginComponent],\n                  imports: [i1.CommonModule],\n              }]\n
+    \     }], null, null); })();\n  (function () { (typeof ngJitMode === \"undefined\"
+    || ngJitMode) && i0__namespace.ɵɵsetNgModuleScope(DemoPluginModule, { declarations:
+    [DemoPluginComponent], imports: [i1.CommonModule] }); })();\n  // SystemJS AMD
+    interop: module.default is the exports object, so exports.default\n  // must BE
+    the factory (module.default.default === factory, used by the holder).\n  var plugin
+    = new i0[\"ɵNgModuleFactory\"](DemoPluginModule);\n\n  exports.DemoPluginComponent
+    = DemoPluginComponent;\n  exports.DemoPluginModule = DemoPluginModule;\n  exports[\"default\"]
+    = plugin;\n\n  Object.defineProperty(exports, '__esModule', { value: true });\n\n}));\n"
+kind: ConfigMap
+metadata:
+  name: demo-plugin-src
+  namespace: dashboard-plugins
+---
+apiVersion: dashboard.k8s.io/v1alpha1
+kind: Plugin
+metadata:
+  name: demo-plugin
+  namespace: dashboard-plugins
+spec:
+  global: true
+  description: "Lists the Kazoo clusters via the extended CRD API — a demo of the restored plugin system (global, pinnable)."
+  icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23326ce5'%3E%3Cpath d='M20 13.5V8a2 2 0 0 0-2-2h-3a2 2 0 1 0-4 0H8a2 2 0 0 0-2 2v3a2 2 0 1 0 0 4v3a2 2 0 0 0 2 2h3a2 2 0 1 1 4 0h3a2 2 0 0 0 2-2v-3a2 2 0 1 0 0-4z'/%3E%3C/svg%3E"
+  source:
+    configMapRef:
+      name: demo-plugin-src
+    filename: plugin.js

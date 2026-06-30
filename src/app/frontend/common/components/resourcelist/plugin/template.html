@@ -17,10 +17,9 @@ limitations under the License.
 <kd-card role="table"
          [hidden]="isHidden()">
   <div title
-       fxLayout="row"
        i18n>Plugins</div>
   <div description><span class="kd-muted-light"
-          i18n>Items:&nbsp;</span>{{ totalItems }}</div>
+                        i18n>Items:&nbsp;</span>{{ totalItems }}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -30,71 +29,54 @@ limitations under the License.
     <div kdLoadingSpinner
          [isLoading]="isLoading"></div>
 
-    <mat-table [dataSource]="getData()"
-               [trackBy]="trackByResource"
-               matSort
-               matSortActive="created"
-               matSortDisableClear
-               matSortDirection="asc">
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef
-                         mat-sort-header
-                         disableClear="true"
-                         i18n>Name</mat-header-cell>
-        <mat-cell *matCellDef="let plugin">
-          <a [routerLink]="getDetailsHref(plugin.objectMeta.name, plugin.objectMeta.namespace)"
-             queryParamsHandling="preserve">
-            {{ plugin.objectMeta.name }}
-          </a>
-        </mat-cell>
-      </ng-container>
+    <!-- ResourceListBase requires a matSort + mat-paginator (static ViewChild); the
+         card grid doesn't use a table, so keep them present but inert/hidden. -->
+    <div matSort
+         matSortActive="created"
+         matSortDisableClear
+         matSortDirection="asc"
+         style="display: none"></div>
 
-      <ng-container matColumnDef="dependencies">
-        <mat-header-cell *matHeaderCellDef
-                         disableClear="true"
-                         i18n>Dependencies</mat-header-cell>
-        <mat-cell *matCellDef="let plugin">
-          <span>{{ plugin.dependencies | commaSeparated }}</span>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container *ngIf="shouldShowColumn('namespace')"
-                    matColumnDef="namespace">
-        <mat-header-cell *matHeaderCellDef
-                         i18n>Namespace</mat-header-cell>
-        <mat-cell *matCellDef="let plugin">{{ plugin.objectMeta.namespace }}</mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="created">
-        <mat-header-cell *matHeaderCellDef
-                         mat-sort-header
-                         disableClear="true"
-                         i18n>Created</mat-header-cell>
-        <mat-cell *matCellDef="let plugin">
-          <kd-date [date]="plugin.objectMeta.creationTimestamp"
-                   relative></kd-date>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container *ngFor="let col of getActionColumns()"
-                    [matColumnDef]="col.name">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let plugin">
-          <kd-dynamic-cell [component]="col.component"
-                           [resource]="plugin"></kd-dynamic-cell>
-        </mat-cell>
-      </ng-container>
-
-      <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: getColumns()"></mat-row>
-    </mat-table>
-
-    <div [hidden]="totalItems <= itemsPerPage">
-      <mat-paginator [length]="totalItems"
-                     [pageSize]="itemsPerPage"
-                     hidePageSize
-                     showFirstLastButtons></mat-paginator>
+    <div class="kd-plugin-grid">
+      <div *ngFor="let plugin of (pagedPlugins$ | async)"
+           class="kd-plugin-card">
+        <a class="kd-plugin-card-link"
+           [routerLink]="detailsHref(plugin)"
+           queryParamsHandling="preserve">
+          <div class="kd-plugin-card-icon">
+            <img *ngIf="icon(plugin)"
+                 [src]="icon(plugin)"
+                 alt="" />
+            <mat-icon *ngIf="!icon(plugin)">extension</mat-icon>
+          </div>
+          <div class="kd-plugin-card-body">
+            <div class="kd-plugin-card-title">
+              <span>{{ plugin.objectMeta.name }}</span>
+              <span *ngIf="plugin.global"
+                    class="kd-plugin-badge kd-plugin-badge-global"
+                    i18n>global</span>
+              <span *ngIf="!plugin.global"
+                    class="kd-plugin-badge"
+                    title="namespace">{{ plugin.objectMeta.namespace }}</span>
+            </div>
+            <div class="kd-plugin-card-desc">{{ plugin.description || ('No description provided.') }}</div>
+          </div>
+        </a>
+        <button mat-icon-button
+                class="kd-plugin-card-pin"
+                [class.is-pinned]="isPinned(plugin)"
+                [attr.aria-label]="isPinned(plugin) ? 'Unpin' : 'Pin'"
+                [title]="isPinned(plugin) ? 'Unpin from sidebar' : 'Pin to sidebar'"
+                (click)="togglePin(plugin, $event)">
+          <mat-icon svgIcon="pin"></mat-icon>
+        </button>
+      </div>
     </div>
+
+    <mat-paginator [length]="totalItems"
+                   [pageSize]="itemsPerPage"
+                   hidePageSize
+                   [hidden]="totalItems <= itemsPerPage"></mat-paginator>
   </div>
 
   <div content

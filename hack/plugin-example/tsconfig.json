@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "es2020",
+    "moduleResolution": "node",
+    "lib": ["es2020", "dom"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "importHelpers": true,
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "outDir": "./out-tsc",
+    "declaration": false
+  },
+  "angularCompilerOptions": {
+    "enableIvy": true,
+    "compilationMode": "full"
+  },
+  "files": ["src/plugin.ts"]
+}

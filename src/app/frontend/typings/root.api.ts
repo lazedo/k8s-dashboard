@@ -1302,6 +1302,9 @@ export interface Plugin extends Resource {
   name: string;
   path: string;
   dependencies: string[];
+  global?: boolean;
+  description?: string;
+  icon?: string;
 }
 
 export interface PluginList extends ResourceList {

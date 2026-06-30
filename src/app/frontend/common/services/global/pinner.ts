@@ -51,9 +51,16 @@ export class PinnerService {
   }
 
   pin(kind: string, name: string, namespace: string, displayName: string, namespaced?: boolean): void {
-    this.http_
-      .put(this.endpoint_, {kind, name, namespace, displayName, namespaced})
-      .subscribe(() => this.onPinUpdate.next(), this.handleErrorResponse_.bind(this));
+    // Optimistically update the local cache so OnPush views (e.g. the plugin
+    // cards) reflect the new state immediately, before the PUT + reload round
+    // trips. The server response reconciles via load(); errors revert it.
+    if (!this.isPinned(kind, name, namespace)) {
+      this.pinnedResources_ = [...this.pinnedResources_, {kind, name, namespace, displayName, namespaced}];
+    }
+    this.http_.put(this.endpoint_, {kind, name, namespace, displayName, namespaced}).subscribe(() => this.load(), err => {
+      this.load();
+      this.handleErrorResponse_(err);
+    });
   }
 
   unpin(kind: string, name: string, namespace: string): void {
@@ -63,7 +70,13 @@ export class PinnerService {
     }
     url += `/${name}`;
 
-    this.http_.delete(url).subscribe(() => this.onPinUpdate.next(), this.handleErrorResponse_.bind(this));
+    this.pinnedResources_ = this.pinnedResources_.filter(
+      r => !(r.kind === kind && r.name === name && r.namespace === namespace)
+    );
+    this.http_.delete(url).subscribe(() => this.load(), err => {
+      this.load();
+      this.handleErrorResponse_(err);
+    });
   }
 
   unpinResource(resource: PinnedResource): void {

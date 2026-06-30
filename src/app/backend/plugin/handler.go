@@ -69,13 +69,31 @@ func (h *Handler) handlePluginList(request *restful.Request, response *restful.R
 		errors.HandleInternalError(response, err)
 		return
 	}
-	namespace := request.PathParameter("namespace")
+	// The dashboard sends a single space as the "all namespaces" sentinel; the
+	// generic resource handlers translate it, but this one passed it through, so
+	// "All namespaces" listed plugins in a namespace literally named " " (none).
+	// Trim it so blank/space => "" => list across all namespaces.
+	namespace := strings.TrimSpace(request.PathParameter("namespace"))
 	dataSelect := parser.ParseDataSelectPathParameter(request)
 
 	result, err := GetPluginList(pluginClient, namespace, dataSelect)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
+	}
+	// Availability: a specific namespace view also includes GLOBAL plugins from any
+	// namespace (a global plugin is available everywhere). All-namespaces (ns="")
+	// already returns everything.
+	if namespace != "" {
+		all, allErr := GetPluginList(pluginClient, "", dataSelect)
+		if allErr == nil {
+			for _, p := range all.Items {
+				if p.Global && p.ObjectMeta.Namespace != namespace {
+					result.Items = append(result.Items, p)
+					result.ListMeta.TotalItems++
+				}
+			}
+		}
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }

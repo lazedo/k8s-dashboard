@@ -12,17 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
+import {ObjectMeta, TypeMeta} from '@api/root.api';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
 
 @Component({
   selector: 'kd-plugin-detail',
   template: ' <kd-plugin-holder [pluginName]="this.pluginName()"></kd-plugin-holder> ',
 })
-export class PluginDetailComponent {
-  constructor(private readonly activatedRoute_: ActivatedRoute) {}
+export class PluginDetailComponent implements OnInit, OnDestroy {
+  constructor(
+    private readonly activatedRoute_: ActivatedRoute,
+    private readonly actionbar_: ActionbarService
+  ) {}
+
+  ngOnInit(): void {
+    // Drive the shared actionbar (pin + edit + delete), like CRDs. The Plugin is a
+    // namespaced CRD; kind "plugin" matches the pinner-nav and the verber.
+    const objectMeta = {name: this.pluginName(), namespace: this.pluginNamespace()} as ObjectMeta;
+    const typeMeta = {kind: 'plugin'} as TypeMeta;
+    // Defer to a microtask: PinDefaultActionbar (named outlet) subscribes to
+    // onInit in its own ngOnInit, which may run after this one. CRDs avoid the
+    // race because they emit from an async HTTP subscribe; we have no fetch, so
+    // emit after the current activation finishes and the actionbar has subscribed.
+    Promise.resolve().then(() =>
+      this.actionbar_.onInit.emit(new ResourceMeta(this.pluginName(), objectMeta, typeMeta, true))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.actionbar_.onDetailsLeave.emit();
+  }
 
   pluginName(): string {
     return this.activatedRoute_.snapshot.params.pluginName;
+  }
+
+  pluginNamespace(): string {
+    return this.activatedRoute_.snapshot.params.pluginNamespace;
   }
 }
