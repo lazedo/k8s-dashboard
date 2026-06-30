@@ -37,3 +37,5 @@ npm-debug.log
 
 # Helm
 aio/deploy/helm-chart/kubernetes-dashboard/charts
+# Stray go build artifact (package main built without -o):
+/backend

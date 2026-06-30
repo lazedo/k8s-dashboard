@@ -1379,14 +1379,36 @@ func (apiHandler *APIHandler) handleDeploymentRestart(request *restful.Request, 
 		return
 	}
 
+	kind := request.PathParameter("kind")
 	namespace := request.PathParameter("namespace")
 	name := request.PathParameter("deployment")
-	rolloutSpec, err := deployment.RestartDeployment(k8sClient, namespace, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+
+	// The restart route is generic (/{kind}/{namespace}/{name}/restart); dispatch
+	// to the matching rollout-restart by kind. DaemonSet/StatefulSet are restartable
+	// the same way as Deployment (template restartedAt annotation).
+	switch kind {
+	case api.ResourceKindDaemonSet:
+		result, err := daemonset.RestartDaemonSet(k8sClient, namespace, name)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+		response.WriteHeaderAndEntity(http.StatusOK, result)
+	case api.ResourceKindStatefulSet:
+		result, err := statefulset.RestartStatefulSet(k8sClient, namespace, name)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+		response.WriteHeaderAndEntity(http.StatusOK, result)
+	default:
+		rolloutSpec, err := deployment.RestartDeployment(k8sClient, namespace, name)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+		response.WriteHeaderAndEntity(http.StatusOK, rolloutSpec)
 	}
-	response.WriteHeaderAndEntity(http.StatusOK, rolloutSpec)
 }
 
 func (apiHandler *APIHandler) handleDeploymentResume(request *restful.Request, response *restful.Response) {

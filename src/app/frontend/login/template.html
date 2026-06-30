@@ -74,7 +74,7 @@ limitations under the License.
                    placeholder="Enter token"
                    type="password"
                    required
-                   (change)="onChange($event)" />
+                   (input)="onChange($event)" />
           </mat-form-field>
           <div *ngSwitchCase="loginModes.Basic"
                fxLayout="column">
