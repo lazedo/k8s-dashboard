@@ -16,9 +16,9 @@ package api
 
 import (
 	"crypto/rand"
-	"fmt"
 	"strings"
 
+	"github.com/gobuffalo/flect"
 	v1 "k8s.io/api/authorization/v1"
 )
 
@@ -29,8 +29,10 @@ func ToSelfSubjectAccessReview(namespace, name, resourceKind, verb string) *v1.S
 			ResourceAttributes: &v1.ResourceAttributes{
 				Namespace: namespace,
 				Name:      name,
-				// Resource kind name must be in a plural lower-case format,
-				Resource: fmt.Sprintf("%ss", strings.ToLower(resourceKind)),
+				// Resource kind name must be in a plural lower-case format. Use proper
+				// English pluralization so irregular kinds work (networkpolicy ->
+				// networkpolicies, ingressclass -> ingressclasses), not a naive +"s". (#9599)
+				Resource: flect.Pluralize(strings.ToLower(resourceKind)),
 				// Let's enforce the same lower-case format for verbs
 				Verb: strings.ToLower(verb),
 			},

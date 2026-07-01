@@ -20,7 +20,10 @@ require (
 	k8s.io/client-go v0.36.2
 )
 
-require k8s.io/kubectl v0.36.2
+require (
+	github.com/gobuffalo/flect v1.0.3
+	k8s.io/kubectl v0.36.2
+)
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
