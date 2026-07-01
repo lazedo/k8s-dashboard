@@ -40,6 +40,7 @@ export class GroupedResourceList {
     [ListGroupIdentifier.workloads]: {},
     [ListGroupIdentifier.discovery]: {},
     [ListGroupIdentifier.config]: {},
+    [ListGroupIdentifier.none]: {},
   };
 
   shouldShowZeroState(): boolean {
@@ -58,6 +59,11 @@ export class GroupedResourceList {
 
   onListUpdate(listEvent: OnListChangeEvent): void {
     this.items_[listEvent.id] = listEvent.items;
+    // Lists may emit group ids not pre-seeded above (e.g. 'none' or ids added by
+    // new group pages) — initialize lazily instead of throwing.
+    if (!this.groupItems_[listEvent.groupId]) {
+      this.groupItems_[listEvent.groupId] = {};
+    }
     this.groupItems_[listEvent.groupId][listEvent.id] = listEvent.items;
 
     if (listEvent.filtered) {

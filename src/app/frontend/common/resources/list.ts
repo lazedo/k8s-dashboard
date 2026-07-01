@@ -285,7 +285,9 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
     }
 
     const filters: string[] = [];
-    if (this.cardFilter_.query) {
+    // Guard: lists without a card filter (e.g. the events card) still call this
+    // via filtered_()/isHidden() when [hideable] is set.
+    if (this.cardFilter_ && this.cardFilter_.query) {
       filters.push(`name,${this.cardFilter_.query}`);
     }
     // Optional status filter, e.g. driven by clicking a status segment on the
@@ -315,6 +317,13 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
 
   clearStatusFilter(): void {
     this.applyStatusFilter('');
+    // Also drop ?statusFilter from the URL — nav links preserve query params, so
+    // a leftover param would re-apply the filter on the next list navigated to.
+    this.router_.navigate([], {
+      queryParams: {statusFilter: null},
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   // applyStatusFilter sets (or clears) the status filter and reloads the list.
