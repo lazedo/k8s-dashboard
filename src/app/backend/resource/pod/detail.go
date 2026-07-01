@@ -89,6 +89,9 @@ type Container struct {
 	// Status of a pod container
 	Status *v1.ContainerStatus `json:"status"`
 
+	// State is a simplified status: one of Waiting, Running, Terminated, Failed, Unknown.
+	State ContainerState `json:"state"`
+
 	// Probes
 	LivenessProbe  *v1.Probe `json:"livenessProbe"`
 	ReadinessProbe *v1.Probe `json:"readinessProbe"`
@@ -257,6 +260,7 @@ func extractContainerInfo(containerList []v1.Container, pod *v1.Pod, configMaps 
 		vars = append(vars, evalEnvFrom(container, configMaps, secrets)...)
 
 		volume_mounts := extractContainerMounts(container, pod)
+		status, state := extractContainerStatus(pod, &container)
 
 		containers = append(containers, Container{
 			Name:            container.Name,
@@ -266,7 +270,8 @@ func extractContainerInfo(containerList []v1.Container, pod *v1.Pod, configMaps 
 			Args:            container.Args,
 			VolumeMounts:    volume_mounts,
 			SecurityContext: container.SecurityContext,
-			Status:          extractContainerStatus(pod, &container),
+			Status:          status,
+			State:           toContainerState(state),
 			LivenessProbe:   container.LivenessProbe,
 			ReadinessProbe:  container.ReadinessProbe,
 			StartupProbe:    container.StartupProbe,
@@ -435,14 +440,14 @@ func extractContainerResourceValue(fs *v1.ResourceFieldSelector, container *v1.C
 	return "", fmt.Errorf("Unsupported container resource : %v", fs.Resource)
 }
 
-func extractContainerStatus(pod *v1.Pod, container *v1.Container) *v1.ContainerStatus {
+func extractContainerStatus(pod *v1.Pod, container *v1.Container) (*v1.ContainerStatus, v1.ContainerState) {
 	statuses := append(pod.Status.ContainerStatuses, pod.Status.InitContainerStatuses...)
 
 	for _, status := range statuses {
 		if status.Name == container.Name {
-			return &status
+			return &status, status.State
 		}
 	}
 
-	return nil
+	return nil, v1.ContainerState{}
 }

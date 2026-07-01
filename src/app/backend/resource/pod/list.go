@@ -16,6 +16,7 @@ package pod
 
 import (
 	"log"
+	"strings"
 
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
@@ -72,6 +73,76 @@ type Pod struct {
 
 	// ContainerImages holds a list of the Pod images.
 	ContainerImages []string `json:"containerImages"`
+
+	// AllocatedResources is the CPU/memory (and GPU) requests and limits summed
+	// over the pod's containers. (#9018, GPU: #10368)
+	AllocatedResources PodAllocatedResources `json:"allocatedResources"`
+}
+
+// PodAllocatedResources describes pod allocated resources.
+type PodAllocatedResources struct {
+	// CPURequests is number of allocated milicores.
+	CPURequests int64 `json:"cpuRequests"`
+
+	// CPULimits is defined CPU limit.
+	CPULimits int64 `json:"cpuLimits"`
+
+	// MemoryRequests is a fraction of memory, that is allocated.
+	MemoryRequests int64 `json:"memoryRequests"`
+
+	// MemoryLimits is defined memory limit.
+	MemoryLimits int64 `json:"memoryLimits"`
+
+	// GPURequests is a number and type of requested GPUs.
+	GPURequests []GPUAllocation `json:"gpuRequests"`
+
+	// GPULimits is a limit number and type of requested GPUs.
+	GPULimits []GPUAllocation `json:"gpuLimits"`
+}
+
+// GPU identifies a GPU vendor.
+type GPU string
+
+const (
+	NoGPU      GPU = ""
+	UnknownGPU GPU = "unknown"
+	NvidiaGPU  GPU = "nvidia"
+	AMDGPU     GPU = "amd"
+	IntelGPU   GPU = "intel"
+
+	NvidiaLabel = "nvidia.com/gpu"
+	AMDLabel    = "amd.com/gpu"
+	// IntelLabel is for a partial match only, and it should be checked if it starts with this prefix.
+	IntelLabel = "gpu.intel.com"
+)
+
+// ToGPU maps a resource name to a GPU vendor (or NoGPU if it is not a GPU resource).
+func ToGPU(gpuType string) GPU {
+	switch gpuType {
+	case NvidiaLabel:
+		return NvidiaGPU
+	case AMDLabel:
+		return AMDGPU
+	}
+
+	if strings.HasPrefix(gpuType, IntelLabel) {
+		return IntelGPU
+	}
+
+	if strings.Contains(gpuType, "gpu") {
+		return UnknownGPU
+	}
+
+	return NoGPU
+}
+
+// GPUAllocation describes GPU allocation.
+type GPUAllocation struct {
+	// Quantity is a number of requested GPUs.
+	Quantity int64 `json:"quantity"`
+
+	// Type of GPU.
+	Type GPU `json:"type"`
 }
 
 var EmptyPodList = &PodList{
@@ -153,14 +224,17 @@ func ToPodList(pods []v1.Pod, events []v1.Event, nonCriticalErrors []error, dsQu
 }
 
 func toPod(pod *v1.Pod, metrics *MetricsByPod, warnings []common.Event) Pod {
+	allocatedResources, _ := getPodAllocatedResources(pod)
+
 	podDetail := Pod{
-		ObjectMeta:      api.NewObjectMeta(pod.ObjectMeta),
-		TypeMeta:        api.NewTypeMeta(api.ResourceKindPod),
-		Warnings:        warnings,
-		Status:          getPodStatus(*pod),
-		RestartCount:    getRestartCount(*pod),
-		NodeName:        pod.Spec.NodeName,
-		ContainerImages: common.GetContainerImages(&pod.Spec),
+		ObjectMeta:         api.NewObjectMeta(pod.ObjectMeta),
+		TypeMeta:           api.NewTypeMeta(api.ResourceKindPod),
+		Warnings:           warnings,
+		Status:             getPodStatus(*pod),
+		RestartCount:       getRestartCount(*pod),
+		NodeName:           pod.Spec.NodeName,
+		ContainerImages:    common.GetContainerImages(&pod.Spec),
+		AllocatedResources: allocatedResources,
 	}
 
 	if m, exists := metrics.MetricsMap[pod.UID]; exists {

@@ -26,6 +26,108 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/event"
 )
 
+func addResourceList(list, newList v1.ResourceList) {
+	for name, quantity := range newList {
+		if value, ok := list[name]; !ok {
+			list[name] = quantity.DeepCopy()
+		} else {
+			value.Add(quantity)
+			list[name] = value
+		}
+	}
+}
+
+func maxResourceList(list, newList v1.ResourceList) {
+	for name, quantity := range newList {
+		if value, ok := list[name]; !ok {
+			list[name] = quantity.DeepCopy()
+			continue
+		} else {
+			if quantity.Cmp(value) > 0 {
+				list[name] = quantity.DeepCopy()
+			}
+		}
+	}
+}
+
+// RequestsAndLimits returns a dictionary of all defined resources summed up for all
+// containers of the pod. If pod overhead is non-nil, the pod overhead is added to the
+// total container resource requests and to the total container limits which have a
+// non-zero quantity. (#9018)
+func RequestsAndLimits(pod *v1.Pod) (reqs, limits v1.ResourceList, err error) {
+	reqs, limits = v1.ResourceList{}, v1.ResourceList{}
+	for _, container := range pod.Spec.Containers {
+		addResourceList(reqs, container.Resources.Requests)
+		addResourceList(limits, container.Resources.Limits)
+	}
+	// init containers define the minimum of any resource
+	for _, container := range pod.Spec.InitContainers {
+		maxResourceList(reqs, container.Resources.Requests)
+		maxResourceList(limits, container.Resources.Limits)
+	}
+
+	// Add overhead for running a pod to the sum of requests and to non-zero limits:
+	if pod.Spec.Overhead != nil {
+		addResourceList(reqs, pod.Spec.Overhead)
+
+		for name, quantity := range pod.Spec.Overhead {
+			if value, ok := limits[name]; ok && !value.IsZero() {
+				value.Add(quantity)
+				limits[name] = value
+			}
+		}
+	}
+	return
+}
+
+func getPodAllocatedResources(pod *v1.Pod) (PodAllocatedResources, error) {
+	reqs, limits, err := RequestsAndLimits(pod)
+	if err != nil {
+		return PodAllocatedResources{}, err
+	}
+
+	cpuRequests := reqs[v1.ResourceCPU]
+	cpuLimits := limits[v1.ResourceCPU]
+	memoryRequests := reqs[v1.ResourceMemory]
+	memoryLimits := limits[v1.ResourceMemory]
+
+	return PodAllocatedResources{
+		CPURequests:    cpuRequests.MilliValue(),
+		CPULimits:      cpuLimits.MilliValue(),
+		MemoryRequests: memoryRequests.Value(),
+		MemoryLimits:   memoryLimits.Value(),
+		GPURequests:    toGPUAllocations(reqs),
+		GPULimits:      toGPUAllocations(limits),
+	}, nil
+}
+
+// toGPUAllocations extracts GPU resources by vendor and aggregates them by type.
+// (#10368; a plain loop replaces the upstream lo.Reduce to avoid a new dependency.)
+func toGPUAllocations(resources v1.ResourceList) []GPUAllocation {
+	// nil (not an empty slice) when there are no GPUs, so the zero-value pod in
+	// tests and the JSON stay clean.
+	var result []GPUAllocation
+	for resource, quantity := range resources {
+		gpuType := ToGPU(string(resource))
+		if gpuType == NoGPU {
+			continue
+		}
+
+		merged := false
+		for i := range result {
+			if result[i].Type == gpuType {
+				result[i].Quantity += quantity.Value()
+				merged = true
+				break
+			}
+		}
+		if !merged {
+			result = append(result, GPUAllocation{Quantity: quantity.Value(), Type: gpuType})
+		}
+	}
+	return result
+}
+
 // getRestartCount return the restart count of given pod (total number of its containers restarts).
 func getRestartCount(pod v1.Pod) int32 {
 	var restartCount int32 = 0
