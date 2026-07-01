@@ -44,8 +44,25 @@ export const PLUGIN_DETAIL_ROUTE: Route = {
   ],
 };
 
+// Cluster-scoped GlobalPlugins have no namespace, so they are addressed by name
+// only (a single path segment). Same component + actionbar as the namespaced one.
+export const PLUGIN_GLOBAL_DETAIL_ROUTE: Route = {
+  path: ':pluginName',
+  children: [
+    {
+      path: '',
+      component: PluginDetailComponent,
+      data: {
+        breadcrumb: '{{ pluginName }}',
+        parent: PLUGIN_LIST_ROUTE,
+      },
+    },
+    PIN_DEFAULT_ACTIONBAR,
+  ],
+};
+
 @NgModule({
-  imports: [RouterModule.forChild([PLUGIN_LIST_ROUTE, PLUGIN_DETAIL_ROUTE])],
+  imports: [RouterModule.forChild([PLUGIN_LIST_ROUTE, PLUGIN_DETAIL_ROUTE, PLUGIN_GLOBAL_DETAIL_ROUTE])],
   exports: [RouterModule],
 })
 export class PluginsRoutingModule {}

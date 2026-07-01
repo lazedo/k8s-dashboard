@@ -6,7 +6,7 @@ metadata:
   name: kubernetes-dashboard-plugins
 rules:
   - apiGroups: ["dashboard.k8s.io"]
-    resources: ["plugins"]
+    resources: ["plugins", "globalplugins"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps"]

@@ -47,6 +47,9 @@ type ClientManager interface {
 	InsecurePluginClient() pluginclientset.Interface
 	CanI(req *restful.Request, ssar *v1.SelfSubjectAccessReview) bool
 	Config(req *restful.Request) (*rest.Config, error)
+	// InsecureConfig returns the config built without per-request auth info; used to
+	// serve plugin source to SystemJS, which cannot send auth headers.
+	InsecureConfig() *rest.Config
 	ClientCmdConfig(req *restful.Request) (clientcmd.ClientConfig, error)
 	CSRFKey() string
 	HasAccess(authInfo api.AuthInfo) (string, error)

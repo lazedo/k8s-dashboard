@@ -74,7 +74,16 @@ func (h *Handler) handleConfig(request *restful.Request, response *restful.Respo
 		return
 	}
 
-	cfg.PluginMetadata = toPluginMetadata(result.Items, func(plugin Plugin) Metadata {
+	items := result.Items
+	// Cluster-scoped GlobalPlugins are available everywhere; include them so the
+	// frontend can load them in any namespace.
+	if dynClient := h.globalPluginClient(request); dynClient != nil {
+		if globals, gErr := GetGlobalPlugins(dynClient); gErr == nil {
+			items = append(items, globals...)
+		}
+	}
+
+	cfg.PluginMetadata = toPluginMetadata(items, func(plugin Plugin) Metadata {
 		return Metadata{
 			Name:         plugin.Name,
 			Path:         plugin.Path,

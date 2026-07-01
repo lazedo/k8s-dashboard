@@ -24,6 +24,7 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"k8s.io/client-go/dynamic"
 )
 
 const (
@@ -56,6 +57,25 @@ func (h *Handler) Install(ws *restful.WebService) {
 	ws.Route(
 		ws.GET("/plugin/{namespace}/{pluginName}").
 			To(h.servePluginSource))
+
+	ws.Route(
+		ws.GET("/globalplugin/{pluginName}").
+			To(h.serveGlobalPluginSource))
+}
+
+// globalPluginClient builds a dynamic client (per-request auth) to read the
+// cluster-scoped GlobalPlugin resource. Returns nil if a client can't be built,
+// so callers can degrade gracefully (namespaced plugins still work).
+func (h *Handler) globalPluginClient(request *restful.Request) dynamic.Interface {
+	cfg, err := h.cManager.Config(request)
+	if err != nil {
+		return nil
+	}
+	client, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil
+	}
+	return client
 }
 
 // NewPluginHandler creates plugin.Handler.
@@ -81,21 +101,35 @@ func (h *Handler) handlePluginList(request *restful.Request, response *restful.R
 		errors.HandleInternalError(response, err)
 		return
 	}
-	// Availability: a specific namespace view also includes GLOBAL plugins from any
-	// namespace (a global plugin is available everywhere). All-namespaces (ns="")
-	// already returns everything.
-	if namespace != "" {
-		all, allErr := GetPluginList(pluginClient, "", dataSelect)
-		if allErr == nil {
-			for _, p := range all.Items {
-				if p.Global && p.ObjectMeta.Namespace != namespace {
-					result.Items = append(result.Items, p)
-					result.ListMeta.TotalItems++
-				}
-			}
+	// Availability: cluster-scoped GlobalPlugins are available in every namespace,
+	// so append them to any namespace view (including all-namespaces).
+	if dynClient := h.globalPluginClient(request); dynClient != nil {
+		if globals, gErr := GetGlobalPlugins(dynClient); gErr == nil {
+			result.Items = append(result.Items, globals...)
+			result.ListMeta.TotalItems += len(globals)
 		}
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (h *Handler) serveGlobalPluginSource(request *restful.Request, response *restful.Response) {
+	// SystemJS can't send auth headers, so use the insecure config (like servePluginSource).
+	dynClient, err := dynamic.NewForConfig(h.cManager.InsecureConfig())
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	pluginName := request.PathParameter("pluginName")
+	name := strings.TrimSuffix(pluginName, filepath.Ext(pluginName))
+
+	result, err := GetGlobalPluginSource(dynClient, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.AddHeader(contentTypeHeader, jsContentType)
+	response.Write(result)
 }
 
 func (h *Handler) servePluginSource(request *restful.Request, response *restful.Response) {

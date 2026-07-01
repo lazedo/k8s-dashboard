@@ -30,14 +30,18 @@ export class PluginDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Drive the shared actionbar (pin + edit + delete), like CRDs. The Plugin is a
     // namespaced CRD; kind "plugin" matches the pinner-nav and the verber.
-    const objectMeta = {name: this.pluginName(), namespace: this.pluginNamespace()} as ObjectMeta;
+    // A GlobalPlugin has no namespace (single-segment route), so it is not
+    // namespaced — this keeps the "N" indicator off its actionbar pin.
+    const namespace = this.pluginNamespace();
+    const objectMeta = {name: this.pluginName(), namespace} as ObjectMeta;
     const typeMeta = {kind: 'plugin'} as TypeMeta;
+    const namespaced = !!namespace;
     // Defer to a microtask: PinDefaultActionbar (named outlet) subscribes to
     // onInit in its own ngOnInit, which may run after this one. CRDs avoid the
     // race because they emit from an async HTTP subscribe; we have no fetch, so
     // emit after the current activation finishes and the actionbar has subscribed.
     Promise.resolve().then(() =>
-      this.actionbar_.onInit.emit(new ResourceMeta(this.pluginName(), objectMeta, typeMeta, true))
+      this.actionbar_.onInit.emit(new ResourceMeta(this.pluginName(), objectMeta, typeMeta, namespaced))
     );
   }
 

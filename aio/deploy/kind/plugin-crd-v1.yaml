@@ -53,9 +53,6 @@ spec:
                 dependencies:
                   type: array
                   items: { type: string }
-                # global: when true the plugin is available in every namespace (and
-                # always listed); otherwise only in its own namespace.
-                global: { type: boolean }
                 # description: long text shown in the Plugins list.
                 description: { type: string }
                 # icon: image URL or data-URI shown next to the plugin in the list.

@@ -64,8 +64,14 @@ export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
   }
 
   // --- card helpers ---
+  // A GlobalPlugin is cluster-scoped: no namespace, addressed by name only, and
+  // pinned without the "N" (namespaced) indicator.
+  private pinNamespace(p: Plugin): string | undefined {
+    return p.global ? undefined : p.objectMeta.namespace;
+  }
+
   detailsHref(p: Plugin): string {
-    return this.getDetailsHref(p.objectMeta.name, p.objectMeta.namespace);
+    return p.global ? `/plugin/${p.objectMeta.name}` : this.getDetailsHref(p.objectMeta.name, p.objectMeta.namespace);
   }
 
   icon(p: Plugin): SafeUrl | null {
@@ -75,16 +81,17 @@ export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
   }
 
   isPinned(p: Plugin): boolean {
-    return this.pinner_.isPinned(PLUGIN_KIND, p.objectMeta.name, p.objectMeta.namespace);
+    return this.pinner_.isPinned(PLUGIN_KIND, p.objectMeta.name, this.pinNamespace(p));
   }
 
   togglePin(p: Plugin, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
+    const namespace = this.pinNamespace(p);
     if (this.isPinned(p)) {
-      this.pinner_.unpin(PLUGIN_KIND, p.objectMeta.name, p.objectMeta.namespace);
+      this.pinner_.unpin(PLUGIN_KIND, p.objectMeta.name, namespace);
     } else {
-      this.pinner_.pin(PLUGIN_KIND, p.objectMeta.name, p.objectMeta.namespace, p.objectMeta.name, true);
+      this.pinner_.pin(PLUGIN_KIND, p.objectMeta.name, namespace, p.objectMeta.name, !p.global);
     }
   }
 }

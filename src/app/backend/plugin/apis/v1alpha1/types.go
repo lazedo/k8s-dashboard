@@ -30,13 +30,12 @@ type Plugin struct {
 	Spec PluginSpec `json:"spec"`
 }
 
-// PluginSpec holds the specs for the Plugin kind
+// PluginSpec holds the specs for the Plugin kind. It is shared by the namespaced
+// Plugin and the cluster-scoped GlobalPlugin (whose availability is defined by the
+// kind itself, so it carries no per-object global flag).
 type PluginSpec struct {
 	Source       Source   `json:"source"`
 	Dependencies []string `json:"dependencies,omitempty"`
-	// Global makes the plugin available in every namespace (and always listed),
-	// not just in its own namespace.
-	Global bool `json:"global,omitempty"`
 	// Description is long text shown in the Plugins list.
 	Description string `json:"description,omitempty"`
 	// Icon is an image URL or data-URI shown next to the plugin in the list.

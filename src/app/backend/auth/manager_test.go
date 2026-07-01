@@ -74,6 +74,10 @@ func (self *fakeClientManager) Config(req *restful.Request) (*rest.Config, error
 	return nil, nil
 }
 
+func (self *fakeClientManager) InsecureConfig() *rest.Config {
+	return nil
+}
+
 func (self *fakeClientManager) ClientCmdConfig(req *restful.Request) (clientcmd.ClientConfig, error) {
 	return clientcmd.NewDefaultClientConfig(api.Config{}, &clientcmd.ConfigOverrides{}), nil
 }

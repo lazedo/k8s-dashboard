@@ -16,6 +16,7 @@ package plugin
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -108,7 +109,13 @@ func (cm *fakeClientManager) CanI(req *restful.Request, ssar *v1.SelfSubjectAcce
 }
 
 func (cm *fakeClientManager) Config(req *restful.Request) (*rest.Config, error) {
-	panic("implement me")
+	// Returning an error makes globalPluginClient degrade to nil, so handleConfig
+	// simply skips GlobalPlugins in tests (there are none).
+	return nil, errors.New("not implemented")
+}
+
+func (cm *fakeClientManager) InsecureConfig() *rest.Config {
+	return nil
 }
 
 func (cm *fakeClientManager) ClientCmdConfig(req *restful.Request) (clientcmd.ClientConfig, error) {
