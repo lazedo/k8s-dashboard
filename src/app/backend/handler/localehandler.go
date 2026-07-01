@@ -165,7 +165,7 @@ func (handler *LocaleHandler) getLocaleMap() map[string]struct{} {
 func (handler *LocaleHandler) dirExists(name string) bool {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
-			glog.Warningf(name)
+			glog.Warning(name)
 			return false
 		}
 	}

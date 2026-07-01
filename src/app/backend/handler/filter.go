@@ -62,13 +62,13 @@ func restrictedResourcesFilter(request *restful.Request, response *restful.Respo
 func requestAndResponseLogger(request *restful.Request, response *restful.Response,
 	chain *restful.FilterChain) {
 	if args.Holder.GetAPILogLevel() != "NONE" {
-		log.Printf(formatRequestLog(request))
+		log.Print(formatRequestLog(request))
 	}
 
 	chain.ProcessFilter(request, response)
 
 	if args.Holder.GetAPILogLevel() != "NONE" {
-		log.Printf(formatResponseLog(response, request))
+		log.Print(formatResponseLog(response, request))
 	}
 }
 
