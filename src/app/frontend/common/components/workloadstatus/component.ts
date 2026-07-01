@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, Input} from '@angular/core';
+import {Router} from '@angular/router';
 import {ResourcesRatio} from '@api/root.ui';
 
 export const emptyResourcesRatio: ResourcesRatio = {
@@ -33,22 +34,22 @@ export const emptyResourcesRatio: ResourcesRatio = {
 })
 export class WorkloadStatusComponent {
   @Input() resourcesRatio = emptyResourcesRatio;
-  // Emits the bare status (e.g. "Running") when a Pods chart segment is clicked.
-  @Output() podStatusSelect = new EventEmitter<string>();
   colors: string[] = [];
   animations = false;
   labels = true;
   trimLabels = false;
   size = [350, 250];
 
+  constructor(private readonly router_: Router) {}
+
+  // Clicking a Pods status chip navigates to the Pods list filtered by that status
+  // (?statusFilter=Running), preserving the namespace query param.
   onPodSelect(event: {name?: string; label?: string; value?: string} | string): void {
-    // ngx-charts (select) emits the datum ({name, value, ...}); older/other shapes
-    // may hand back a string or a {label}. Cover them all.
     const raw = typeof event === 'string' ? event : event?.name ?? event?.label ?? event?.value ?? '';
     // Ratio labels look like "Running: 3"; keep just the status word.
     const status = `${raw}`.split(':')[0].trim();
     if (status) {
-      this.podStatusSelect.emit(status);
+      this.router_.navigate(['pod'], {queryParams: {statusFilter: status}, queryParamsHandling: 'merge'});
     }
   }
 

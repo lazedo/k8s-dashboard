@@ -28,6 +28,39 @@ import {Status} from '../statuses';
   selector: 'kd-pod-list',
   templateUrl: './template.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      .kd-pod-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-right: 12px;
+        padding: 3px 6px 3px 14px;
+        border-radius: 999px;
+        background: #326ce5;
+        color: #fff;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .kd-pod-status-pill-x {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .kd-pod-status-pill-x:hover {
+        background: rgba(255, 255, 255, 0.45);
+      }
+    `,
+  ],
 })
 export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   @Input() endpoint = EndpointManager.resource(Resource.pod, true).list();
@@ -35,6 +68,15 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   // Optional status filter, driven by clicking a segment on the overview Pods chart.
   @Input() set podStatusFilter(status: string) {
     this.applyStatusFilter(status);
+  }
+
+  // Active status filter (shown as a removable chip left of the card filter).
+  get statusFilter(): string {
+    return this.statusFilter_;
+  }
+
+  clearStatusFilter(): void {
+    this.applyStatusFilter('');
   }
   cumulativeMetrics: Metric[];
 
