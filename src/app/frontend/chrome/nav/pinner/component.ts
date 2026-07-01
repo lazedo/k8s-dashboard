@@ -14,6 +14,7 @@
 
 import {Component, Input} from '@angular/core';
 import {PinnedResource} from '@api/root.api';
+import {NamespaceService} from '@common/services/global/namespace';
 import {PinnerService} from '@common/services/global/pinner';
 
 @Component({
@@ -23,7 +24,10 @@ import {PinnerService} from '@common/services/global/pinner';
 })
 export class PinnerNavComponent {
   @Input() kind: string;
-  constructor(private readonly pinner_: PinnerService) {}
+  constructor(
+    private readonly pinner_: PinnerService,
+    private readonly namespace_: NamespaceService
+  ) {}
 
   isInitialized(): boolean {
     return this.pinner_.isInitialized();
@@ -40,7 +44,19 @@ export class PinnerNavComponent {
   }
 
   getPinnedResources(): PinnedResource[] {
-    return this.pinner_.getPinnedForKind(this.kind);
+    return this.pinner_.getPinnedForKind(this.kind).filter(r => this.isVisibleInCurrentNamespace_(r));
+  }
+
+  // A namespaced pin (e.g. a namespaced Plugin) only makes sense when its namespace
+  // is in view — otherwise clicking it lands on a list that doesn't contain it. Show
+  // it only when "All namespaces" is selected or the current namespace matches.
+  // Namespaceless pins (cluster-scoped CRDs, GlobalPlugins) are always shown.
+  private isVisibleInCurrentNamespace_(resource: PinnedResource): boolean {
+    if (resource.namespace === undefined) {
+      return true;
+    }
+    const current = this.namespace_.current();
+    return current === this.namespace_.getAllNamespacesKey() || current === resource.namespace;
   }
 
   unpin(resource: PinnedResource): void {
