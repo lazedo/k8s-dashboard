@@ -28,7 +28,10 @@ spec:
               properties:
                 source:
                   type: object
-                  required: [configMapRef, filename]
+                  # Exactly one of configMapRef or inline supplies the plugin JS.
+                  oneOf:
+                    - required: [configMapRef]
+                    - required: [inline]
                   properties:
                     configMapRef:
                       type: object
@@ -36,6 +39,17 @@ spec:
                       properties:
                         name: { type: string }
                     filename: { type: string }
+                    # inline embeds the compiled JS directly in the CR (no ConfigMap,
+                    # so no namespace needed to hold it). encoding "gzip+base64"
+                    # carries a base64 string of gzip-compressed JS.
+                    inline:
+                      type: object
+                      required: [js]
+                      properties:
+                        js: { type: string }
+                        encoding:
+                          type: string
+                          enum: ["", "gzip+base64"]
                 dependencies:
                   type: array
                   items: { type: string }
