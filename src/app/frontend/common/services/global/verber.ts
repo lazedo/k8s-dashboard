@@ -19,6 +19,7 @@ import {ObjectMeta, TypeMeta} from '@api/root.api';
 import {filter, switchMap} from 'rxjs/operators';
 
 import {AlertDialog, AlertDialogConfig} from '../../dialogs/alert/dialog';
+import {ConfirmDialog, ConfirmDialogConfig} from '../../dialogs/config/dialog';
 import {DeleteResourceDialog} from '../../dialogs/deleteresource/dialog';
 import {EditResourceDialog} from '../../dialogs/editresource/dialog';
 import {RestartResourceDialog} from '../../dialogs/restartresource/dialog';
@@ -35,8 +36,31 @@ export class VerberService {
   onScale = new EventEmitter<boolean>();
   onTrigger = new EventEmitter<boolean>();
   onRestart = new EventEmitter<boolean>();
+  onDrain = new EventEmitter<boolean>();
 
   constructor(private readonly dialog_: MatDialog, private readonly http_: HttpClient) {}
+
+  showDrainDialog(objectMeta: ObjectMeta): void {
+    const dialogConfig: MatDialogConfig<ConfirmDialogConfig> = {
+      data: {
+        title: `Drain node ${objectMeta.name}`,
+        message:
+          `Are you sure you want to drain ${objectMeta.name}? Its pods will be evicted ` +
+          `(DaemonSet pods are ignored). The node is cordoned first.`,
+      },
+    };
+    this.dialog_
+      .open(ConfirmDialog, dialogConfig)
+      .afterClosed()
+      .pipe(filter(doDrain => doDrain))
+      .pipe(
+        switchMap(_ => {
+          const url = `api/v1/node/${objectMeta.name}/drain`;
+          return this.http_.post(url, {}, {responseType: 'text'});
+        })
+      )
+      .subscribe(_ => this.onDrain.emit(true), this.handleErrorResponse_.bind(this));
+  }
 
   showDeleteDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);

@@ -52,6 +52,10 @@ limitations under the License.
           (click)="onRestart()"
           i18n>Restart</button>
   <button mat-menu-item
+          *ngIf="isDrainEnabled()"
+          (click)="onDrain()"
+          i18n>Drain</button>
+  <button mat-menu-item
           id="delete"
           (click)="onDelete()"
           i18n>Delete</button>

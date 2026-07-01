@@ -33,6 +33,7 @@ const loggableResources: string[] = [
 const pinnableResources: string[] = [Resource.crdFull, Resource.plugin];
 const executableResources: string[] = [Resource.pod];
 const triggerableResources: string[] = [Resource.cronJob];
+const drainableResources: string[] = [Resource.node];
 
 @Component({
   selector: 'kd-resource-context-menu',
@@ -131,6 +132,14 @@ export class MenuComponent implements ActionColumn {
 
   onRestart(): void {
     this.verber_.showRestartDialog(this.typeMeta.kind, this.typeMeta, this.objectMeta);
+  }
+
+  isDrainEnabled(): boolean {
+    return drainableResources.includes(this.typeMeta.kind);
+  }
+
+  onDrain(): void {
+    this.verber_.showDrainDialog(this.objectMeta);
   }
 
   onDelete(): void {
