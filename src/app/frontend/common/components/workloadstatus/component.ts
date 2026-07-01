@@ -41,10 +41,12 @@ export class WorkloadStatusComponent {
   trimLabels = false;
   size = [350, 250];
 
-  onPodSelect(event: {name?: string} | string): void {
-    const label = typeof event === 'string' ? event : event?.name ?? '';
+  onPodSelect(event: {name?: string; label?: string; value?: string} | string): void {
+    // ngx-charts (select) emits the datum ({name, value, ...}); older/other shapes
+    // may hand back a string or a {label}. Cover them all.
+    const raw = typeof event === 'string' ? event : event?.name ?? event?.label ?? event?.value ?? '';
     // Ratio labels look like "Running: 3"; keep just the status word.
-    const status = label.split(':')[0].trim();
+    const status = `${raw}`.split(':')[0].trim();
     if (status) {
       this.podStatusSelect.emit(status);
     }
