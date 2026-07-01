@@ -35,6 +35,7 @@ export enum ListIdentifier {
   service = 'serviceList',
   serviceAccount = 'serviceAccountList',
   networkPolicy = 'networkPolicyList',
+  podDisruptionBudget = 'podDisruptionBudgetList',
   configMap = 'configMapList',
   persistentVolumeClaim = 'persistentVolumeClaimList',
   secret = 'secretList',

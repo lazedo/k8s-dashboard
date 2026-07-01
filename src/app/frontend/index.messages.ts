@@ -58,6 +58,7 @@ export const BREADCRUMBS: IBreadcrumbMessage = {
   [IBreadcrumbMessageKey.ClusterRoles]: $localize`Cluster Roles`,
   [IBreadcrumbMessageKey.Namespaces]: $localize`Namespaces`,
   [IBreadcrumbMessageKey.NetworkPolicies]: $localize`Network Policies`,
+  [IBreadcrumbMessageKey.PodDisruptionBudgets]: $localize`Pod Disruption Budgets`,
   [IBreadcrumbMessageKey.Nodes]: $localize`Nodes`,
   [IBreadcrumbMessageKey.PersistentVolumes]: $localize`Persistent Volumes`,
   [IBreadcrumbMessageKey.RoleBindings]: $localize`Role Bindings`,

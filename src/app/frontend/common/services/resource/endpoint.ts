@@ -46,6 +46,7 @@ export enum Resource {
   service = 'service',
   serviceAccount = 'serviceaccount',
   networkPolicy = 'networkpolicy',
+  podDisruptionBudget = 'poddisruptionbudget',
   event = 'event',
   container = 'container',
   plugin = 'plugin',

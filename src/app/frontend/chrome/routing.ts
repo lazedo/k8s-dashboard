@@ -55,6 +55,11 @@ const routes: Routes = [
         loadChildren: () => import('resource/cluster/networkpolicy/module').then(m => m.NetworkPolicyModule),
       },
       {
+        path: 'poddisruptionbudget',
+        loadChildren: () =>
+          import('resource/cluster/poddisruptionbudget/module').then(m => m.PodDisruptionBudgetModule),
+      },
+      {
         path: 'node',
         loadChildren: () => import('resource/cluster/node/module').then(m => m.NodeModule),
       },

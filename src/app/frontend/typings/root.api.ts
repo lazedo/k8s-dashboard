@@ -144,6 +144,31 @@ export interface NetworkPolicyList extends ResourceList {
   items: NetworkPolicy[];
 }
 
+export interface PodDisruptionBudget extends Resource {
+  minAvailable?: string | number;
+  maxUnavailable?: string | number;
+  currentHealthy: number;
+  desiredHealthy: number;
+  disruptionsAllowed: number;
+  expectedPods: number;
+}
+
+export interface PodDisruptionBudgetList extends ResourceList {
+  items: PodDisruptionBudget[];
+}
+
+export interface PodDisruptionBudgetDetail extends ResourceDetail {
+  minAvailable?: string | number;
+  maxUnavailable?: string | number;
+  currentHealthy: number;
+  desiredHealthy: number;
+  disruptionsAllowed: number;
+  expectedPods: number;
+  selector?: LabelSelector;
+  unhealthyPodEvictionPolicy?: string;
+  conditions?: Condition[];
+}
+
 export interface JobList extends ResourceList {
   cumulativeMetrics: Metric[] | null;
   jobs: Job[];

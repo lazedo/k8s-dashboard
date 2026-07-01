@@ -201,6 +201,7 @@ export enum IBreadcrumbMessageKey {
   ClusterRoles = 'ClusterRoles',
   Namespaces = 'Namespaces',
   NetworkPolicies = 'NetworkPolicies',
+  PodDisruptionBudgets = 'PodDisruptionBudgets',
   Nodes = 'Nodes',
   PersistentVolumes = 'PersistentVolumes',
   RoleBindings = 'RoleBindings',

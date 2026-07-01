@@ -83,6 +83,7 @@ import {IngressListComponent} from './resourcelist/ingress/component';
 import {JobListComponent} from './resourcelist/job/component';
 import {NamespaceListComponent} from './resourcelist/namespace/component';
 import {NetworkPolicyListComponent} from './resourcelist/networkpolicy/component';
+import {PodDisruptionBudgetListComponent} from './resourcelist/poddisruptionbudget/component';
 import {NodeListComponent} from './resourcelist/node/component';
 import {PersistentVolumeListComponent} from './resourcelist/persistentvolume/component';
 import {PersistentVolumeClaimListComponent} from './resourcelist/persistentvolumeclaim/component';
@@ -192,6 +193,7 @@ const components = [
   ZeroStateComponent,
   WorkloadStatusComponent,
   NetworkPolicyListComponent,
+  PodDisruptionBudgetListComponent,
   RoleListComponent,
   RoleBindingListComponent,
   SubjectListComponent,
