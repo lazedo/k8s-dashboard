@@ -47,10 +47,37 @@ func (apiHandler *APIHandler) handleMe(request *restful.Request, response *restf
 			stringClaim(claims, "sub"),
 		),
 		Email:         stringClaim(claims, "email"),
-		Picture:       stringClaim(claims, "picture"),
+		Picture:       resolvePicture(claims),
 		Authenticated: token != "",
 	}
 	_ = response.WriteHeaderAndEntity(http.StatusOK, user)
+}
+
+// resolvePicture returns the avatar URL. Most OIDC providers put it in the `picture`
+// claim; Dex's GitHub connector does not, so as a fallback we derive the public
+// GitHub avatar (https://github.com/<login>.png) from the `preferred_username`.
+func resolvePicture(claims map[string]interface{}) string {
+	if picture := stringClaim(claims, "picture"); picture != "" {
+		return picture
+	}
+	if login := stringClaim(claims, "preferred_username"); login != "" && isGitHubLogin(login) {
+		return "https://github.com/" + login + ".png"
+	}
+	return ""
+}
+
+// isGitHubLogin is a conservative check so we only build a github.com avatar URL for
+// values that look like a GitHub username (alphanumeric with single hyphens).
+func isGitHubLogin(login string) bool {
+	if len(login) == 0 || len(login) > 39 || strings.Contains(login, "@") {
+		return false
+	}
+	for _, r := range login {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-') {
+			return false
+		}
+	}
+	return true
 }
 
 func bearerToken(authHeader string) string {
