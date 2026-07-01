@@ -63,7 +63,8 @@ export const CONFIG: IConfig = {
   usernameCookieName: 'username',
   csrfHeaderName: 'X-CSRF-TOKEN',
   skipLoginPageCookieName: 'skipLoginPage',
-  defaultNamespace: 'default',
+  // Show all namespaces by default (fork idea) instead of just "default".
+  defaultNamespace: '_all',
   authModeCookieName: 'authMode',
   supportedLanguages: supportedLanguages,
   defaultLanguage: 'en',
