@@ -150,6 +150,24 @@ const (
 	ResourceKindNetworkPolicy            = "networkpolicy"
 	ResourceKindIngressClass             = "ingressclass"
 	ResourceKindPodDisruptionBudget      = "poddisruptionbudget"
+	// ResourceKindVerticalPodAutoscaler is an OPTIONAL CRD (autoscaling.k8s.io),
+	// browsed via the dynamic client, so it is intentionally NOT in
+	// KindToAPIMapping (there is no generated clientset for its group).
+	ResourceKindVerticalPodAutoscaler = "verticalpodautoscaler"
+	// ResourceKindScaledObject and ResourceKindScaledJob are OPTIONAL KEDA CRDs
+	// (keda.sh), browsed via the dynamic client (not in KindToAPIMapping).
+	ResourceKindScaledObject = "scaledobject"
+	ResourceKindScaledJob    = "scaledjob"
+	// ResourceKindMachineDeployment, ResourceKindMachineSet and ResourceKindMachine
+	// are OPTIONAL Cluster API CRDs (cluster.x-k8s.io), browsed via the dynamic
+	// client (not in KindToAPIMapping).
+	ResourceKindMachineDeployment = "machinedeployment"
+	ResourceKindMachineSet        = "machineset"
+	ResourceKindMachine           = "machine"
+	// ResourceKindNodePool and ResourceKindNodeClaim are OPTIONAL Karpenter CRDs
+	// (karpenter.sh), cluster-scoped, browsed via the dynamic client.
+	ResourceKindNodePool  = "nodepool"
+	ResourceKindNodeClaim = "nodeclaim"
 )
 
 // Scalable method return whether ResourceKind is scalable.

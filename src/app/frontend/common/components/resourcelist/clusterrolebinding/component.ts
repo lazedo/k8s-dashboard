@@ -39,7 +39,7 @@ export class ClusterRoleBindingListComponent extends ResourceListBase<ClusterRol
   ) {
     super('clusterrolebinding', notifications, cdr);
     this.id = ListIdentifier.clusterRoleBinding;
-    this.groupId = ListGroupIdentifier.cluster;
+    this.groupId = ListGroupIdentifier.accessControl;
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);

@@ -39,7 +39,7 @@ export class ServiceAccountListComponent extends ResourceListBase<ServiceAccount
   ) {
     super('serviceaccount', notifications, cdr);
     this.id = ListIdentifier.serviceAccount;
-    this.groupId = ListGroupIdentifier.config;
+    this.groupId = ListGroupIdentifier.accessControl;
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);

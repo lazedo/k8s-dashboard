@@ -39,7 +39,7 @@ export class RoleBindingListComponent extends ResourceListBase<RoleBindingList, 
   ) {
     super('rolebinding', notifications, cdr);
     this.id = ListIdentifier.roleBinding;
-    this.groupId = ListGroupIdentifier.cluster;
+    this.groupId = ListGroupIdentifier.accessControl;
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);

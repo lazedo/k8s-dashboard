@@ -17,7 +17,7 @@ import {Route, RouterModule} from '@angular/router';
 import {DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
 import {BREADCRUMBS} from '../../../index.messages';
 
-import {CLUSTER_ROUTE} from '../routing';
+import {ACCESS_CONTROL_ROUTE} from '../../accesscontrol/routing';
 
 import {ClusterRoleBindingDetailComponent} from './detail/component';
 import {ClusterRoleBindingListComponent} from './list/component';
@@ -27,7 +27,7 @@ const CLUSTERROLEBINDING_LIST_ROUTE: Route = {
   component: ClusterRoleBindingListComponent,
   data: {
     breadcrumb: BREADCRUMBS.ClusterRoleBindings,
-    parent: CLUSTER_ROUTE,
+    parent: ACCESS_CONTROL_ROUTE,
   },
 };
 

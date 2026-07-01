@@ -83,6 +83,14 @@ import {IngressListComponent} from './resourcelist/ingress/component';
 import {JobListComponent} from './resourcelist/job/component';
 import {NamespaceListComponent} from './resourcelist/namespace/component';
 import {NetworkPolicyListComponent} from './resourcelist/networkpolicy/component';
+import {VerticalPodAutoscalerListComponent} from './resourcelist/verticalpodautoscaler/component';
+import {ScaledObjectListComponent} from './resourcelist/scaledobject/component';
+import {ScaledJobListComponent} from './resourcelist/scaledjob/component';
+import {MachineDeploymentListComponent} from './resourcelist/machinedeployment/component';
+import {MachineSetListComponent} from './resourcelist/machineset/component';
+import {MachineListComponent} from './resourcelist/machine/component';
+import {NodePoolListComponent} from './resourcelist/nodepool/component';
+import {NodeClaimListComponent} from './resourcelist/nodeclaim/component';
 import {PodDisruptionBudgetListComponent} from './resourcelist/poddisruptionbudget/component';
 import {NodeListComponent} from './resourcelist/node/component';
 import {PersistentVolumeListComponent} from './resourcelist/persistentvolume/component';
@@ -193,6 +201,14 @@ const components = [
   ZeroStateComponent,
   WorkloadStatusComponent,
   NetworkPolicyListComponent,
+  VerticalPodAutoscalerListComponent,
+  ScaledObjectListComponent,
+  ScaledJobListComponent,
+  MachineDeploymentListComponent,
+  MachineSetListComponent,
+  MachineListComponent,
+  NodePoolListComponent,
+  NodeClaimListComponent,
   PodDisruptionBudgetListComponent,
   RoleListComponent,
   RoleBindingListComponent,

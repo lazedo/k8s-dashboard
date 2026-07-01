@@ -17,6 +17,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
@@ -124,7 +125,12 @@ func (verber *resourceVerber) getCRDGroupAndVersion(kind string) (info crdInfo, 
 	err = verber.apiExtensionsClient.Get().Resource("customresourcedefinitions").Name(kind).Do(context.TODO()).Into(&crdv1)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
-			return info, errors.NewInvalid(fmt.Sprintf("Unknown resource kind: %s", kind))
+			// The kind may be a short/singular name (e.g. "verticalpodautoscaler")
+			// used by a dynamic CRD-backed resource rather than the full CRD name
+			// ("verticalpodautoscalers.autoscaling.k8s.io"). Fall back to matching a
+			// CRD by its accepted singular/plural/kind name so DELETE/PUT/GET on the
+			// raw resource work for VPA, KEDA and any other dynamic resource.
+			return verber.findCRDByShortName(kind)
 		}
 
 		return
@@ -132,7 +138,7 @@ func (verber *resourceVerber) getCRDGroupAndVersion(kind string) (info crdInfo, 
 
 	if len(crdv1.Spec.Versions) > 0 {
 		info.group = crdv1.Spec.Group
-		info.version = crdv1.Spec.Versions[0].Name
+		info.version = servedCRDVersion(&crdv1)
 		info.pluralName = crdv1.Status.AcceptedNames.Plural
 		info.namespaced = crdv1.Spec.Scope == apiextensionsv1.NamespaceScoped
 
@@ -140,6 +146,58 @@ func (verber *resourceVerber) getCRDGroupAndVersion(kind string) (info crdInfo, 
 	}
 
 	return
+}
+
+// findCRDByShortName resolves a CRD whose accepted singular/plural/kind matches
+// the given short name, so the verber can operate on dynamic CRD-backed
+// resources that are addressed by their singular kind, not the full CRD name.
+func (verber *resourceVerber) findCRDByShortName(kind string) (info crdInfo, err error) {
+	var crdList apiextensionsv1.CustomResourceDefinitionList
+	err = verber.apiExtensionsClient.Get().Resource("customresourcedefinitions").Do(context.TODO()).Into(&crdList)
+	if err != nil {
+		return
+	}
+
+	lower := strings.ToLower(kind)
+	for i := range crdList.Items {
+		crd := &crdList.Items[i]
+		names := crd.Status.AcceptedNames
+		if strings.ToLower(names.Singular) == lower ||
+			strings.ToLower(names.Plural) == lower ||
+			strings.ToLower(names.Kind) == lower {
+			if len(crd.Spec.Versions) == 0 {
+				continue
+			}
+			info.group = crd.Spec.Group
+			info.version = servedCRDVersion(crd)
+			info.pluralName = names.Plural
+			info.namespaced = crd.Spec.Scope == apiextensionsv1.NamespaceScoped
+			return
+		}
+	}
+
+	return info, errors.NewInvalid(fmt.Sprintf("Unknown resource kind: %s", kind))
+}
+
+// servedCRDVersion returns the version to address a CRD by: the storage version
+// if set, otherwise the first served version, otherwise the first declared one.
+func servedCRDVersion(crd *apiextensionsv1.CustomResourceDefinition) string {
+	served := ""
+	for _, v := range crd.Spec.Versions {
+		if v.Storage {
+			return v.Name
+		}
+		if served == "" && v.Served {
+			served = v.Name
+		}
+	}
+	if served != "" {
+		return served
+	}
+	if len(crd.Spec.Versions) > 0 {
+		return crd.Spec.Versions[0].Name
+	}
+	return ""
 }
 
 // RESTClient is an interface for REST operations used in this file.

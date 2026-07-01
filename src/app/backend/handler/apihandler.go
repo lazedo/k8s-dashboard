@@ -24,6 +24,7 @@ import (
 	"golang.org/x/net/xsrftoken"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/remotecommand"
 
 	"github.com/kubernetes/dashboard/src/app/backend/api"
@@ -34,6 +35,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/handler/parser"
 	"github.com/kubernetes/dashboard/src/app/backend/integration"
 	"github.com/kubernetes/dashboard/src/app/backend/plugin"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/capi"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrole"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrolebinding"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
@@ -51,6 +53,8 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/ingress"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/ingressclass"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/job"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/karpenter"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/keda"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/logs"
 	ns "github.com/kubernetes/dashboard/src/app/backend/resource/namespace"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/networkpolicy"
@@ -68,6 +72,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/serviceaccount"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/statefulset"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/storageclass"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/verticalpodautoscaler"
 	"github.com/kubernetes/dashboard/src/app/backend/scaling"
 	"github.com/kubernetes/dashboard/src/app/backend/settings"
 	settingsApi "github.com/kubernetes/dashboard/src/app/backend/settings/api"
@@ -531,6 +536,98 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/networkpolicy/{namespace}/{networkpolicy}").
 			To(apiHandler.handleGetNetworkPolicyDetail).
 			Writes(networkpolicy.NetworkPolicyDetail{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/verticalpodautoscaler").
+			To(apiHandler.handleGetVerticalPodAutoscalerList).
+			Writes(verticalpodautoscaler.VerticalPodAutoscalerList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/verticalpodautoscaler/{namespace}").
+			To(apiHandler.handleGetVerticalPodAutoscalerList).
+			Writes(verticalpodautoscaler.VerticalPodAutoscalerList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/verticalpodautoscaler/{namespace}/{verticalpodautoscaler}").
+			To(apiHandler.handleGetVerticalPodAutoscalerDetail).
+			Writes(verticalpodautoscaler.VerticalPodAutoscalerDetail{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/scaledobject").
+			To(apiHandler.handleGetScaledObjectList).
+			Writes(keda.ScaledObjectList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/scaledobject/{namespace}").
+			To(apiHandler.handleGetScaledObjectList).
+			Writes(keda.ScaledObjectList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/scaledobject/{namespace}/{scaledobject}").
+			To(apiHandler.handleGetScaledObjectDetail).
+			Writes(keda.ScaledObjectDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/scaledjob").
+			To(apiHandler.handleGetScaledJobList).
+			Writes(keda.ScaledJobList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/scaledjob/{namespace}").
+			To(apiHandler.handleGetScaledJobList).
+			Writes(keda.ScaledJobList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/scaledjob/{namespace}/{scaledjob}").
+			To(apiHandler.handleGetScaledJobDetail).
+			Writes(keda.ScaledJobDetail{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machinedeployment").
+			To(apiHandler.handleGetMachineDeploymentList).
+			Writes(capi.MachineDeploymentList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machinedeployment/{namespace}").
+			To(apiHandler.handleGetMachineDeploymentList).
+			Writes(capi.MachineDeploymentList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machinedeployment/{namespace}/{machinedeployment}").
+			To(apiHandler.handleGetMachineDeploymentDetail).
+			Writes(capi.MachineDeploymentDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machineset").
+			To(apiHandler.handleGetMachineSetList).
+			Writes(capi.MachineSetList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machineset/{namespace}").
+			To(apiHandler.handleGetMachineSetList).
+			Writes(capi.MachineSetList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machineset/{namespace}/{machineset}").
+			To(apiHandler.handleGetMachineSetDetail).
+			Writes(capi.MachineSetDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machine").
+			To(apiHandler.handleGetMachineList).
+			Writes(capi.MachineList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machine/{namespace}").
+			To(apiHandler.handleGetMachineList).
+			Writes(capi.MachineList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/machine/{namespace}/{machine}").
+			To(apiHandler.handleGetMachineDetail).
+			Writes(capi.MachineDetail{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/nodepool").
+			To(apiHandler.handleGetNodePoolList).
+			Writes(karpenter.NodePoolList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/nodepool/{nodepool}").
+			To(apiHandler.handleGetNodePoolDetail).
+			Writes(karpenter.NodePoolDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/nodeclaim").
+			To(apiHandler.handleGetNodeClaimList).
+			Writes(karpenter.NodeClaimList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/nodeclaim/{nodeclaim}").
+			To(apiHandler.handleGetNodeClaimDetail).
+			Writes(karpenter.NodeClaimDetail{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/poddisruptionbudget").
@@ -1201,6 +1298,285 @@ func (apiHandler *APIHandler) handleGetNetworkPolicyDetail(request *restful.Requ
 	namespace := request.PathParameter("namespace")
 	name := request.PathParameter("networkpolicy")
 	result, err := networkpolicy.GetNetworkPolicyDetail(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+// dynamicClient builds a dynamic client with per-request auth, used to browse
+// optional CRD-backed resources (e.g. VerticalPodAutoscaler) without a generated
+// clientset.
+func (apiHandler *APIHandler) dynamicClient(request *restful.Request) (dynamic.Interface, error) {
+	cfg, err := apiHandler.cManager.Config(request)
+	if err != nil {
+		return nil, err
+	}
+	return dynamic.NewForConfig(cfg)
+}
+
+func (apiHandler *APIHandler) handleGetVerticalPodAutoscalerList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := verticalpodautoscaler.GetVerticalPodAutoscalerList(dynClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetVerticalPodAutoscalerDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("verticalpodautoscaler")
+	result, err := verticalpodautoscaler.GetVerticalPodAutoscalerDetail(dynClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetScaledObjectList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := keda.GetScaledObjectList(dynClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetScaledObjectDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("scaledobject")
+	result, err := keda.GetScaledObjectDetail(dynClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetScaledJobList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := keda.GetScaledJobList(dynClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetScaledJobDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("scaledjob")
+	result, err := keda.GetScaledJobDetail(dynClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetMachineDeploymentList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := capi.GetMachineDeploymentList(dynClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetMachineDeploymentDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("machinedeployment")
+	result, err := capi.GetMachineDeploymentDetail(dynClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetMachineSetList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := capi.GetMachineSetList(dynClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetMachineSetDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("machineset")
+	result, err := capi.GetMachineSetDetail(dynClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetMachineList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := capi.GetMachineList(dynClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetMachineDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("machine")
+	result, err := capi.GetMachineDetail(dynClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetNodePoolList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := karpenter.GetNodePoolList(dynClient, common.NewNamespaceQuery(nil), dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetNodePoolDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("nodepool")
+	result, err := karpenter.GetNodePoolDetail(dynClient, "", name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetNodeClaimList(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := karpenter.GetNodeClaimList(dynClient, common.NewNamespaceQuery(nil), dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetNodeClaimDetail(request *restful.Request, response *restful.Response) {
+	dynClient, err := apiHandler.dynamicClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("nodeclaim")
+	result, err := karpenter.GetNodeClaimDetail(dynClient, "", name)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

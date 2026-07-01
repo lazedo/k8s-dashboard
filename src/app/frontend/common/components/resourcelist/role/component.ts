@@ -39,7 +39,7 @@ export class RoleListComponent extends ResourceListBase<RoleList, Role> {
   ) {
     super('role', notifications, cdr);
     this.id = ListIdentifier.role;
-    this.groupId = ListGroupIdentifier.cluster;
+    this.groupId = ListGroupIdentifier.accessControl;
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);

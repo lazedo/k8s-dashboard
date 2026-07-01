@@ -94,12 +94,6 @@ limitations under the License.
                    i18n>Config Maps
       </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
-                   state="/persistentvolumeclaim"
-                   id="nav-persistentvolumeclaim"
-                   [namespaced]="true"
-                   i18n>Persistent Volume Claims
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
                    state="/secret"
                    id="nav-secret"
                    [namespaced]="true"
@@ -108,6 +102,17 @@ limitations under the License.
                    state="/storageclass"
                    id="nav-storageclass"
                    i18n>Storage Classes </kd-nav-item>
+      <kd-nav-item class="kd-nav-item"
+                   state="/persistentvolume"
+                   id="nav-persistentvolume"
+                   i18n>Persistent Volumes
+      </kd-nav-item>
+      <kd-nav-item class="kd-nav-item"
+                   state="/persistentvolumeclaim"
+                   id="nav-persistentvolumeclaim"
+                   [namespaced]="true"
+                   i18n>Persistent Volume Claims
+      </kd-nav-item>
 
       <!-- Cluster -->
       <kd-nav-item class="kd-nav-group-item"
@@ -115,14 +120,9 @@ limitations under the License.
                    id="nav-cluster"
                    i18n>Cluster </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
-                   state="/clusterrolebinding"
-                   id="nav-clusterrolebinding"
-                   i18n>Cluster Role Bindings
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/clusterrole"
-                   id="nav-clusterrole"
-                   i18n>Cluster Roles </kd-nav-item>
+                   state="/node"
+                   id="nav-node"
+                   i18n>Nodes </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
                    state="/event"
                    id="nav-events"
@@ -138,32 +138,20 @@ limitations under the License.
                    [namespaced]="true"
                    i18n>Network Policies
       </kd-nav-item>
+
+      <!-- Access Control -->
+      <kd-nav-item class="kd-nav-group-item"
+                   state="/accesscontrol"
+                   id="nav-accesscontrol"
+                   i18n>Access Control </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
-                   state="/poddisruptionbudget"
-                   id="nav-poddisruptionbudget"
-                   [namespaced]="true"
-                   i18n>Pod Disruption Budgets
-      </kd-nav-item>
+                   state="/clusterrole"
+                   id="nav-clusterrole"
+                   i18n>Cluster Roles </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
-                   state="/horizontalpodautoscaler"
-                   id="nav-horizontalpodautoscaler"
-                   [namespaced]="true"
-                   i18n>Horizontal Pod Autoscalers
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/node"
-                   id="nav-node"
-                   i18n>Nodes </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/persistentvolume"
-                   id="nav-persistentvolume"
-                   i18n>Persistent Volumes
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/rolebinding"
-                   id="nav-rolebinding"
-                   [namespaced]="true"
-                   i18n>Role Bindings
+                   state="/clusterrolebinding"
+                   id="nav-clusterrolebinding"
+                   i18n>Cluster Role Bindings
       </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
                    state="/role"
@@ -171,11 +159,108 @@ limitations under the License.
                    [namespaced]="true"
                    i18n>Roles </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
+                   state="/rolebinding"
+                   id="nav-rolebinding"
+                   [namespaced]="true"
+                   i18n>Role Bindings
+      </kd-nav-item>
+      <kd-nav-item class="kd-nav-item"
                    state="/serviceaccount"
                    id="nav-serviceaccount"
                    [namespaced]="true"
                    i18n>Service Accounts
       </kd-nav-item>
+
+      <!-- Cluster API (hidden entirely when Cluster API is not installed) -->
+      <ng-container *ngIf="hasAnyCrd(['machinedeployments.cluster.x-k8s.io', 'machinesets.cluster.x-k8s.io', 'machines.cluster.x-k8s.io'])">
+        <kd-nav-item class="kd-nav-group-item"
+                     state="/clusterapi"
+                     id="nav-clusterapi"
+                     i18n>Cluster API </kd-nav-item>
+        <kd-nav-item *ngIf="hasCrd('machinedeployments.cluster.x-k8s.io')"
+                     class="kd-nav-item"
+                     state="/machinedeployment"
+                     id="nav-machinedeployment"
+                     [namespaced]="true"
+                     i18n>Machine Deployments
+        </kd-nav-item>
+        <kd-nav-item *ngIf="hasCrd('machinesets.cluster.x-k8s.io')"
+                     class="kd-nav-item"
+                     state="/machineset"
+                     id="nav-machineset"
+                     [namespaced]="true"
+                     i18n>Machine Sets
+        </kd-nav-item>
+        <kd-nav-item *ngIf="hasCrd('machines.cluster.x-k8s.io')"
+                     class="kd-nav-item"
+                     state="/machine"
+                     id="nav-machine"
+                     [namespaced]="true"
+                     i18n>Machines
+        </kd-nav-item>
+      </ng-container>
+
+      <!-- Scaling & Availability -->
+      <kd-nav-item class="kd-nav-group-item"
+                   state="/autoscaling"
+                   id="nav-autoscaling"
+                   i18n>Scaling &amp; Availability </kd-nav-item>
+      <kd-nav-item class="kd-nav-item"
+                   state="/horizontalpodautoscaler"
+                   id="nav-horizontalpodautoscaler"
+                   [namespaced]="true"
+                   i18n>Horizontal Pod Autoscalers
+      </kd-nav-item>
+      <kd-nav-item *ngIf="hasCrd('verticalpodautoscalers.autoscaling.k8s.io')"
+                   class="kd-nav-item"
+                   state="/verticalpodautoscaler"
+                   id="nav-verticalpodautoscaler"
+                   [namespaced]="true"
+                   i18n>Vertical Pod Autoscalers
+      </kd-nav-item>
+      <kd-nav-item *ngIf="hasCrd('scaledobjects.keda.sh')"
+                   class="kd-nav-item"
+                   state="/scaledobject"
+                   id="nav-scaledobject"
+                   [namespaced]="true"
+                   i18n>Scaled Objects
+      </kd-nav-item>
+      <kd-nav-item *ngIf="hasCrd('scaledjobs.keda.sh')"
+                   class="kd-nav-item"
+                   state="/scaledjob"
+                   id="nav-scaledjob"
+                   [namespaced]="true"
+                   i18n>Scaled Jobs
+      </kd-nav-item>
+      <kd-nav-item *ngIf="hasCrd('nodepools.karpenter.sh')"
+                   class="kd-nav-item"
+                   state="/nodepool"
+                   id="nav-nodepool"
+                   i18n>Node Pools
+      </kd-nav-item>
+      <kd-nav-item *ngIf="hasCrd('nodeclaims.karpenter.sh')"
+                   class="kd-nav-item"
+                   state="/nodeclaim"
+                   id="nav-nodeclaim"
+                   i18n>Node Claims
+      </kd-nav-item>
+      <kd-nav-item class="kd-nav-item"
+                   state="/poddisruptionbudget"
+                   id="nav-poddisruptionbudget"
+                   [namespaced]="true"
+                   i18n>Pod Disruption Budgets
+      </kd-nav-item>
+
+      <!-- Plugins (hidden entirely when there are no plugins) -->
+      <ng-container *ngIf="showPlugin()">
+        <kd-nav-item class="kd-nav-group-item"
+                     state="/plugin"
+                     id="nav-plugin"
+                     [exact]="true"
+                     i18n>Plugins </kd-nav-item>
+        <!-- pinned plugins appear as sub-items, like Custom Resource Definitions -->
+        <kd-pinner-nav kind="plugin"></kd-pinner-nav>
+      </ng-container>
 
       <!-- Custom Resource Definitions -->
       <kd-nav-item class="kd-nav-group-item"
@@ -186,18 +271,6 @@ limitations under the License.
       </kd-nav-item>
 
       <kd-pinner-nav kind="customresourcedefinition"></kd-pinner-nav>
-
-      <ng-container *ngIf="showPlugin()">
-        <mat-divider></mat-divider>
-
-        <kd-nav-item class="kd-nav-group-item"
-                     state="/plugin"
-                     id="nav-plugin"
-                     [exact]="true"
-                     i18n>Plugins </kd-nav-item>
-        <!-- pinned plugins appear as sub-items, like Custom Resource Definitions -->
-        <kd-pinner-nav kind="plugin"></kd-pinner-nav>
-      </ng-container>
 
       <mat-divider></mat-divider>
 

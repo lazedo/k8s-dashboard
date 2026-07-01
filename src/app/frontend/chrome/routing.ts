@@ -34,6 +34,21 @@ const routes: Routes = [
         path: 'cluster',
         loadChildren: () => import('resource/cluster/module').then(m => m.ClusterModule),
       },
+      // Autoscaling group
+      {
+        path: 'autoscaling',
+        loadChildren: () => import('resource/autoscaling/module').then(m => m.AutoscalingModule),
+      },
+      // Access Control group
+      {
+        path: 'accesscontrol',
+        loadChildren: () => import('resource/accesscontrol/module').then(m => m.AccessControlModule),
+      },
+      // Cluster API group
+      {
+        path: 'clusterapi',
+        loadChildren: () => import('resource/clusterapi/module').then(m => m.ClusterApiModule),
+      },
       {
         path: 'clusterrolebinding',
         loadChildren: () => import('resource/cluster/clusterrolebinding/module').then(m => m.ClusterRoleBindingModule),
@@ -63,6 +78,39 @@ const routes: Routes = [
         path: 'horizontalpodautoscaler',
         loadChildren: () =>
           import('resource/cluster/horizontalpodautoscaler/module').then(m => m.HorizontalPodAutoscalerModule),
+      },
+      {
+        path: 'verticalpodautoscaler',
+        loadChildren: () =>
+          import('resource/cluster/verticalpodautoscaler/module').then(m => m.VerticalPodAutoscalerModule),
+      },
+      {
+        path: 'scaledobject',
+        loadChildren: () => import('resource/cluster/scaledobject/module').then(m => m.ScaledObjectModule),
+      },
+      {
+        path: 'scaledjob',
+        loadChildren: () => import('resource/cluster/scaledjob/module').then(m => m.ScaledJobModule),
+      },
+      {
+        path: 'machinedeployment',
+        loadChildren: () => import('resource/cluster/machinedeployment/module').then(m => m.MachineDeploymentModule),
+      },
+      {
+        path: 'machineset',
+        loadChildren: () => import('resource/cluster/machineset/module').then(m => m.MachineSetModule),
+      },
+      {
+        path: 'machine',
+        loadChildren: () => import('resource/cluster/machine/module').then(m => m.MachineModule),
+      },
+      {
+        path: 'nodepool',
+        loadChildren: () => import('resource/cluster/nodepool/module').then(m => m.NodePoolModule),
+      },
+      {
+        path: 'nodeclaim',
+        loadChildren: () => import('resource/cluster/nodeclaim/module').then(m => m.NodeClaimModule),
       },
       {
         path: 'node',

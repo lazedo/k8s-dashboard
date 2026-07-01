@@ -1,0 +1,47 @@
+<!--
+Copyright 2024 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<kd-object-meta [initialized]="isInitialized"
+                [objectMeta]="nodeClaim?.objectMeta"></kd-object-meta>
+
+<kd-card [initialized]="isInitialized">
+  <div title
+       i18n>Resource information</div>
+  <div content
+       *ngIf="isInitialized"
+       fxLayout="row wrap">
+    <kd-property *ngIf="nodeClaim?.nodeName">
+      <div key
+           i18n>Node</div>
+      <div value>{{ nodeClaim?.nodeName }}</div>
+    </kd-property>
+
+    <kd-property *ngIf="nodeClaim?.capacity">
+      <div key
+           i18n>Capacity</div>
+      <div value>
+        <kd-chips [map]="nodeClaim?.capacity"
+                  [displayAll]="true"></kd-chips>
+      </div>
+    </kd-property>
+
+    <kd-property *ngIf="nodeClaim?.providerID">
+      <div key
+           i18n>Provider ID</div>
+      <div value>{{ nodeClaim?.providerID }}</div>
+    </kd-property>
+  </div>
+</kd-card>

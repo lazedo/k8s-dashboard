@@ -17,6 +17,7 @@ import {MatDrawer} from '@angular/material/sidenav';
 
 import {NavService} from '@common/services/nav/service';
 import {PluginsConfigService} from '@common/services/global/plugin';
+import {CrdAvailabilityService} from '@common/services/global/crd';
 
 @Component({
   selector: 'kd-nav',
@@ -30,7 +31,11 @@ export class NavComponent implements OnInit {
     return this.nav_.opened;
   }
 
-  constructor(private readonly navService_: NavService, private readonly pluginsConfigService_: PluginsConfigService) {}
+  constructor(
+    private readonly navService_: NavService,
+    private readonly pluginsConfigService_: PluginsConfigService,
+    private readonly crdAvailability_: CrdAvailabilityService
+  ) {}
 
   ngOnInit(): void {
     this.navService_.setNav(this.nav_);
@@ -39,5 +44,15 @@ export class NavComponent implements OnInit {
 
   showPlugin(): boolean {
     return this.pluginsConfigService_.status() === 200;
+  }
+
+  // hasCrd hides nav items for optional CRD-backed resources that are not
+  // installed in the cluster (e.g. VPA, KEDA, Karpenter, Cluster API).
+  hasCrd(crdName: string): boolean {
+    return this.crdAvailability_.isInstalled(crdName);
+  }
+
+  hasAnyCrd(crdNames: string[]): boolean {
+    return this.crdAvailability_.isAnyInstalled(crdNames);
   }
 }

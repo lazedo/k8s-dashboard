@@ -17,7 +17,7 @@ import {Route, RouterModule} from '@angular/router';
 import {DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
 import {BREADCRUMBS} from '../../../index.messages';
 
-import {CLUSTER_ROUTE} from '../routing';
+import {AUTOSCALING_ROUTE} from '../../autoscaling/routing';
 
 import {PodDisruptionBudgetDetailComponent} from './detail/component';
 import {PodDisruptionBudgetListComponent} from './list/component';
@@ -27,7 +27,7 @@ const POD_DISRUPTION_BUDGET_LIST_ROUTE: Route = {
   component: PodDisruptionBudgetListComponent,
   data: {
     breadcrumb: BREADCRUMBS.PodDisruptionBudgets,
-    parent: CLUSTER_ROUTE,
+    parent: AUTOSCALING_ROUTE,
   },
 };
 

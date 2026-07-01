@@ -40,6 +40,7 @@ import {PluginLoaderService} from '../pluginloader/pluginloader.service';
 import {ClientPluginLoaderService} from '../pluginloader/clientloader.service';
 import {PinnerService} from './pinner';
 import {MeService} from './me';
+import {CrdAvailabilityService} from './crd';
 
 @NgModule({
   providers: [
@@ -65,6 +66,7 @@ import {MeService} from './me';
     ParamsService,
     LocalConfigLoaderService,
     DecoderService,
+    CrdAvailabilityService,
     {
       provide: APP_INITIALIZER,
       useFactory: init,
@@ -77,6 +79,7 @@ import {MeService} from './me';
         PinnerService,
         ThemeService,
         LocalConfigLoaderService,
+        CrdAvailabilityService,
       ],
       multi: true,
     },
@@ -103,7 +106,8 @@ export function init(
   history: HistoryService,
   pluginsConfig: PluginsConfigService,
   theme: ThemeService,
-  loader: LocalConfigLoaderService
+  loader: LocalConfigLoaderService,
+  crd: CrdAvailabilityService
 ): Function {
   return () => {
     return loader.init().then(() => {
@@ -112,7 +116,7 @@ export function init(
       config.init();
       history.init();
       theme.init();
-      return globalSettings.init().then(() => pluginsConfig.init());
+      return globalSettings.init().then(() => Promise.all([pluginsConfig.init(), crd.init()]));
     });
   };
 }

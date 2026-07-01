@@ -144,6 +144,38 @@ export interface NetworkPolicyList extends ResourceList {
   items: NetworkPolicy[];
 }
 
+export interface VerticalPodAutoscalerList extends ResourceList {
+  items: VerticalPodAutoscaler[];
+}
+
+export interface ScaledObjectList extends ResourceList {
+  items: ScaledObject[];
+}
+
+export interface ScaledJobList extends ResourceList {
+  items: ScaledJob[];
+}
+
+export interface MachineDeploymentList extends ResourceList {
+  items: MachineDeployment[];
+}
+
+export interface MachineSetList extends ResourceList {
+  items: MachineSet[];
+}
+
+export interface MachineList extends ResourceList {
+  items: Machine[];
+}
+
+export interface NodePoolList extends ResourceList {
+  items: NodePool[];
+}
+
+export interface NodeClaimList extends ResourceList {
+  items: NodeClaim[];
+}
+
 export interface PodDisruptionBudget extends Resource {
   minAvailable?: string | number;
   maxUnavailable?: string | number;
@@ -254,6 +286,22 @@ export type ConfigMap = Resource;
 export type ServiceAccount = Resource;
 
 export type NetworkPolicy = Resource;
+
+export type VerticalPodAutoscaler = Resource;
+
+export type ScaledObject = Resource;
+
+export type ScaledJob = Resource;
+
+export type MachineDeployment = Resource;
+
+export type MachineSet = Resource;
+
+export type Machine = Resource;
+
+export type NodePool = Resource;
+
+export type NodeClaim = Resource;
 
 export interface Controller extends Resource {
   pods: PodInfo;
@@ -599,6 +647,87 @@ export interface NetworkPolicyDetail extends ResourceDetail {
   ingress?: any;
   egress?: any;
   policyTypes?: string[];
+}
+
+export interface VPACrossVersionObjectReference {
+  apiVersion?: string;
+  kind?: string;
+  name?: string;
+}
+
+export interface VPAContainerRecommendation {
+  containerName?: string;
+  target?: {[key: string]: string};
+  lowerBound?: {[key: string]: string};
+  upperBound?: {[key: string]: string};
+  uncappedTarget?: {[key: string]: string};
+}
+
+export interface VerticalPodAutoscalerDetail extends ResourceDetail {
+  targetRef?: VPACrossVersionObjectReference;
+  updateMode?: string;
+  recommendations?: VPAContainerRecommendation[];
+}
+
+export interface KedaScaleTargetRef {
+  apiVersion?: string;
+  kind?: string;
+  name?: string;
+}
+
+export interface KedaTrigger {
+  type?: string;
+  name?: string;
+  metadata?: {[key: string]: string};
+}
+
+export interface ScaledObjectDetail extends ResourceDetail {
+  scaleTargetRef?: KedaScaleTargetRef;
+  minReplicaCount?: number;
+  maxReplicaCount?: number;
+  triggers?: KedaTrigger[];
+}
+
+export interface ScaledJobDetail extends ResourceDetail {
+  minReplicaCount?: number;
+  maxReplicaCount?: number;
+  triggers?: KedaTrigger[];
+}
+
+export interface MachineDeploymentDetail extends ResourceDetail {
+  clusterName?: string;
+  replicas?: number;
+  readyReplicas?: number;
+  updatedReplicas?: number;
+  phase?: string;
+}
+
+export interface MachineSetDetail extends ResourceDetail {
+  clusterName?: string;
+  replicas?: number;
+  readyReplicas?: number;
+  availableReplicas?: number;
+}
+
+export interface MachineDetail extends ResourceDetail {
+  clusterName?: string;
+  version?: string;
+  providerID?: string;
+  phase?: string;
+  nodeName?: string;
+}
+
+export interface NodePoolDetail extends ResourceDetail {
+  limits?: {[key: string]: string};
+  consolidationPolicy?: string;
+  consolidateAfter?: string;
+  weight?: number;
+}
+
+export interface NodeClaimDetail extends ResourceDetail {
+  nodeName?: string;
+  providerID?: string;
+  capacity?: {[key: string]: string};
 }
 
 export interface PersistentVolumeClaimDetail extends ResourceDetail {

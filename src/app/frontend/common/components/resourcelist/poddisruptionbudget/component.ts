@@ -39,7 +39,7 @@ export class PodDisruptionBudgetListComponent extends ResourceListBase<PodDisrup
   ) {
     super('poddisruptionbudget', notifications, cdr);
     this.id = ListIdentifier.podDisruptionBudget;
-    this.groupId = ListGroupIdentifier.cluster;
+    this.groupId = ListGroupIdentifier.autoscaling;
 
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));

@@ -41,7 +41,7 @@ export class HorizontalPodAutoscalerListComponent extends ResourceListWithStatus
   ) {
     super('horizontalpodautoscaler', notifications, cdr);
     this.id = ListIdentifier.horizontalpodautoscaler;
-    this.groupId = ListGroupIdentifier.workloads;
+    this.groupId = ListGroupIdentifier.autoscaling;
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
