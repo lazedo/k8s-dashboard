@@ -168,6 +168,11 @@ func (self *DataSelector) GetMetrics(metricClient metricapi.MetricClient) *DataS
 		return self
 	}
 
+	// No metric client / no promises (e.g. metrics disabled): nothing to do. (#8881)
+	if len(metricPromisesList) == 0 {
+		return self
+	}
+
 	metricPromises := make(metricapi.MetricPromises, 0)
 	for _, promises := range metricPromisesList {
 		metricPromises = append(metricPromises, promises...)
@@ -183,6 +188,11 @@ func (self *DataSelector) GetCumulativeMetrics(metricClient metricapi.MetricClie
 	metricPromisesList, err := self.getMetrics(metricClient)
 	if err != nil {
 		log.Print(err)
+		return self
+	}
+
+	// No metric client / no promises (e.g. metrics disabled): nothing to do. (#8881)
+	if len(metricPromisesList) == 0 {
 		return self
 	}
 
