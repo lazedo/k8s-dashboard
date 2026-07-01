@@ -23,11 +23,12 @@ import {CreateComponent} from './component';
 import {CreateFromFileComponent} from './from/file/component';
 import {CreateFromFormModule} from './from/form/module';
 import {CreateFromInputComponent} from './from/input/component';
+import {CreateFromUrlComponent} from './from/url/component';
 import {CreateRoutingModule} from './routing';
 
 @NgModule({
   imports: [SharedModule, ComponentsModule, CreateFromFormModule, CreateServiceModule, CreateRoutingModule],
-  declarations: [CreateComponent, CreateFromInputComponent, CreateFromFileComponent],
+  declarations: [CreateComponent, CreateFromInputComponent, CreateFromFileComponent, CreateFromUrlComponent],
   providers: [CanDeactivateGuard],
 })
 export class CreateModule {}

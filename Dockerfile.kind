@@ -35,10 +35,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
       -ldflags "-X github.com/kubernetes/dashboard/src/app/backend/client.Version=v2.7.0-plugins" \
       -o /dashboard ./src/app/backend
 
-# ---- assemble (scratch, like upstream aio/Dockerfile) ----
-FROM scratch AS final
-COPY --from=backend /etc/passwd /etc/passwd
-COPY --from=backend /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+# ---- assemble (alpine + git, so "Create from URL" can kustomize-build remote
+#      git targets like github.com/org/repo//overlays?ref=main via git clone) ----
+FROM alpine:3.20 AS final
+RUN apk add --no-cache git ca-certificates
+# git and kustomize's git loader clone into TMPDIR; give a writable HOME so git
+# runs as any (non-root) uid the pod is scheduled with.
+ENV HOME=/tmp
 COPY --from=backend /dashboard /dashboard
 COPY --from=frontend /frontend/en /public/en
 COPY --from=frontend /frontend/locale_conf.json /locale_conf.json

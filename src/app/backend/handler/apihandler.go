@@ -173,6 +173,11 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			To(apiHandler.handleDeployFromFile).
 			Reads(deployment.AppDeploymentFromFileSpec{}).
 			Writes(deployment.AppDeploymentFromFileResponse{}))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/appdeploymentfromurl").
+			To(apiHandler.handleDeployFromUrl).
+			Reads(deployment.AppDeploymentFromUrlSpec{}).
+			Writes(deployment.AppDeploymentFromUrlResponse{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/replicationcontroller").
@@ -1794,6 +1799,37 @@ func (apiHandler *APIHandler) handleDeployFromFile(request *restful.Request, res
 	response.WriteHeaderAndEntity(http.StatusCreated, deployment.AppDeploymentFromFileResponse{
 		Name:    deploymentSpec.Name,
 		Content: deploymentSpec.Content,
+		Error:   errorMessage,
+	})
+}
+
+func (apiHandler *APIHandler) handleDeployFromUrl(request *restful.Request, response *restful.Response) {
+	cfg, err := apiHandler.cManager.Config(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	deploymentSpec := new(deployment.AppDeploymentFromUrlSpec)
+	if err := request.ReadEntity(deploymentSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	content, isDeployed, err := deployment.DeployAppFromUrl(cfg, deploymentSpec)
+	if !isDeployed {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	errorMessage := ""
+	if err != nil {
+		errorMessage = err.Error()
+	}
+
+	response.WriteHeaderAndEntity(http.StatusCreated, deployment.AppDeploymentFromUrlResponse{
+		URL:     deploymentSpec.URL,
+		Content: content,
 		Error:   errorMessage,
 	})
 }

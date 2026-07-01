@@ -1,0 +1,62 @@
+<!--
+Copyright 2024 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="kd-create-from-file-info">
+  <span i18n>
+    Enter a URL to a manifest file (applied with -f), or to a directory / kustomization.yaml
+    (built and applied with kustomize -k). Resources are deployed to the namespace in the manifest,
+    or to the currently selected namespace.
+  </span>
+  <a href="https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/"
+     target="_blank"
+     i18n>
+    Learn more
+    <i class="material-icons">open_in_new</i>
+  </a>
+</div>
+
+<form>
+  <mat-form-field class="kd-block">
+    <mat-label i18n>Manifest or kustomization URL</mat-label>
+    <input matInput
+           name="url"
+           type="url"
+           [(ngModel)]="url"
+           placeholder="https://raw.githubusercontent.com/org/repo/main/deploy.yaml" />
+  </mat-form-field>
+
+  <div>
+    <mat-checkbox name="kustomize"
+                  [(ngModel)]="kustomize"
+                  i18n>Build with Kustomize (auto-detected for directories and kustomization.yaml)
+    </mat-checkbox>
+  </div>
+</form>
+
+<button type="button"
+        [disabled]="isCreateDisabled()"
+        (click)="create()"
+        color="primary"
+        mat-raised-button
+        i18n>Upload
+</button>
+
+<button type="button"
+        (click)="cancel()"
+        color="primary"
+        mat-button
+        i18n>Cancel
+</button>

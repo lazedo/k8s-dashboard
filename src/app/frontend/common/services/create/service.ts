@@ -16,7 +16,13 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Inject, Injectable} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {Router} from '@angular/router';
-import {AppDeploymentContentResponse, AppDeploymentContentSpec, AppDeploymentSpec} from '@api/root.api';
+import {
+  AppDeploymentContentResponse,
+  AppDeploymentContentSpec,
+  AppDeploymentFromUrlResponse,
+  AppDeploymentFromUrlSpec,
+  AppDeploymentSpec,
+} from '@api/root.api';
 import {IConfig} from '@api/root.ui';
 import {AsKdError} from '@common/errors/errors';
 import {CONFIG_DI_TOKEN} from '../../../index.config';
@@ -73,6 +79,41 @@ export class CreateService {
       this.isDeployInProgress_ = true;
       response = await this.http_
         .post<AppDeploymentContentResponse>('api/v1/appdeploymentfromfile', spec, {
+          headers: {[this.CONFIG.csrfHeaderName]: token},
+        })
+        .toPromise();
+      if (response.error.length > 0) {
+        this.reportError_(i18n.MSG_DEPLOY_DIALOG_PARTIAL_COMPLETED, response.error);
+      }
+    } catch (err) {
+      error = err;
+    }
+    this.isDeployInProgress_ = false;
+
+    if (error) {
+      this.reportError_(i18n.MSG_DEPLOY_DIALOG_ERROR, AsKdError(error).message);
+      throw error;
+    }
+
+    return response;
+  }
+
+  async createFromUrl(url: string, kustomize = false, validate = true): Promise<AppDeploymentFromUrlResponse> {
+    const spec: AppDeploymentFromUrlSpec = {
+      url,
+      namespace: this.namespace_.current(),
+      kustomize,
+      validate,
+    };
+
+    let response: AppDeploymentFromUrlResponse;
+    let error: HttpErrorResponse;
+
+    try {
+      const {token} = await this.csrfToken_.getTokenForAction('appdeploymentfromurl').toPromise();
+      this.isDeployInProgress_ = true;
+      response = await this.http_
+        .post<AppDeploymentFromUrlResponse>('api/v1/appdeploymentfromurl', spec, {
           headers: {[this.CONFIG.csrfHeaderName]: token},
         })
         .toPromise();

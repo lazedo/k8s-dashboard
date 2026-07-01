@@ -927,6 +927,19 @@ export interface AppDeploymentContentResponse {
   name: string;
 }
 
+export interface AppDeploymentFromUrlSpec {
+  url: string;
+  namespace: string;
+  kustomize: boolean;
+  validate: boolean;
+}
+
+export interface AppDeploymentFromUrlResponse {
+  url: string;
+  content: string;
+  error: string;
+}
+
 export interface AppDeploymentSpec {
   containerImage: string;
   containerCommand?: string;

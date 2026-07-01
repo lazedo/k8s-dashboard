@@ -120,6 +120,35 @@ type AppDeploymentFromFileResponse struct {
 	Error string `json:"error"`
 }
 
+// AppDeploymentFromUrlSpec is a specification for deployment from a URL. The URL
+// points at a single manifest, or at a directory / kustomization.yaml to build
+// with kustomize (apply -f vs apply -k).
+type AppDeploymentFromUrlSpec struct {
+	// URL of the manifest or kustomization to apply
+	URL string `json:"url"`
+
+	// Namespace that objects should be deployed in
+	Namespace string `json:"namespace"`
+
+	// Whether to render the URL with kustomize (auto-detected when unset)
+	Kustomize bool `json:"kustomize"`
+
+	// Whether validate content before creation or not
+	Validate bool `json:"validate"`
+}
+
+// AppDeploymentFromUrlResponse is a specification for deployment from a URL.
+type AppDeploymentFromUrlResponse struct {
+	// URL that was applied
+	URL string `json:"url"`
+
+	// Rendered content that was applied
+	Content string `json:"content"`
+
+	// Error after create resource
+	Error string `json:"error"`
+}
+
 // PortMapping is a specification of port mapping for an application deployment.
 type PortMapping struct {
 	// Port that will be exposed on the service.
@@ -302,8 +331,24 @@ func getLabelsMap(labels []Label) map[string]string {
 
 // DeployAppFromFile deploys an app based on the given yaml or json file.
 func DeployAppFromFile(cfg *rest.Config, spec *AppDeploymentFromFileSpec) (bool, error) {
-	reader := strings.NewReader(spec.Content)
-	log.Printf("Namespace for deploy from file: %s\n", spec.Namespace)
+	return deployContent(cfg, spec.Content, spec.Namespace)
+}
+
+// DeployAppFromUrl fetches a manifest (or builds a kustomization) from a URL and
+// deploys it. It returns the rendered content that was applied.
+func DeployAppFromUrl(cfg *rest.Config, spec *AppDeploymentFromUrlSpec) (string, bool, error) {
+	content, err := fetchDeployContent(spec.URL, spec.Kustomize)
+	if err != nil {
+		return "", false, err
+	}
+	deployed, err := deployContent(cfg, content, spec.Namespace)
+	return content, deployed, err
+}
+
+// deployContent applies every resource in a multi-document YAML/JSON string.
+func deployContent(cfg *rest.Config, content, targetNamespace string) (bool, error) {
+	reader := strings.NewReader(content)
+	log.Printf("Namespace for deploy from content: %s\n", targetNamespace)
 	d := yaml.NewYAMLOrJSONDecoder(reader, 4096)
 	for {
 		data := &unstructured.Unstructured{}
@@ -349,9 +394,9 @@ func DeployAppFromFile(cfg *rest.Config, spec *AppDeploymentFromFileSpec) (bool,
 		}
 
 		groupVersionResource := schema.GroupVersionResource{Group: gv.Group, Version: gv.Version, Resource: resource.Name}
-		namespace := spec.Namespace
+		namespace := targetNamespace
 
-		if strings.Compare(spec.Namespace, "_all") == 0 {
+		if strings.Compare(targetNamespace, "_all") == 0 {
 			namespace = data.GetNamespace()
 		}
 
