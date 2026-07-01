@@ -93,34 +93,41 @@
 }
 
 .kd-plugin-card-pin {
-  align-self: flex-start;
-  margin: 6px 6px 0 0;
+  // Small badge tucked flush into the card's top-right corner (~1/4 the default
+  // mat-icon-button). Behaves like the detail actionbar pin: dashboard-blue
+  // background, white pin; glyph conveys state — `pin` vs `pin-crossed`.
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 14px;
+  height: 14px;
+  min-width: 0;
+  padding: 0;
+  line-height: 14px;
+  background: #326ce5;
   transition: background 0.15s ease;
 
-  // Same dark pin in both states (matches the detail actionbar pin); the
-  // circle background conveys state. Unpinned: grey circle, upright pin.
-  background: #eef0f4;
-
   mat-icon {
-    color: #3c4043;
-    transform: rotate(0deg);
-    transition: transform 0.15s ease;
+    width: 11px;
+    height: 11px;
+    font-size: 11px;
+    line-height: 11px;
+    color: #fff;
+  }
+
+  .mat-button-wrapper {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mat-button-ripple,
+  .mat-button-focus-overlay {
+    border-radius: 50%;
   }
 
   &:hover {
-    background: #e2e5ea;
-  }
-
-  // pinned: dashboard-blue circle + tilted pin ("stuck in").
-  &.is-pinned {
-    background: #326ce5;
-
-    mat-icon {
-      transform: rotate(45deg);
-    }
-
-    &:hover {
-      background: #2a5bd0;
-    }
+    background: #2a5bd0;
   }
 }

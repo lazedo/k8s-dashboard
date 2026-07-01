@@ -68,7 +68,7 @@ limitations under the License.
                 [attr.aria-label]="isPinned(plugin) ? 'Unpin' : 'Pin'"
                 [title]="isPinned(plugin) ? 'Unpin from sidebar' : 'Pin to sidebar'"
                 (click)="togglePin(plugin, $event)">
-          <mat-icon svgIcon="pin"></mat-icon>
+          <mat-icon [svgIcon]="isPinned(plugin) ? 'pin-crossed' : 'pin'"></mat-icon>
         </button>
       </div>
     </div>
