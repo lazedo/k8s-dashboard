@@ -149,6 +149,7 @@ const (
 	ResourceKindEndpoint                 = "endpoint"
 	ResourceKindNetworkPolicy            = "networkpolicy"
 	ResourceKindIngressClass             = "ingressclass"
+	ResourceKindPodDisruptionBudget      = "poddisruptionbudget"
 )
 
 // Scalable method return whether ResourceKind is scalable.
@@ -202,6 +203,7 @@ const (
 	ClientTypeRbacClient          = "rbacclient"
 	ClientTypeAPIExtensionsClient = "apiextensionsclient"
 	ClientTypeNetworkingClient    = "networkingclient"
+	ClientTypePolicyClient        = "policyclient"
 	ClientTypePluginsClient       = "plugin"
 )
 
@@ -246,6 +248,7 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindStorageClass:             {"storageclasses", ClientTypeStorageClient, false},
 	ResourceKindEndpoint:                 {"endpoints", ClientTypeDefault, true},
 	ResourceKindNetworkPolicy:            {"networkpolicies", ClientTypeNetworkingClient, true},
+	ResourceKindPodDisruptionBudget:      {"poddisruptionbudgets", ClientTypePolicyClient, true},
 	ResourceKindClusterRole:              {"clusterroles", ClientTypeRbacClient, false},
 	ResourceKindClusterRoleBinding:       {"clusterrolebindings", ClientTypeRbacClient, false},
 	ResourceKindRole:                     {"roles", ClientTypeRbacClient, true},

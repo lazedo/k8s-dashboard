@@ -54,6 +54,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/logs"
 	ns "github.com/kubernetes/dashboard/src/app/backend/resource/namespace"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/networkpolicy"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/poddisruptionbudget"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/node"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolume"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolumeclaim"
@@ -530,6 +531,19 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/networkpolicy/{namespace}/{networkpolicy}").
 			To(apiHandler.handleGetNetworkPolicyDetail).
 			Writes(networkpolicy.NetworkPolicyDetail{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/poddisruptionbudget").
+			To(apiHandler.handleGetPodDisruptionBudgetList).
+			Writes(poddisruptionbudget.PodDisruptionBudgetList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/poddisruptionbudget/{namespace}").
+			To(apiHandler.handleGetPodDisruptionBudgetList).
+			Writes(poddisruptionbudget.PodDisruptionBudgetList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/poddisruptionbudget/{namespace}/{poddisruptionbudget}").
+			To(apiHandler.handleGetPodDisruptionBudgetDetail).
+			Writes(poddisruptionbudget.PodDisruptionBudgetDetail{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/statefulset").
@@ -1187,6 +1201,40 @@ func (apiHandler *APIHandler) handleGetNetworkPolicyDetail(request *restful.Requ
 	namespace := request.PathParameter("namespace")
 	name := request.PathParameter("networkpolicy")
 	result, err := networkpolicy.GetNetworkPolicyDetail(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetPodDisruptionBudgetList(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := poddisruptionbudget.GetPodDisruptionBudgetList(k8sClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetPodDisruptionBudgetDetail(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("poddisruptionbudget")
+	result, err := poddisruptionbudget.GetPodDisruptionBudgetDetail(k8sClient, namespace, name)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

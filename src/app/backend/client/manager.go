@@ -301,6 +301,7 @@ func (self *clientManager) VerberClient(req *restful.Request, config *rest.Confi
 		k8sClient.StorageV1().RESTClient(),
 		k8sClient.RbacV1().RESTClient(),
 		k8sClient.NetworkingV1().RESTClient(),
+		k8sClient.PolicyV1().RESTClient(),
 		apiextensionsRestClient,
 		pluginsclient.DashboardV1alpha1().RESTClient(),
 		config), nil
