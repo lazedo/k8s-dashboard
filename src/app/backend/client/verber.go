@@ -153,14 +153,28 @@ func NewResourceVerber(client, appsClient, batchClient, betaBatchClient, autosca
 }
 
 // Delete deletes the resource of the given kind in the given namespace with the given name.
-func (verber *resourceVerber) Delete(kind string, namespaceSet bool, namespace string, name string) error {
+// toDeletePropagationPolicy maps the propagation query value to a DeletionPropagation,
+// defaulting to Foreground (cascade) which is what users typically expect. (#9113)
+func toDeletePropagationPolicy(propagation string) v1.DeletionPropagation {
+	switch v1.DeletionPropagation(propagation) {
+	case v1.DeletePropagationBackground:
+		return v1.DeletePropagationBackground
+	case v1.DeletePropagationForeground:
+		return v1.DeletePropagationForeground
+	case v1.DeletePropagationOrphan:
+		return v1.DeletePropagationOrphan
+	}
+
+	return v1.DeletePropagationForeground
+}
+
+func (verber *resourceVerber) Delete(kind string, namespaceSet bool, namespace string, name string, propagation string) error {
 	client, resourceSpec, err := verber.getResourceSpecFromKind(kind, namespaceSet)
 	if err != nil {
 		return err
 	}
 
-	// Do cascade delete by default, as this is what users typically expect.
-	defaultPropagationPolicy := v1.DeletePropagationForeground
+	defaultPropagationPolicy := toDeletePropagationPolicy(propagation)
 	defaultDeleteOptions := &v1.DeleteOptions{
 		PropagationPolicy: &defaultPropagationPolicy,
 	}

@@ -16,11 +16,22 @@ import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {ResourceMeta} from '../../services/global/actionbar';
 
+// DeletionPropagation mirrors metav1.DeletionPropagation on the backend. (#9113)
+export enum DeletionPropagation {
+  Background = 'Background',
+  Foreground = 'Foreground',
+  Orphan = 'Orphan',
+}
+
 @Component({
   selector: 'kd-delete-resource-dialog',
   templateUrl: 'template.html',
 })
 export class DeleteResourceDialog {
+  // Cascade in the background by default (delete the object, GC dependents async).
+  propagation: DeletionPropagation = DeletionPropagation.Background;
+  readonly DeletionPropagation = DeletionPropagation;
+
   constructor(
     public dialogRef: MatDialogRef<DeleteResourceDialog>,
     @Inject(MAT_DIALOG_DATA) public data: ResourceMeta

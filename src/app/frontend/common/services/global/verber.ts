@@ -43,10 +43,12 @@ export class VerberService {
     this.dialog_
       .open(DeleteResourceDialog, dialogConfig)
       .afterClosed()
-      .pipe(filter(doDelete => doDelete))
+      // The dialog closes with the chosen propagation policy (truthy) on confirm,
+      // or false on cancel. (#9113)
+      .pipe(filter(propagation => !!propagation))
       .pipe(
-        switchMap(_ => {
-          const url = RawResource.getUrl(typeMeta, objectMeta);
+        switchMap(propagation => {
+          const url = `${RawResource.getUrl(typeMeta, objectMeta)}?propagation=${propagation}`;
           return this.http_.delete(url, {responseType: 'text'});
         })
       )
