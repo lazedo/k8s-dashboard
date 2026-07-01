@@ -23,3 +23,8 @@
   font-size: $subhead-font-size-base;
   padding-bottom: 2 * $baseline-grid;
 }
+
+// The Pods chart is interactive (click a status to filter the Pods list).
+::ng-deep #kd-graph-pods {
+  cursor: pointer;
+}
