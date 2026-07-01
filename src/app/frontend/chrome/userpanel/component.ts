@@ -17,6 +17,7 @@ import {MatMenuTrigger} from '@angular/material/menu';
 import {LoginStatus} from '@api/root.api';
 import {IConfig} from '@api/root.ui';
 import {AuthService} from '@common/services/global/authentication';
+import {MeService} from '@common/services/global/me';
 import {CookieService} from 'ngx-cookie-service';
 import {CONFIG_DI_TOKEN} from '../../index.config';
 
@@ -38,18 +39,34 @@ export class UserPanelComponent implements OnInit {
   constructor(
     private readonly authService_: AuthService,
     private readonly cookieService_: CookieService,
+    private readonly me_: MeService,
     @Inject(CONFIG_DI_TOKEN) private readonly config_: IConfig
   ) {}
 
   get hasUsername(): boolean {
-    return !!this.cookieService_.get(this.config_.usernameCookieName);
+    return !!this.name;
+  }
+
+  // Prefer the identity from /me (JWT claims, e.g. an OIDC id_token injected by a
+  // proxy); fall back to the legacy username cookie.
+  get name(): string {
+    return this.me_.getUserName() || this.cookieService_.get(this.config_.usernameCookieName);
   }
 
   get username(): string {
-    return this.cookieService_.get(this.config_.usernameCookieName);
+    return this.name;
+  }
+
+  get email(): string {
+    return this.me_.getUser().email || '';
+  }
+
+  get picture(): string {
+    return this.me_.getPicture();
   }
 
   ngOnInit(): void {
+    this.me_.init();
     this.authService_.getLoginStatus().subscribe(status => {
       this.loginStatus = status;
       this.isLoginStatusInitialized = true;

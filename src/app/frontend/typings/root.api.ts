@@ -1267,6 +1267,14 @@ export interface LoginStatus {
   impersonatedUser?: string;
 }
 
+// Me is the authenticated identity behind the current request (from /api/v1/me).
+export interface Me {
+  name?: string;
+  email?: string;
+  picture?: string;
+  authenticated: boolean;
+}
+
 export type AuthenticationMode = string;
 
 export interface EnabledAuthenticationModes {

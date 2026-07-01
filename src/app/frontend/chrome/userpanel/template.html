@@ -23,8 +23,11 @@ limitations under the License.
            fxFlex
            fxLayout="row">
         <div fxFlex
-             fxFlexAlign=" center"
-             class="username">{{ username }}</div>
+             fxFlexAlign=" center">
+          <div class="username">{{ name }}</div>
+          <div *ngIf="email"
+               class="kd-muted email">{{ email }}</div>
+        </div>
 
         <button mat-icon-button
                 matTooltip="Close"
@@ -75,7 +78,12 @@ limitations under the License.
         color="primary"
         [matMenuTriggerFor]="actions"
         (click)="$event.stopPropagation()">
-  <mat-icon class="kd-user-panel-icon kd-primary-toolbar-icon">account_circle</mat-icon>
+  <img *ngIf="picture"
+       class="kd-user-panel-avatar"
+       [src]="picture"
+       alt="" />
+  <mat-icon *ngIf="!picture"
+            class="kd-user-panel-icon kd-primary-toolbar-icon">account_circle</mat-icon>
   <svg class="kd-cross-style"
        *ngIf="isAuthSkipped()"
        width="40px"

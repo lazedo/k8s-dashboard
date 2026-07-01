@@ -39,9 +39,11 @@ import {PluginsConfigService} from './plugin';
 import {PluginLoaderService} from '../pluginloader/pluginloader.service';
 import {ClientPluginLoaderService} from '../pluginloader/clientloader.service';
 import {PinnerService} from './pinner';
+import {MeService} from './me';
 
 @NgModule({
   providers: [
+    MeService,
     AuthorizerService,
     AssetsService,
     LocalSettingsService,

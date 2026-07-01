@@ -49,6 +49,18 @@
   margin-right: 2 * $baseline-grid;
 }
 
+.email {
+  font-size: 0.85 * $body-font-size-base;
+  margin-right: 2 * $baseline-grid;
+}
+
+.kd-user-panel-avatar {
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+  object-fit: cover;
+}
+
 .method {
   font-size: $body-font-size-base;
   margin-right: 2 * $baseline-grid;
