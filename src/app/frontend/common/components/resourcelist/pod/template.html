@@ -28,10 +28,10 @@ limitations under the License.
        fxLayout="row"
        fxLayoutAlign=" center">
     <span *ngIf="statusFilter"
-          class="kd-pod-status-pill">
+          class="kd-status-filter-pill">
       {{ statusFilter }}
       <button type="button"
-              class="kd-pod-status-pill-x"
+              class="kd-status-filter-pill-x"
               matTooltip="Clear status filter"
               i18n-matTooltip
               (click)="clearStatusFilter()">×</button>

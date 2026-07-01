@@ -29,7 +29,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'cronjob')"
+                              id="kd-graph-cronjobs">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
@@ -47,7 +49,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'daemonset')"
+                              id="kd-graph-daemonsets">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
@@ -65,7 +69,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'deployment')"
+                              id="kd-graph-deployments">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
@@ -83,7 +89,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'job')"
+                              id="kd-graph-jobs">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
@@ -102,7 +110,7 @@ limitations under the License.
                               [animations]="animations"
                               [labels]="labels"
                               [trimLabels]="trimLabels"
-                              (select)="onPodSelect($event)"
+                              (select)="onSelect($event, 'pod')"
                               id="kd-graph-pods">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
@@ -121,7 +129,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'replicaset')"
+                              id="kd-graph-replicasets">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
@@ -139,7 +149,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'replicationcontroller')"
+                              id="kd-graph-replicationcontrollers">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
@@ -157,7 +169,9 @@ limitations under the License.
                               [customColors]="getCustomColor"
                               [animations]="animations"
                               [labels]="labels"
-                              [trimLabels]="trimLabels">
+                              [trimLabels]="trimLabels"
+                              (select)="onSelect($event, 'statefulset')"
+                              id="kd-graph-statefulsets">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>

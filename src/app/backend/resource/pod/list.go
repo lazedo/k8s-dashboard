@@ -173,7 +173,7 @@ func ToPodList(pods []v1.Pod, events []v1.Event, nonCriticalErrors []error, dsQu
 	}
 
 	podCells, cumulativeMetricsPromises, filteredTotal := dataselect.
-		GenericDataSelectWithFilterAndMetrics(toCells(pods), dsQuery, metricapi.NoResourceCache, metricClient)
+		GenericDataSelectWithFilterAndMetrics(toCells(pods, events), dsQuery, metricapi.NoResourceCache, metricClient)
 	pods = fromCells(podCells)
 	podList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 

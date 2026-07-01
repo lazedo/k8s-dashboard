@@ -301,6 +301,22 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
     return result;
   }
 
+  // Optional status filter, driven from the Workload Status chart
+  // (?statusFilter=Running). Requires the resource's dataselect cell to support
+  // StatusProperty (all workloads do). Shown as a removable chip on the card.
+  @Input()
+  set statusFilter(status: string) {
+    this.applyStatusFilter(status);
+  }
+
+  get statusFilter(): string {
+    return this.statusFilter_;
+  }
+
+  clearStatusFilter(): void {
+    this.applyStatusFilter('');
+  }
+
   // applyStatusFilter sets (or clears) the status filter and reloads the list.
   applyStatusFilter(status: string): void {
     this.statusFilter_ = status || '';

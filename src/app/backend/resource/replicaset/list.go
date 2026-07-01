@@ -130,7 +130,7 @@ func ToReplicaSetList(replicaSets []apps.ReplicaSet, pods []v1.Pod, events []v1.
 	}
 	rsCells, metricPromises, filteredTotal := dataselect.
 		GenericDataSelectWithFilterAndMetrics(
-			ToCells(replicaSets), dsQuery, cachedResources, metricClient)
+			ToCells(replicaSets, pods, events), dsQuery, cachedResources, metricClient)
 	replicaSets = FromCells(rsCells)
 	replicaSetList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 

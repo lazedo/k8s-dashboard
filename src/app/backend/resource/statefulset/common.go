@@ -26,18 +26,25 @@ import (
 
 // The code below allows to perform complex data section on []apps.StatefulSet
 
-type StatefulSetCell apps.StatefulSet
+// StatefulSetCell wraps a StatefulSet together with its computed status
+// (Running/Pending/Failed) so that dataselect can filter the list by the same
+// status categories shown in the Workload Status chart.
+type StatefulSetCell struct {
+	apps.StatefulSet
+	status string
+}
 
 func (self StatefulSetCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
 	default:
-		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil
 	}
 }
@@ -51,10 +58,29 @@ func (self StatefulSetCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
-func toCells(std []apps.StatefulSet) []dataselect.DataCell {
+// statefulSetStatus returns the status category (Running/Pending/Failed) of a
+// single StatefulSet, matching the categorization used by the Workload Status
+// chart in getStatus.
+func statefulSetStatus(ss apps.StatefulSet, pods []v1.Pod, events []v1.Event) string {
+	matchingPods := common.FilterPodsByControllerRef(&ss, pods)
+	podInfo := common.GetPodInfo(ss.Status.Replicas, ss.Spec.Replicas, matchingPods)
+	warnings := event.GetPodsEventWarnings(events, matchingPods)
+
+	if len(warnings) > 0 {
+		return "Failed"
+	} else if podInfo.Pending > 0 {
+		return "Pending"
+	}
+	return "Running"
+}
+
+func toCells(std []apps.StatefulSet, pods []v1.Pod, events []v1.Event) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = StatefulSetCell(std[i])
+		cells[i] = StatefulSetCell{
+			StatefulSet: std[i],
+			status:      statefulSetStatus(std[i], pods, events),
+		}
 	}
 	return cells
 }
@@ -62,7 +88,7 @@ func toCells(std []apps.StatefulSet) []dataselect.DataCell {
 func fromCells(cells []dataselect.DataCell) []apps.StatefulSet {
 	std := make([]apps.StatefulSet, len(cells))
 	for i := range std {
-		std[i] = apps.StatefulSet(cells[i].(StatefulSetCell))
+		std[i] = cells[i].(StatefulSetCell).StatefulSet
 	}
 	return std
 }
@@ -74,15 +100,12 @@ func getStatus(list *apps.StatefulSetList, pods []v1.Pod, events []v1.Event) com
 	}
 
 	for _, ss := range list.Items {
-		matchingPods := common.FilterPodsByControllerRef(&ss, pods)
-		podInfo := common.GetPodInfo(ss.Status.Replicas, ss.Spec.Replicas, matchingPods)
-		warnings := event.GetPodsEventWarnings(events, matchingPods)
-
-		if len(warnings) > 0 {
+		switch statefulSetStatus(ss, pods, events) {
+		case "Failed":
 			info.Failed++
-		} else if podInfo.Pending > 0 {
+		case "Pending":
 			info.Pending++
-		} else {
+		default:
 			info.Running++
 		}
 	}

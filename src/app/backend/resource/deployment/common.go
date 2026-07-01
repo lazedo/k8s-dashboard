@@ -26,13 +26,21 @@ import (
 
 // The code below allows to perform complex data section on Deployment
 
-type DeploymentCell apps.Deployment
+// DeploymentCell wraps a Deployment together with its computed status
+// (Running/Pending/Failed) so that dataselect can filter the list by the same
+// status categories shown in the Workload Status chart.
+type DeploymentCell struct {
+	apps.Deployment
+	status string
+}
 
 // GetProperty is used to get property of the deployment
 func (self DeploymentCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
@@ -53,10 +61,29 @@ func (self DeploymentCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
-func toCells(std []apps.Deployment) []dataselect.DataCell {
+// deploymentStatus returns the status category (Running/Pending/Failed) of a
+// single Deployment, matching the categorization used by the Workload Status
+// chart in getStatus.
+func deploymentStatus(deployment apps.Deployment, rs []apps.ReplicaSet, pods []v1.Pod, events []v1.Event) string {
+	matchingPods := common.FilterDeploymentPodsByOwnerReference(deployment, rs, pods)
+	podInfo := common.GetPodInfo(deployment.Status.Replicas, deployment.Spec.Replicas, matchingPods)
+	warnings := event.GetPodsEventWarnings(events, matchingPods)
+
+	if len(warnings) > 0 {
+		return "Failed"
+	} else if podInfo.Pending > 0 {
+		return "Pending"
+	}
+	return "Running"
+}
+
+func toCells(std []apps.Deployment, rs []apps.ReplicaSet, pods []v1.Pod, events []v1.Event) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = DeploymentCell(std[i])
+		cells[i] = DeploymentCell{
+			Deployment: std[i],
+			status:     deploymentStatus(std[i], rs, pods, events),
+		}
 	}
 	return cells
 }
@@ -64,7 +91,7 @@ func toCells(std []apps.Deployment) []dataselect.DataCell {
 func fromCells(cells []dataselect.DataCell) []apps.Deployment {
 	std := make([]apps.Deployment, len(cells))
 	for i := range std {
-		std[i] = apps.Deployment(cells[i].(DeploymentCell))
+		std[i] = cells[i].(DeploymentCell).Deployment
 	}
 	return std
 }
@@ -76,15 +103,12 @@ func getStatus(list *apps.DeploymentList, rs []apps.ReplicaSet, pods []v1.Pod, e
 	}
 
 	for _, deployment := range list.Items {
-		matchingPods := common.FilterDeploymentPodsByOwnerReference(deployment, rs, pods)
-		podInfo := common.GetPodInfo(deployment.Status.Replicas, deployment.Spec.Replicas, matchingPods)
-		warnings := event.GetPodsEventWarnings(events, matchingPods)
-
-		if len(warnings) > 0 {
+		switch deploymentStatus(deployment, rs, pods, events) {
+		case "Failed":
 			info.Failed++
-		} else if podInfo.Pending > 0 {
+		case "Pending":
 			info.Pending++
-		} else {
+		default:
 			info.Running++
 		}
 	}

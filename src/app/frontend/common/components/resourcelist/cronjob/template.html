@@ -24,7 +24,18 @@ limitations under the License.
        i18n>Cron Jobs</div>
   <div description><span class="kd-muted-light"
           i18n>Items:&nbsp;</span>{{ totalItems }}</div>
-  <div actions>
+  <div actions
+       fxLayout="row"
+       fxLayoutAlign=" center">
+    <span *ngIf="statusFilter"
+          class="kd-status-filter-pill">
+      {{ statusFilter }}
+      <button type="button"
+              class="kd-status-filter-pill-x"
+              matTooltip="Clear status filter"
+              i18n-matTooltip
+              (click)="clearStatusFilter()">×</button>
+    </span>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
 

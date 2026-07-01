@@ -24,7 +24,15 @@
   padding-bottom: 2 * $baseline-grid;
 }
 
-// The Pods chart is interactive: click a status slice to open the Pods list filtered.
-::ng-deep #kd-graph-pods {
+// The workload charts are interactive: click a status slice to open that
+// workload's list filtered by the clicked status.
+::ng-deep #kd-graph-cronjobs,
+::ng-deep #kd-graph-daemonsets,
+::ng-deep #kd-graph-deployments,
+::ng-deep #kd-graph-jobs,
+::ng-deep #kd-graph-pods,
+::ng-deep #kd-graph-replicasets,
+::ng-deep #kd-graph-replicationcontrollers,
+::ng-deep #kd-graph-statefulsets {
   cursor: pointer;
 }

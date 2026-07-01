@@ -127,7 +127,7 @@ func toDeploymentList(deployments []apps.Deployment, pods []v1.Pod, events []v1.
 		Pods: pods,
 	}
 	deploymentCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(
-		toCells(deployments), dsQuery, cachedResources, metricClient)
+		toCells(deployments, rs, pods, events), dsQuery, cachedResources, metricClient)
 	deployments = fromCells(deploymentCells)
 	deploymentList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 

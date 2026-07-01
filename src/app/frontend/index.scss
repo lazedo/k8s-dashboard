@@ -341,6 +341,41 @@ router-outlet::after {
   cursor: pointer !important;
 }
 
+// Removable status-filter chip shown on a resource list card (left of the card
+// filter) when the list is filtered by a status picked from the Workload Status
+// chart. Global so every resource-list card component can use it.
+.kd-status-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 12px;
+  padding: 3px 6px 3px 14px;
+  border-radius: 999px;
+  background: #326ce5;
+  color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.kd-status-filter-pill-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.45);
+  }
+}
+
 .kd-ellipsised {
   overflow: hidden;
   text-overflow: ellipsis;

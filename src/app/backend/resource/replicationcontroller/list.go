@@ -116,7 +116,7 @@ func toReplicationControllerList(replicationControllers []v1.ReplicationControll
 		Pods: pods,
 	}
 	rcCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(
-		toCells(replicationControllers), dsQuery, cachedResources, metricClient)
+		toCells(replicationControllers, pods, events), dsQuery, cachedResources, metricClient)
 	replicationControllers = fromCells(rcCells)
 	rcList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 

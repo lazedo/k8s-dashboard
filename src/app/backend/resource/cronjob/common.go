@@ -25,18 +25,25 @@ import (
 
 // The code below allows to perform complex data section on []batch.CronJob
 
-type CronJobCell batch.CronJob
+// CronJobCell wraps a CronJob together with its computed status
+// (Running/Suspended) so that dataselect can filter the list by the same
+// status categories shown in the Workload Status chart.
+type CronJobCell struct {
+	batch.CronJob
+	status string
+}
 
 func (self CronJobCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
 	default:
-		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil
 	}
 }
@@ -50,10 +57,23 @@ func (self CronJobCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
+// cronJobStatus returns the status category (Running/Suspended) of a single
+// CronJob, matching the categorization used by the Workload Status chart in
+// getStatus.
+func cronJobStatus(cronJob batch.CronJob) string {
+	if cronJob.Spec.Suspend != nil && !(*cronJob.Spec.Suspend) {
+		return "Running"
+	}
+	return "Suspended"
+}
+
 func ToCells(std []batch.CronJob) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = CronJobCell(std[i])
+		cells[i] = CronJobCell{
+			CronJob: std[i],
+			status:  cronJobStatus(std[i]),
+		}
 	}
 	return cells
 }
@@ -61,7 +81,7 @@ func ToCells(std []batch.CronJob) []dataselect.DataCell {
 func FromCells(cells []dataselect.DataCell) []batch.CronJob {
 	std := make([]batch.CronJob, len(cells))
 	for i := range std {
-		std[i] = batch.CronJob(cells[i].(CronJobCell))
+		std[i] = cells[i].(CronJobCell).CronJob
 	}
 	return std
 }
@@ -73,7 +93,7 @@ func getStatus(list *batch.CronJobList) common.ResourceStatus {
 	}
 
 	for _, cronJob := range list.Items {
-		if cronJob.Spec.Suspend != nil && !(*cronJob.Spec.Suspend) {
+		if cronJobStatus(cronJob) == "Running" {
 			info.Running++
 		} else {
 			info.Failed++

@@ -151,7 +151,7 @@ func GetPodDetail(client kubernetes.Interface, metricClient metricapi.MetricClie
 		return nil, criticalError
 	}
 
-	_, metricPromises := dataselect.GenericDataSelectWithMetrics(toCells([]v1.Pod{*pod}),
+	_, metricPromises := dataselect.GenericDataSelectWithMetrics(toCells([]v1.Pod{*pod}, nil),
 		dataselect.StdMetricsDataSelect, metricapi.NoResourceCache, metricClient)
 	metrics, _ := metricPromises.GetMetrics()
 

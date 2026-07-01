@@ -89,18 +89,25 @@ func ToReplicationController(replicationController *v1.ReplicationController,
 
 // The code below allows to perform complex data section on []api.ReplicationController
 
-type ReplicationControllerCell v1.ReplicationController
+// ReplicationControllerCell wraps a ReplicationController together with its
+// computed status (Running/Pending/Failed) so that dataselect can filter the
+// list by the same status categories shown in the Workload Status chart.
+type ReplicationControllerCell struct {
+	v1.ReplicationController
+	status string
+}
 
 func (self ReplicationControllerCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
 	default:
-		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil
 	}
 }
@@ -113,10 +120,29 @@ func (self ReplicationControllerCell) GetResourceSelector() *metricapi.ResourceS
 	}
 }
 
-func toCells(std []v1.ReplicationController) []dataselect.DataCell {
+// replicationControllerStatus returns the status category (Running/Pending/Failed)
+// of a single ReplicationController, matching the categorization used by the
+// Workload Status chart in getStatus.
+func replicationControllerStatus(rc v1.ReplicationController, pods []v1.Pod, events []v1.Event) string {
+	matchingPods := common.FilterPodsByControllerRef(&rc, pods)
+	podInfo := common.GetPodInfo(rc.Status.Replicas, rc.Spec.Replicas, matchingPods)
+	warnings := event.GetPodsEventWarnings(events, matchingPods)
+
+	if len(warnings) > 0 {
+		return "Failed"
+	} else if podInfo.Pending > 0 {
+		return "Pending"
+	}
+	return "Running"
+}
+
+func toCells(std []v1.ReplicationController, pods []v1.Pod, events []v1.Event) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = ReplicationControllerCell(std[i])
+		cells[i] = ReplicationControllerCell{
+			ReplicationController: std[i],
+			status:                replicationControllerStatus(std[i], pods, events),
+		}
 	}
 	return cells
 }
@@ -124,7 +150,7 @@ func toCells(std []v1.ReplicationController) []dataselect.DataCell {
 func fromCells(cells []dataselect.DataCell) []v1.ReplicationController {
 	std := make([]v1.ReplicationController, len(cells))
 	for i := range std {
-		std[i] = v1.ReplicationController(cells[i].(ReplicationControllerCell))
+		std[i] = cells[i].(ReplicationControllerCell).ReplicationController
 	}
 	return std
 }
@@ -135,16 +161,13 @@ func getStatus(list *v1.ReplicationControllerList, pods []v1.Pod, events []v1.Ev
 		return info
 	}
 
-	for _, ss := range list.Items {
-		matchingPods := common.FilterPodsByControllerRef(&ss, pods)
-		podInfo := common.GetPodInfo(ss.Status.Replicas, ss.Spec.Replicas, matchingPods)
-		warnings := event.GetPodsEventWarnings(events, matchingPods)
-
-		if len(warnings) > 0 {
+	for _, rc := range list.Items {
+		switch replicationControllerStatus(rc, pods, events) {
+		case "Failed":
 			info.Failed++
-		} else if podInfo.Pending > 0 {
+		case "Pending":
 			info.Pending++
-		} else {
+		default:
 			info.Running++
 		}
 	}

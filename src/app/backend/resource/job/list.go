@@ -142,7 +142,7 @@ func ToJobList(jobs []batch.Job, pods []v1.Pod, events []v1.Event, nonCriticalEr
 	cachedResources := &metricapi.CachedResources{
 		Pods: pods,
 	}
-	jobCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(ToCells(jobs),
+	jobCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(ToCells(jobs, pods),
 		dsQuery, cachedResources, metricClient)
 	jobs = FromCells(jobCells)
 	jobList.ListMeta = api.ListMeta{TotalItems: filteredTotal}

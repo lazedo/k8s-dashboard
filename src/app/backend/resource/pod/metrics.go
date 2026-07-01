@@ -51,7 +51,7 @@ func getMetricsPerPod(pods []v1.Pod, metricClient metricapi.MetricClient, dsQuer
 
 	result := &MetricsByPod{MetricsMap: make(map[types.UID]PodMetrics)}
 
-	metricPromises := dataselect.PodListMetrics(toCells(pods), dsQuery, metricClient)
+	metricPromises := dataselect.PodListMetrics(toCells(pods, nil), dsQuery, metricClient)
 	metrics, err := metricPromises.GetMetrics()
 	if err != nil {
 		return result, err

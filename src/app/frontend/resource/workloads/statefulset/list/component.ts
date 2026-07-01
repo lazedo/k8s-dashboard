@@ -12,10 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'kd-stateful-set-state',
-  template: '<kd-stateful-set-list [showMetrics]="true"></kd-stateful-set-list>',
+  template: '<kd-stateful-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-stateful-set-list>',
 })
-export class StatefulSetListComponent {}
+export class StatefulSetListComponent implements OnInit, OnDestroy {
+  // Optional status filter carried in the URL (?statusFilter=Running), set by
+  // clicking a status on the Workload Status chart.
+  statusFilter = '';
+  private sub_: Subscription;
+
+  constructor(private readonly route_: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.sub_ = this.route_.queryParams.subscribe(params => (this.statusFilter = params['statusFilter'] || ''));
+  }
+
+  ngOnDestroy(): void {
+    this.sub_?.unsubscribe();
+  }
+}

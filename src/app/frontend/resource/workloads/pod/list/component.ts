@@ -18,7 +18,7 @@ import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'kd-pod-list-state',
-  template: '<kd-pod-list [showMetrics]="true" [podStatusFilter]="statusFilter"></kd-pod-list>',
+  template: '<kd-pod-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-pod-list>',
 })
 export class PodListComponent implements OnInit, OnDestroy {
   // Optional status filter carried in the URL (?statusFilter=Running), e.g. set by

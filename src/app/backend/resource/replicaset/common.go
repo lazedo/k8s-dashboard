@@ -26,18 +26,25 @@ import (
 
 // The code below allows to perform complex data section on Replica Set
 
-type ReplicaSetCell apps.ReplicaSet
+// ReplicaSetCell wraps a ReplicaSet together with its computed status
+// (Running/Pending/Failed) so that dataselect can filter the list by the same
+// status categories shown in the Workload Status chart.
+type ReplicaSetCell struct {
+	apps.ReplicaSet
+	status string
+}
 
 func (self ReplicaSetCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
 	default:
-		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil
 	}
 }
@@ -51,10 +58,29 @@ func (self ReplicaSetCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
-func ToCells(std []apps.ReplicaSet) []dataselect.DataCell {
+// replicaSetStatus returns the status category (Running/Pending/Failed) of a
+// single ReplicaSet, matching the categorization used by the Workload Status
+// chart in getStatus.
+func replicaSetStatus(rs apps.ReplicaSet, pods []v1.Pod, events []v1.Event) string {
+	matchingPods := common.FilterPodsByControllerRef(&rs, pods)
+	podInfo := common.GetPodInfo(rs.Status.Replicas, rs.Spec.Replicas, matchingPods)
+	warnings := event.GetPodsEventWarnings(events, matchingPods)
+
+	if len(warnings) > 0 {
+		return "Failed"
+	} else if podInfo.Pending > 0 {
+		return "Pending"
+	}
+	return "Running"
+}
+
+func ToCells(std []apps.ReplicaSet, pods []v1.Pod, events []v1.Event) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = ReplicaSetCell(std[i])
+		cells[i] = ReplicaSetCell{
+			ReplicaSet: std[i],
+			status:     replicaSetStatus(std[i], pods, events),
+		}
 	}
 	return cells
 }
@@ -62,7 +88,7 @@ func ToCells(std []apps.ReplicaSet) []dataselect.DataCell {
 func FromCells(cells []dataselect.DataCell) []apps.ReplicaSet {
 	std := make([]apps.ReplicaSet, len(cells))
 	for i := range std {
-		std[i] = apps.ReplicaSet(cells[i].(ReplicaSetCell))
+		std[i] = cells[i].(ReplicaSetCell).ReplicaSet
 	}
 	return std
 }
@@ -74,15 +100,12 @@ func getStatus(list *apps.ReplicaSetList, pods []v1.Pod, events []v1.Event) comm
 	}
 
 	for _, rs := range list.Items {
-		matchingPods := common.FilterPodsByControllerRef(&rs, pods)
-		podInfo := common.GetPodInfo(rs.Status.Replicas, rs.Spec.Replicas, matchingPods)
-		warnings := event.GetPodsEventWarnings(events, matchingPods)
-
-		if len(warnings) > 0 {
+		switch replicaSetStatus(rs, pods, events) {
+		case "Failed":
 			info.Failed++
-		} else if podInfo.Pending > 0 {
+		case "Pending":
 			info.Pending++
-		} else {
+		default:
 			info.Running++
 		}
 	}

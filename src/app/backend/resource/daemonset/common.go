@@ -64,12 +64,20 @@ func GetServicesForDSDeletion(client client.Interface, labelSelector labels.Sele
 
 // The code below allows to perform complex data section on Daemon Set
 
-type DaemonSetCell apps.DaemonSet
+// DaemonSetCell wraps a DaemonSet together with its computed status
+// (Running/Pending/Failed) so that dataselect can filter the list by the same
+// status categories shown in the Workload Status chart.
+type DaemonSetCell struct {
+	apps.DaemonSet
+	status string
+}
 
 func (self DaemonSetCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
@@ -89,10 +97,30 @@ func (self DaemonSetCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
-func ToCells(std []apps.DaemonSet) []dataselect.DataCell {
+// daemonSetStatus returns the status category (Running/Pending/Failed) of a
+// single DaemonSet, matching the categorization used by the Workload Status
+// chart in getStatus.
+func daemonSetStatus(daemonSet apps.DaemonSet, pods []v1.Pod, events []v1.Event) string {
+	matchingPods := common.FilterPodsByControllerRef(&daemonSet, pods)
+	podInfo := common.GetPodInfo(daemonSet.Status.CurrentNumberScheduled,
+		&daemonSet.Status.DesiredNumberScheduled, matchingPods)
+	warnings := event.GetPodsEventWarnings(events, matchingPods)
+
+	if len(warnings) > 0 {
+		return "Failed"
+	} else if podInfo.Pending > 0 {
+		return "Pending"
+	}
+	return "Running"
+}
+
+func ToCells(std []apps.DaemonSet, pods []v1.Pod, events []v1.Event) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = DaemonSetCell(std[i])
+		cells[i] = DaemonSetCell{
+			DaemonSet: std[i],
+			status:    daemonSetStatus(std[i], pods, events),
+		}
 	}
 	return cells
 }
@@ -100,7 +128,7 @@ func ToCells(std []apps.DaemonSet) []dataselect.DataCell {
 func FromCells(cells []dataselect.DataCell) []apps.DaemonSet {
 	std := make([]apps.DaemonSet, len(cells))
 	for i := range std {
-		std[i] = apps.DaemonSet(cells[i].(DaemonSetCell))
+		std[i] = cells[i].(DaemonSetCell).DaemonSet
 	}
 	return std
 }
@@ -112,16 +140,12 @@ func getStatus(list *apps.DaemonSetList, pods []v1.Pod, events []v1.Event) commo
 	}
 
 	for _, daemonSet := range list.Items {
-		matchingPods := common.FilterPodsByControllerRef(&daemonSet, pods)
-		podInfo := common.GetPodInfo(daemonSet.Status.CurrentNumberScheduled,
-			&daemonSet.Status.DesiredNumberScheduled, matchingPods)
-		warnings := event.GetPodsEventWarnings(events, matchingPods)
-
-		if len(warnings) > 0 {
+		switch daemonSetStatus(daemonSet, pods, events) {
+		case "Failed":
 			info.Failed++
-		} else if podInfo.Pending > 0 {
+		case "Pending":
 			info.Pending++
-		} else {
+		default:
 			info.Running++
 		}
 	}

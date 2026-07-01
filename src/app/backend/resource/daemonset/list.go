@@ -103,7 +103,7 @@ func toDaemonSetList(daemonSets []apps.DaemonSet, pods []v1.Pod, events []v1.Eve
 		Pods: pods,
 	}
 
-	dsCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(ToCells(daemonSets),
+	dsCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(ToCells(daemonSets, pods, events),
 		dsQuery, cachedResources, metricClient)
 	daemonSets = FromCells(dsCells)
 	daemonSetList.ListMeta = api.ListMeta{TotalItems: filteredTotal}

@@ -107,7 +107,7 @@ func toStatefulSetList(statefulSets []apps.StatefulSet, pods []v1.Pod, events []
 		Pods: pods,
 	}
 	ssCells, metricPromises, filteredTotal := dataselect.GenericDataSelectWithFilterAndMetrics(
-		toCells(statefulSets), dsQuery, cachedResources, metricClient)
+		toCells(statefulSets, pods, events), dsQuery, cachedResources, metricClient)
 	statefulSets = fromCells(ssCells)
 	statefulSetList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 

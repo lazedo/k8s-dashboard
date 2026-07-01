@@ -290,14 +290,23 @@ func getPodStatusPhase(pod v1.Pod, warnings []common.Event) v1.PodPhase {
 
 // The code below allows to perform complex data section on []api.Pod
 
-type PodCell v1.Pod
+// PodCell wraps a Pod together with its computed status phase
+// (Running/Pending/Succeeded/Failed/Unknown/Terminating) so that dataselect can
+// filter the list by the same status categories shown in the Workload Status
+// chart. Note: this deliberately differs from the humanized status shown in the
+// list (getPodStatus, e.g. "Completed"/"NotReady") — the chart slices are built
+// from the phase (getPodStatusPhase), so the filter must match the phase.
+type PodCell struct {
+	v1.Pod
+	status string
+}
 
 func (self PodCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
 	case dataselect.StatusProperty:
-		return dataselect.StdComparableString(getPodStatus(v1.Pod(self)))
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
@@ -317,10 +326,14 @@ func (self PodCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
-func toCells(std []v1.Pod) []dataselect.DataCell {
+func toCells(std []v1.Pod, events []v1.Event) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = PodCell(std[i])
+		warnings := event.GetPodsEventWarnings(events, []v1.Pod{std[i]})
+		cells[i] = PodCell{
+			Pod:    std[i],
+			status: string(getPodStatusPhase(std[i], warnings)),
+		}
 	}
 	return cells
 }
@@ -328,7 +341,7 @@ func toCells(std []v1.Pod) []dataselect.DataCell {
 func fromCells(cells []dataselect.DataCell) []v1.Pod {
 	std := make([]v1.Pod, len(cells))
 	for i := range std {
-		std[i] = v1.Pod(cells[i].(PodCell))
+		std[i] = cells[i].(PodCell).Pod
 	}
 	return std
 }

@@ -25,18 +25,25 @@ import (
 
 // The code below allows to perform complex data section on []batch.Job
 
-type JobCell batch.Job
+// JobCell wraps a Job together with its computed status
+// (Running/Pending/Failed/Succeeded) so that dataselect can filter the list by
+// the same status categories shown in the Workload Status chart.
+type JobCell struct {
+	batch.Job
+	status string
+}
 
 func (self JobCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
 	switch name {
 	case dataselect.NameProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.StatusProperty:
+		return dataselect.StdComparableString(self.status)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
 	default:
-		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil
 	}
 }
@@ -50,10 +57,31 @@ func (self JobCell) GetResourceSelector() *metricapi.ResourceSelector {
 	}
 }
 
-func ToCells(std []batch.Job) []dataselect.DataCell {
+// jobStatusCategory returns the status category (Running/Pending/Failed/Succeeded)
+// of a single Job, matching the categorization used by the Workload Status chart
+// in getStatus.
+func jobStatusCategory(job batch.Job, pods []v1.Pod) string {
+	matchingPods := common.FilterPodsForJob(job, pods)
+	podInfo := common.GetPodInfo(job.Status.Active, job.Spec.Completions, matchingPods)
+	jobStatus := getJobStatus(&job)
+
+	if jobStatus.Status == JobStatusFailed {
+		return "Failed"
+	} else if jobStatus.Status == JobStatusComplete {
+		return "Succeeded"
+	} else if podInfo.Running > 0 {
+		return "Running"
+	}
+	return "Pending"
+}
+
+func ToCells(std []batch.Job, pods []v1.Pod) []dataselect.DataCell {
 	cells := make([]dataselect.DataCell, len(std))
 	for i := range std {
-		cells[i] = JobCell(std[i])
+		cells[i] = JobCell{
+			Job:    std[i],
+			status: jobStatusCategory(std[i], pods),
+		}
 	}
 	return cells
 }
@@ -61,7 +89,7 @@ func ToCells(std []batch.Job) []dataselect.DataCell {
 func FromCells(cells []dataselect.DataCell) []batch.Job {
 	std := make([]batch.Job, len(cells))
 	for i := range std {
-		std[i] = batch.Job(cells[i].(JobCell))
+		std[i] = cells[i].(JobCell).Job
 	}
 	return std
 }
@@ -73,17 +101,14 @@ func getStatus(list *batch.JobList, pods []v1.Pod) common.ResourceStatus {
 	}
 
 	for _, job := range list.Items {
-		matchingPods := common.FilterPodsForJob(job, pods)
-		podInfo := common.GetPodInfo(job.Status.Active, job.Spec.Completions, matchingPods)
-		jobStatus := getJobStatus(&job)
-
-		if jobStatus.Status == JobStatusFailed {
+		switch jobStatusCategory(job, pods) {
+		case "Failed":
 			info.Failed++
-		} else if jobStatus.Status == JobStatusComplete {
+		case "Succeeded":
 			info.Succeeded++
-		} else if podInfo.Running > 0 {
+		case "Running":
 			info.Running++
-		} else {
+		default:
 			info.Pending++
 		}
 	}
