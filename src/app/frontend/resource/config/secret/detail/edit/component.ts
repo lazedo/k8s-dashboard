@@ -19,6 +19,7 @@ import {RawResource} from 'common/resources/rawresource';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {AlertDialogConfig, AlertDialog} from 'common/dialogs/alert/dialog';
 import {MatDialogConfig, MatDialog} from '@angular/material/dialog';
+import {encode} from 'js-base64';
 
 @Component({
   selector: 'kd-secret-detail-edit',
@@ -88,7 +89,9 @@ export class SecretDetailEditComponent implements OnInit {
   }
 
   private encode_(s: string): string {
-    return btoa(s);
+    // Use js-base64 instead of `btoa`, which only supports binary (latin1) input;
+    // secret values may be non-latin1 UTF-8. (#7477)
+    return encode(s, false);
   }
 
   private getHttpHeaders_(): HttpHeaders {

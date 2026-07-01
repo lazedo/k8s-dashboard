@@ -563,6 +563,12 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/node/{name}/pod").
 			To(apiHandler.handleGetNodePods).
 			Writes(pod.PodList{}))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/node/{name}/drain").To(apiHandler.handleNodeDrain).
+			Doc("drains Node").
+			Param(apiV1Ws.PathParameter("name", "name of the Node")).
+			Reads(node.NodeDrainSpec{}).
+			Returns(http.StatusOK, "OK", nil))
 
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/_raw/{kind}/namespace/{namespace}/name/{name}").
@@ -1252,6 +1258,28 @@ func (apiHandler *APIHandler) handleGetNodePods(request *restful.Request, respon
 		return
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleNodeDrain(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("name")
+	spec := new(node.NodeDrainSpec)
+	if err := request.ReadEntity(spec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	if err := node.DrainNode(k8sClient, name, spec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	response.WriteHeader(http.StatusAccepted)
 }
 
 func (apiHandler *APIHandler) handleDeploy(request *restful.Request, response *restful.Response) {
