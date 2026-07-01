@@ -202,6 +202,7 @@ export enum IBreadcrumbMessageKey {
   Namespaces = 'Namespaces',
   NetworkPolicies = 'NetworkPolicies',
   PodDisruptionBudgets = 'PodDisruptionBudgets',
+  HorizontalPodAutoscalers = 'HorizontalPodAutoscalers',
   Nodes = 'Nodes',
   PersistentVolumes = 'PersistentVolumes',
   RoleBindings = 'RoleBindings',

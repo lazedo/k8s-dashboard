@@ -60,6 +60,11 @@ const routes: Routes = [
           import('resource/cluster/poddisruptionbudget/module').then(m => m.PodDisruptionBudgetModule),
       },
       {
+        path: 'horizontalpodautoscaler',
+        loadChildren: () =>
+          import('resource/cluster/horizontalpodautoscaler/module').then(m => m.HorizontalPodAutoscalerModule),
+      },
+      {
         path: 'node',
         loadChildren: () => import('resource/cluster/node/module').then(m => m.NodeModule),
       },
