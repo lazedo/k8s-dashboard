@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ResourcesRatio} from '@api/root.ui';
 
 export const emptyResourcesRatio: ResourcesRatio = {
@@ -33,11 +33,22 @@ export const emptyResourcesRatio: ResourcesRatio = {
 })
 export class WorkloadStatusComponent {
   @Input() resourcesRatio = emptyResourcesRatio;
+  // Emits the bare status (e.g. "Running") when a Pods chart segment is clicked.
+  @Output() podStatusSelect = new EventEmitter<string>();
   colors: string[] = [];
   animations = false;
   labels = true;
   trimLabels = false;
   size = [350, 250];
+
+  onPodSelect(event: {name?: string} | string): void {
+    const label = typeof event === 'string' ? event : event?.name ?? '';
+    // Ratio labels look like "Running: 3"; keep just the status word.
+    const status = label.split(':')[0].trim();
+    if (status) {
+      this.podStatusSelect.emit(status);
+    }
+  }
 
   getCustomColor(label: string): string {
     if (label.includes('Running')) {

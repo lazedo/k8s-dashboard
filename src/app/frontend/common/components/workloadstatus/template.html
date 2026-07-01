@@ -102,6 +102,7 @@ limitations under the License.
                               [animations]="animations"
                               [labels]="labels"
                               [trimLabels]="trimLabels"
+                              (select)="onPodSelect($event)"
                               id="kd-graph-pods">
           <ng-template #tooltipTemplate
                        let-model="model"> {{ model.value | number }}% </ng-template>

@@ -21,7 +21,18 @@ limitations under the License.
   <kd-graph-metrics [metrics]="cumulativeMetrics"></kd-graph-metrics>
 
   <kd-workload-statuses *ngIf="showWorkloadStatuses()"
-                        [resourcesRatio]="resourcesRatio"></kd-workload-statuses>
+                        [resourcesRatio]="resourcesRatio"
+                        (podStatusSelect)="onPodStatusSelect($event)"></kd-workload-statuses>
+
+  <div *ngIf="podStatusFilter"
+       class="kd-overview-status-filter">
+    <mat-chip-list>
+      <mat-chip (removed)="clearPodStatusFilter()">
+        <span i18n>Pods filtered by status:</span>&nbsp;{{ podStatusFilter }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+    </mat-chip-list>
+  </div>
 
   <kd-cron-job-list (onchange)="onListUpdate($event)"
                     [hideable]="true"></kd-cron-job-list>
@@ -32,6 +43,7 @@ limitations under the License.
   <kd-job-list (onchange)="onListUpdate($event)"
                [hideable]="true"></kd-job-list>
   <kd-pod-list (onchange)="onListUpdate($event)"
+               [podStatusFilter]="podStatusFilter"
                [hideable]="true"></kd-pod-list>
   <kd-replica-set-list (onchange)="onListUpdate($event)"
                        [hideable]="true"></kd-replica-set-list>

@@ -32,6 +32,10 @@ import {Status} from '../statuses';
 export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   @Input() endpoint = EndpointManager.resource(Resource.pod, true).list();
   @Input() showMetrics = false;
+  // Optional status filter, driven by clicking a segment on the overview Pods chart.
+  @Input() set podStatusFilter(status: string) {
+    this.applyStatusFilter(status);
+  }
   cumulativeMetrics: Metric[];
 
   constructor(

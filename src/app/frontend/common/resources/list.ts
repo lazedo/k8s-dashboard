@@ -73,6 +73,9 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
   private readonly dynamicColumns_: ColumnWhenCondition[] = [];
   private paramsService_: ParamsService;
   private router_: Router;
+  // Optional status filter (e.g. driven from the overview workload chart).
+  protected statusFilter_ = '';
+  private readonly statusFilterChanged_ = new EventEmitter<void>();
   // Data select properties
   @ViewChild(MatSort, {static: true}) private readonly matSort_: MatSort;
   @ViewChild(MatPaginator, {static: true}) private readonly matPaginator_: MatPaginator;
@@ -238,6 +241,8 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
       obsInput.push(this.cardFilter_.filterEvent);
     }
 
+    obsInput.push(this.statusFilterChanged_);
+
     return merge(...obsInput, this.listUpdates_);
   }
 
@@ -279,12 +284,30 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
       result = params;
     }
 
-    const filterByQuery = this.cardFilter_.query ? `name,${this.cardFilter_.query}` : '';
-    if (filterByQuery) {
-      return result.set('filterBy', filterByQuery);
+    const filters: string[] = [];
+    if (this.cardFilter_.query) {
+      filters.push(`name,${this.cardFilter_.query}`);
+    }
+    // Optional status filter, e.g. driven by clicking a status segment on the
+    // overview workload chart. Requires the resource's dataselect cell to support
+    // StatusProperty (pods do).
+    if (this.statusFilter_) {
+      filters.push(`status,${this.statusFilter_}`);
+    }
+    if (filters.length) {
+      return result.set('filterBy', filters.join(','));
     }
 
     return result;
+  }
+
+  // applyStatusFilter sets (or clears) the status filter and reloads the list.
+  applyStatusFilter(status: string): void {
+    this.statusFilter_ = status || '';
+    if (this.matPaginator_) {
+      this.matPaginator_.pageIndex = 0;
+    }
+    this.statusFilterChanged_.emit();
   }
 
   private search_(params?: HttpParams): HttpParams {

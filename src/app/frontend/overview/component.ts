@@ -22,6 +22,18 @@ import {GroupedResourceList} from '@common/resources/groupedlist';
   templateUrl: './template.html',
 })
 export class OverviewComponent extends GroupedResourceList {
+  // Status picked by clicking a Pods chart segment; filters the Pods list below.
+  podStatusFilter = '';
+
+  onPodStatusSelect(status: string): void {
+    // Toggle: clicking the active status again clears the filter.
+    this.podStatusFilter = this.podStatusFilter === status ? '' : status;
+  }
+
+  clearPodStatusFilter(): void {
+    this.podStatusFilter = '';
+  }
+
   hasCluster(): boolean {
     return this.isGroupVisible(ListGroupIdentifier.cluster);
   }
