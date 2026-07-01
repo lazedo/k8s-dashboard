@@ -110,13 +110,6 @@ limitations under the License.
       </div>
       <div class="kd-graph-title"
            i18n>Pods</div>
-      <!-- Clickable status chips (reliable interaction; filters the Pods list). -->
-      <div class="kd-pod-status-filters">
-        <button *ngFor="let item of resourcesRatio.podRatio"
-                type="button"
-                class="kd-pod-status-chip"
-                (click)="onPodSelect(item)">{{ item.name }}</button>
-      </div>
     </div>
 
     <div class="kd-graph-container"

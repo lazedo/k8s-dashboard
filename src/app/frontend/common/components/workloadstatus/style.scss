@@ -24,25 +24,7 @@
   padding-bottom: 2 * $baseline-grid;
 }
 
-// Clickable status chips under the Pods chart (filter the Pods list).
-.kd-pod-status-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $baseline-grid;
-  justify-content: center;
-  padding-bottom: 2 * $baseline-grid;
-}
-
-.kd-pod-status-chip {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 999px;
-  background: #f1f3f4;
-  color: #3c4043;
-  font-size: 0.85 * $body-font-size-base;
-  padding: 2px 10px;
+// The Pods chart is interactive: click a status slice to open the Pods list filtered.
+::ng-deep #kd-graph-pods {
   cursor: pointer;
-
-  &:hover {
-    background: #e2e5ea;
-  }
 }
