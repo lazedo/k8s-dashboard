@@ -107,6 +107,42 @@ limitations under the License.
   </div>
 </kd-card>
 
+<kd-card *ngIf="hasAllocatedResources()"
+         [initialized]="isInitialized">
+  <div title
+       i18n>Allocated resources</div>
+  <div content
+       *ngIf="isInitialized"
+       fxLayout="row wrap">
+    <!-- Generic: every requested/limited resource, including device-plugin /
+         extended resources (nvidia.com/gpu, hugepages-2Mi, ...). -->
+    <kd-property *ngFor="let r of pod?.allocatedResources?.requests | keyvalue">
+      <div key>{{ r.key }} <span class="kd-muted"
+              i18n>(request)</span></div>
+      <div value>{{ r.value }}</div>
+    </kd-property>
+    <kd-property *ngFor="let r of pod?.allocatedResources?.limits | keyvalue">
+      <div key>{{ r.key }} <span class="kd-muted"
+              i18n>(limit)</span></div>
+      <div value>{{ r.value }}</div>
+    </kd-property>
+  </div>
+</kd-card>
+
+<kd-card *ngIf="pod?.allocatedResources?.resourceClaims?.length"
+         [initialized]="isInitialized">
+  <div title
+       i18n>Resource claims (DRA)</div>
+  <div content
+       *ngIf="isInitialized"
+       fxLayout="row wrap">
+    <kd-property *ngFor="let claim of pod?.allocatedResources?.resourceClaims">
+      <div key>{{ claim.name }}</div>
+      <div value>{{ claim.resourceClaimName || claim.resourceClaimTemplateName || '—' }}</div>
+    </kd-property>
+  </div>
+</kd-card>
+
 <kd-condition-list [conditions]="pod?.conditions"
                    [initialized]="isInitialized"></kd-condition-list>
 

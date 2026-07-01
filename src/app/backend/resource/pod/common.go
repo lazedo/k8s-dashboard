@@ -80,6 +80,13 @@ func RequestsAndLimits(pod *v1.Pod) (reqs, limits v1.ResourceList, err error) {
 	return
 }
 
+// mustPodAllocatedResources is a convenience wrapper for callers that don't thread
+// an error (getPodAllocatedResources never returns a non-nil error today).
+func mustPodAllocatedResources(pod *v1.Pod) PodAllocatedResources {
+	res, _ := getPodAllocatedResources(pod)
+	return res
+}
+
 func getPodAllocatedResources(pod *v1.Pod) (PodAllocatedResources, error) {
 	reqs, limits, err := RequestsAndLimits(pod)
 	if err != nil {
@@ -96,34 +103,41 @@ func getPodAllocatedResources(pod *v1.Pod) (PodAllocatedResources, error) {
 		CPULimits:      cpuLimits.MilliValue(),
 		MemoryRequests: memoryRequests.Value(),
 		MemoryLimits:   memoryLimits.Value(),
-		GPURequests:    toGPUAllocations(reqs),
-		GPULimits:      toGPUAllocations(limits),
+		Requests:       toResourceMap(reqs),
+		Limits:         toResourceMap(limits),
+		ResourceClaims: toPodResourceClaims(pod),
 	}, nil
 }
 
-// toGPUAllocations extracts GPU resources by vendor and aggregates them by type.
-// (#10368; a plain loop replaces the upstream lo.Reduce to avoid a new dependency.)
-func toGPUAllocations(resources v1.ResourceList) []GPUAllocation {
-	// nil (not an empty slice) when there are no GPUs, so the zero-value pod in
-	// tests and the JSON stay clean.
-	var result []GPUAllocation
-	for resource, quantity := range resources {
-		gpuType := ToGPU(string(resource))
-		if gpuType == NoGPU {
-			continue
-		}
+// toResourceMap renders a ResourceList as name->quantity strings, generically, so
+// device-plugin / extended resources (nvidia.com/gpu, hugepages-2Mi, ...) are
+// surfaced without vendor special-casing. nil when there is nothing to report.
+func toResourceMap(list v1.ResourceList) map[string]string {
+	if len(list) == 0 {
+		return nil
+	}
+	result := make(map[string]string, len(list))
+	for name, quantity := range list {
+		result[string(name)] = quantity.String()
+	}
+	return result
+}
 
-		merged := false
-		for i := range result {
-			if result[i].Type == gpuType {
-				result[i].Quantity += quantity.Value()
-				merged = true
-				break
-			}
+// toPodResourceClaims maps the pod's Dynamic Resource Allocation claim references.
+func toPodResourceClaims(pod *v1.Pod) []PodResourceClaim {
+	if len(pod.Spec.ResourceClaims) == 0 {
+		return nil
+	}
+	result := make([]PodResourceClaim, 0, len(pod.Spec.ResourceClaims))
+	for _, claim := range pod.Spec.ResourceClaims {
+		item := PodResourceClaim{Name: claim.Name}
+		if claim.ResourceClaimName != nil {
+			item.ResourceClaimName = *claim.ResourceClaimName
 		}
-		if !merged {
-			result = append(result, GPUAllocation{Quantity: quantity.Value(), Type: gpuType})
+		if claim.ResourceClaimTemplateName != nil {
+			item.ResourceClaimTemplateName = *claim.ResourceClaimTemplateName
 		}
+		result = append(result, item)
 	}
 	return result
 }

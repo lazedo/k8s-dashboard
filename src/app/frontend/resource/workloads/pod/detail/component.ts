@@ -74,6 +74,11 @@ export class PodDetailComponent implements OnInit, OnDestroy {
     return this.pod && !_.isEmpty(this.pod.securityContext);
   }
 
+  hasAllocatedResources(): boolean {
+    const a = this.pod && this.pod.allocatedResources;
+    return !!a && (!_.isEmpty(a.requests) || !_.isEmpty(a.limits));
+  }
+
   getNodeHref(name: string): string {
     return this.kdState_.href('node', name);
   }

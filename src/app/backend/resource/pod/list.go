@@ -16,7 +16,6 @@ package pod
 
 import (
 	"log"
-	"strings"
 
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
@@ -74,12 +73,17 @@ type Pod struct {
 	// ContainerImages holds a list of the Pod images.
 	ContainerImages []string `json:"containerImages"`
 
-	// AllocatedResources is the CPU/memory (and GPU) requests and limits summed
-	// over the pod's containers. (#9018, GPU: #10368)
+	// AllocatedResources is the resource requests and limits summed over the pod's
+	// containers. (#9018, generic device-plugin/extended resources + DRA claims)
 	AllocatedResources PodAllocatedResources `json:"allocatedResources"`
 }
 
-// PodAllocatedResources describes pod allocated resources.
+// PodAllocatedResources describes pod allocated resources. CPU/Memory are kept as
+// convenience scalars (millicores / bytes); Requests and Limits are generic maps of
+// EVERY resource name to its quantity, so device-plugin / extended resources
+// (nvidia.com/gpu, amd.com/gpu, hugepages-2Mi, ...) show up without special-casing
+// any vendor. ResourceClaims lists the Dynamic Resource Allocation (resource.k8s.io)
+// claims the pod references.
 type PodAllocatedResources struct {
 	// CPURequests is number of allocated milicores.
 	CPURequests int64 `json:"cpuRequests"`
@@ -93,56 +97,27 @@ type PodAllocatedResources struct {
 	// MemoryLimits is defined memory limit.
 	MemoryLimits int64 `json:"memoryLimits"`
 
-	// GPURequests is a number and type of requested GPUs.
-	GPURequests []GPUAllocation `json:"gpuRequests"`
+	// Requests maps every requested resource name to its quantity (e.g. "cpu"->"500m",
+	// "nvidia.com/gpu"->"1"). nil when the pod requests nothing.
+	Requests map[string]string `json:"requests,omitempty"`
 
-	// GPULimits is a limit number and type of requested GPUs.
-	GPULimits []GPUAllocation `json:"gpuLimits"`
+	// Limits maps every limited resource name to its quantity. nil when unset.
+	Limits map[string]string `json:"limits,omitempty"`
+
+	// ResourceClaims are the DRA claims referenced by the pod (spec.resourceClaims).
+	ResourceClaims []PodResourceClaim `json:"resourceClaims,omitempty"`
 }
 
-// GPU identifies a GPU vendor.
-type GPU string
+// PodResourceClaim is a Dynamic Resource Allocation claim referenced by a pod.
+type PodResourceClaim struct {
+	// Name is the name used to reference the claim within the pod spec.
+	Name string `json:"name"`
 
-const (
-	NoGPU      GPU = ""
-	UnknownGPU GPU = "unknown"
-	NvidiaGPU  GPU = "nvidia"
-	AMDGPU     GPU = "amd"
-	IntelGPU   GPU = "intel"
+	// ResourceClaimName is the bound ResourceClaim object (if any).
+	ResourceClaimName string `json:"resourceClaimName,omitempty"`
 
-	NvidiaLabel = "nvidia.com/gpu"
-	AMDLabel    = "amd.com/gpu"
-	// IntelLabel is for a partial match only, and it should be checked if it starts with this prefix.
-	IntelLabel = "gpu.intel.com"
-)
-
-// ToGPU maps a resource name to a GPU vendor (or NoGPU if it is not a GPU resource).
-func ToGPU(gpuType string) GPU {
-	switch gpuType {
-	case NvidiaLabel:
-		return NvidiaGPU
-	case AMDLabel:
-		return AMDGPU
-	}
-
-	if strings.HasPrefix(gpuType, IntelLabel) {
-		return IntelGPU
-	}
-
-	if strings.Contains(gpuType, "gpu") {
-		return UnknownGPU
-	}
-
-	return NoGPU
-}
-
-// GPUAllocation describes GPU allocation.
-type GPUAllocation struct {
-	// Quantity is a number of requested GPUs.
-	Quantity int64 `json:"quantity"`
-
-	// Type of GPU.
-	Type GPU `json:"type"`
+	// ResourceClaimTemplateName is the template the claim is generated from (if any).
+	ResourceClaimTemplateName string `json:"resourceClaimTemplateName,omitempty"`
 }
 
 var EmptyPodList = &PodList{

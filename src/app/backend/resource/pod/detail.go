@@ -52,6 +52,7 @@ type PodDetail struct {
 	Controller                *controller.ResourceOwner                       `json:"controller,omitempty"`
 	Containers                []Container                                     `json:"containers"`
 	InitContainers            []Container                                     `json:"initContainers"`
+	AllocatedResources        PodAllocatedResources                           `json:"allocatedResources"`
 	Metrics                   []metricapi.Metric                              `json:"metrics"`
 	Conditions                []common.Condition                              `json:"conditions"`
 	ImagePullSecrets          []v1.LocalObjectReference                       `json:"imagePullSecrets,omitempty"`
@@ -295,6 +296,7 @@ func toPodDetail(pod *v1.Pod, metrics []metricapi.Metric, configMaps *v1.ConfigM
 		Controller:                controller,
 		Containers:                extractContainerInfo(pod.Spec.Containers, pod, configMaps, secrets),
 		InitContainers:            extractContainerInfo(pod.Spec.InitContainers, pod, configMaps, secrets),
+		AllocatedResources:        mustPodAllocatedResources(pod),
 		Metrics:                   metrics,
 		Conditions:                getPodConditions(*pod),
 		ImagePullSecrets:          pod.Spec.ImagePullSecrets,

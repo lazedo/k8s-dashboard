@@ -660,6 +660,7 @@ export interface PodDetail extends ResourceDetail {
   nodeName: string;
   restartCount: number;
   qosClass: string;
+  allocatedResources: PodAllocatedResources;
   metrics: Metric[];
   conditions: Condition[];
   controller: Resource;
@@ -667,6 +668,25 @@ export interface PodDetail extends ResourceDetail {
   eventList: EventList;
   persistentVolumeClaimList: PersistentVolumeClaimList;
   securityContext: PodSecurityContext;
+}
+
+export interface PodAllocatedResources {
+  cpuRequests: number;
+  cpuLimits: number;
+  memoryRequests: number;
+  memoryLimits: number;
+  // Generic: every requested/limited resource name -> quantity (cpu, memory, and
+  // device-plugin / extended resources like nvidia.com/gpu, hugepages-2Mi, ...).
+  requests?: {[name: string]: string};
+  limits?: {[name: string]: string};
+  // DRA (resource.k8s.io) claims referenced by the pod.
+  resourceClaims?: PodResourceClaim[];
+}
+
+export interface PodResourceClaim {
+  name: string;
+  resourceClaimName?: string;
+  resourceClaimTemplateName?: string;
 }
 
 export interface LocalObjectReference {
