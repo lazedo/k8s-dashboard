@@ -129,7 +129,9 @@ func (self *DataSelector) getMetrics(metricClient metricapi.MetricClient) (
 	metricPromises := make([]metricapi.MetricPromises, 0)
 
 	if metricClient == nil {
-		return metricPromises, errors.NewInternal("No metric client provided. Skipping metrics.")
+		// Metrics are optional (e.g. no metrics provider configured); returning an
+		// error here spams the logs on every list. Skip quietly instead. (#8881)
+		return metricPromises, nil
 	}
 
 	metricNames := self.DataSelectQuery.MetricQuery.MetricNames
