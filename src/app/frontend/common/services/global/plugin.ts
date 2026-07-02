@@ -15,10 +15,14 @@
 import { HttpClient } from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {PluginMetadata, PluginsConfig} from '@api/root.ui';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 @Injectable()
 export class PluginsConfigService {
+  // Fires after every config (re)fetch so views gated on plugin presence
+  // (the nav's Plugins entry) can markForCheck — zoneless default.
+  changed = new Subject<void>();
+
   private readonly pluginConfigPath_ = 'api/v1/plugin/config';
   private config_: PluginsConfig = {status: 204, plugins: [], errors: []};
 
@@ -32,10 +36,18 @@ export class PluginsConfigService {
     this.fetchConfig();
   }
 
+  anyPlugins(): boolean {
+    return this.config_.plugins.length > 0;
+  }
+
   private fetchConfig(): Promise<PluginsConfig> {
     return this.getConfig()
       .toPromise()
-      .then(config => (this.config_ = config));
+      .then(config => {
+        this.config_ = config;
+        this.changed.next();
+        return config;
+      });
   }
 
   private getConfig(): Observable<PluginsConfig> {
