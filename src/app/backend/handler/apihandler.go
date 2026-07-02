@@ -23,6 +23,7 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 	"golang.org/x/net/xsrftoken"
+	authorizationapi "k8s.io/api/authorization/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
@@ -801,6 +802,10 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}").
 			To(apiHandler.handleGetCustomResourceObjectDetail).
 			Writes(types.CustomResourceObjectDetail{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/cani").
+			To(apiHandler.handleCanI))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/raw").
@@ -3242,6 +3247,26 @@ func (apiHandler *APIHandler) handleGetCustomResourceObjectDetail(request *restf
 // handleGetCustomResourceObjectRaw returns the object's full JSON: the typed
 // detail endpoint strips everything but metadata, so consumers that need the
 // spec (FormPlugin cards) use this route instead.
+// handleCanI answers a SelfSubjectAccessReview for the logged-in user:
+// GET /api/v1/cani?verb=update&group=g&resource=r[&namespace=ns][&name=n]
+// → {"allowed": bool}. Generic — plugins gate optional UI on it.
+func (apiHandler *APIHandler) handleCanI(request *restful.Request, response *restful.Response) {
+	ssar := &authorizationapi.SelfSubjectAccessReview{
+		Spec: authorizationapi.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationapi.ResourceAttributes{
+				Verb:        request.QueryParameter("verb"),
+				Group:       request.QueryParameter("group"),
+				Resource:    request.QueryParameter("resource"),
+				Subresource: request.QueryParameter("subresource"),
+				Namespace:   request.QueryParameter("namespace"),
+				Name:        request.QueryParameter("name"),
+			},
+		},
+	}
+	allowed := apiHandler.cManager.CanI(request, ssar)
+	response.WriteHeaderAndEntity(http.StatusOK, map[string]bool{"allowed": allowed})
+}
+
 func (apiHandler *APIHandler) handleGetCustomResourceObjectRaw(request *restful.Request, response *restful.Response) {
 	config, err := apiHandler.cManager.Config(request)
 	if err != nil {

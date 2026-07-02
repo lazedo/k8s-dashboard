@@ -59,3 +59,8 @@ spec:
                     properties:
                       name: { type: string }
                       url: { type: string }
+                      # Free-form labels; catalog routes (cat:*) are filterable
+                      # by them in the Apps plugin.
+                      tags:
+                        type: array
+                        items: { type: string }
