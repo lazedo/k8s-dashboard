@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import {ErrStatus, K8sError as K8SApiError} from '@api/root.api';
 import {KdError as KdApiError} from '@api/root.shared';
 

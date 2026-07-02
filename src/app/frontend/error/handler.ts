@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import {ErrorHandler, Injectable, Injector, NgZone} from '@angular/core';
 import {Router} from '@angular/router';
 import {StateError} from '@api/root.ui';

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {EventEmitter, Injectable} from '@angular/core';
 import {GlobalSettings} from '@api/root.api';
 import {onSettingsFailCallback, onSettingsLoadCallback} from '@api/root.ui';

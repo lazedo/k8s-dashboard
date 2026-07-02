@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {DataSource} from '@angular/cdk/collections';
-import {HttpParams} from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import {
   ChangeDetectorRef,
   Directive,

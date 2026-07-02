@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {HTTP_INTERCEPTORS} from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {DecoderService} from '@common/services/global/decoder';
 import {LocalConfigLoaderService} from '@common/services/global/loader';

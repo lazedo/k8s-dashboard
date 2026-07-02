@@ -16,7 +16,7 @@ import {Component, OnInit, Input, EventEmitter, Output} from '@angular/core';
 import {SecretDetail} from '@api/root.api';
 import {DecoderService} from '@common/services/global/decoder';
 import {RawResource} from 'common/resources/rawresource';
-import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import {AlertDialogConfig, AlertDialog} from 'common/dialogs/alert/dialog';
 import {MatDialogConfig, MatDialog} from '@angular/material/dialog';
 import {encode} from 'js-base64';

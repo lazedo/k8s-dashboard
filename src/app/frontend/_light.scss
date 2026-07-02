@@ -30,9 +30,9 @@ $colors-light: (
   log-viewer-text: #fff,
   log-viewer-scrollbar: rgb(200 200 200 / 0.66),
 );
-$kd-blue: map.merge(mat.$blue-palette, (500: #326de6));
-$kd-palette: mat.define-palette($kd-blue);
-$theme-light: mat.define-light-theme((
+$kd-blue: map.merge(mat.$m2-blue-palette, (500: #326de6));
+$kd-palette: mat.m2-define-palette($kd-blue);
+$theme-light: mat.m2-define-light-theme((
   color: (
     primary: $kd-palette,
     accent: $kd-palette,

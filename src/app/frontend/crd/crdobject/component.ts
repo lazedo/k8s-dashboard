@@ -15,7 +15,7 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {MatButtonToggleGroup} from '@angular/material/button-toggle';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {dump as toYaml, load as fromYaml} from 'js-yaml';
 import {Subject} from 'rxjs';
 import {CRDObjectDetail} from '@api/root.api';

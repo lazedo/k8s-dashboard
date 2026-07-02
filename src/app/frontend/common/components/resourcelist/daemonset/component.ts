@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {HttpParams} from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import {DaemonSet, DaemonSetList, Event, Metric} from '@api/root.api';
 import {Observable} from 'rxjs';
