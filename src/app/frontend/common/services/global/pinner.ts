@@ -48,7 +48,42 @@ export class PinnerService {
       this.pinnedResources_ = resources;
       this.isInitialized_ = true;
       this.changed.next();
+      this.pruneDeleted_(resources);
     });
+  }
+
+  // Pins are manual and survive resource deletion (kubectl delete included),
+  // leaving orphan entries in the nav. Verify each pin against its detail
+  // endpoint and unpin the ones that are gone. Only a definitive 404 prunes —
+  // 403 (no RBAC for this user) must not eat pins.
+  private pruneDeleted_(resources: PinnedResource[]): void {
+    for (const resource of resources) {
+      const url = this.existenceUrl_(resource);
+      if (!url) {
+        continue;
+      }
+      this.http_.get(url).subscribe({
+        next: () => {},
+        error: err => {
+          if (err?.status === 404) {
+            this.unpin(resource.kind, resource.name, resource.namespace);
+          }
+        },
+      });
+    }
+  }
+
+  private existenceUrl_(resource: PinnedResource): string | null {
+    switch (resource.kind) {
+      case 'customresourcedefinition':
+        return `api/v1/crd/${resource.name}`;
+      case 'plugin':
+        return resource.namespace !== undefined
+          ? `api/v1/plugin/${resource.namespace}/${resource.name}`
+          : `api/v1/globalplugin/${resource.name}`;
+      default:
+        return null;
+    }
   }
 
   isInitialized(): boolean {
