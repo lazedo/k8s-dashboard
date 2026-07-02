@@ -64,4 +64,11 @@ export class CrdAvailabilityService {
   isAnyInstalled(crdNames: string[]): boolean {
     return this.failedOpen_ || crdNames.some(name => this.installed_.has(name));
   }
+
+  // installedNames returns the full names of every installed CRD (empty when
+  // the list could not be read). Used by feature cards that look for a CRD by
+  // pattern rather than exact name (e.g. the Kazoo Media create card).
+  installedNames(): string[] {
+    return Array.from(this.installed_);
+  }
 }

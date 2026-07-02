@@ -20,7 +20,9 @@ import {CanDeactivateGuard} from '@common/services/guard/candeactivate';
 import {SharedModule} from '../shared.module';
 
 import {CreateComponent} from './component';
+import {CreateFromCrdComponent} from './from/crd/component';
 import {CreateFromFileComponent} from './from/file/component';
+import {CreateFromFormCardsComponent} from './from/form/cards/component';
 import {CreateFromFormModule} from './from/form/module';
 import {CreateFromInputComponent} from './from/input/component';
 import {CreateFromUrlComponent} from './from/url/component';
@@ -28,7 +30,14 @@ import {CreateRoutingModule} from './routing';
 
 @NgModule({
   imports: [SharedModule, ComponentsModule, CreateFromFormModule, CreateServiceModule, CreateRoutingModule],
-  declarations: [CreateComponent, CreateFromInputComponent, CreateFromFileComponent, CreateFromUrlComponent],
+  declarations: [
+    CreateComponent,
+    CreateFromInputComponent,
+    CreateFromFileComponent,
+    CreateFromUrlComponent,
+    CreateFromCrdComponent,
+    CreateFromFormCardsComponent,
+  ],
   providers: [CanDeactivateGuard],
 })
 export class CreateModule {}

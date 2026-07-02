@@ -15,7 +15,7 @@
 import {Component, ViewChild} from '@angular/core';
 import {ICanDeactivate} from '@common/interfaces/candeactivate';
 import {CreateFromFileComponent} from './from/file/component';
-import {CreateFromFormComponent} from './from/form/component';
+import {CreateFromFormCardsComponent} from './from/form/cards/component';
 import {CreateFromInputComponent} from './from/input/component';
 import {CreateFromUrlComponent} from './from/url/component';
 
@@ -29,14 +29,16 @@ export class CreateComponent extends ICanDeactivate {
   @ViewChild(CreateFromInputComponent) fromInput: CreateFromInputComponent;
   @ViewChild(CreateFromFileComponent) fromFile: CreateFromFileComponent;
   @ViewChild(CreateFromUrlComponent) fromUrl: CreateFromUrlComponent;
-  @ViewChild(CreateFromFormComponent) fromForm: CreateFromFormComponent;
+  @ViewChild(CreateFromFormCardsComponent) fromForm: CreateFromFormCardsComponent;
 
+  // Optional chaining: view children may be absent before the first CD pass
+  // (or, for the form cards, while no card is open).
   canDeactivate(): boolean {
     return (
-      this.fromInput.canDeactivate() &&
-      this.fromFile.canDeactivate() &&
-      this.fromUrl.canDeactivate() &&
-      this.fromForm.canDeactivate()
+      (this.fromInput?.canDeactivate() ?? true) &&
+      (this.fromFile?.canDeactivate() ?? true) &&
+      (this.fromUrl?.canDeactivate() ?? true) &&
+      (this.fromForm?.canDeactivate() ?? true)
     );
   }
 }
