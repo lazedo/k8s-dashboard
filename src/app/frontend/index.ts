@@ -22,4 +22,7 @@ if (environment.production) {
   enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(RootModule);
+// Angular 22 defaults to zoneless change detection; this codebase still relies
+// on ZoneJS-driven ticks (plain property mutation after HTTP responses), so
+// request the zone-based NgZone explicitly.
+platformBrowserDynamic().bootstrapModule(RootModule, {ngZone: 'zone.js'});
