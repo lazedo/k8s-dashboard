@@ -57,3 +57,9 @@
 .kd-form-cards-back {
   margin: $baseline-grid 0;
 }
+
+.kd-form-action-bar {
+  display: flex;
+  gap: $baseline-grid;
+  margin-top: 2 * $baseline-grid;
+}

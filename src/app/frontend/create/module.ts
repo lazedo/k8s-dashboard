@@ -26,6 +26,7 @@ import {CreateFromFormCardsComponent} from './from/form/cards/component';
 import {CreateFromFormModule} from './from/form/module';
 import {CreateFromInputComponent} from './from/input/component';
 import {CreateFromUrlComponent} from './from/url/component';
+import {FormPluginHostComponent} from './from/form/pluginhost/component';
 import {CreateRoutingModule} from './routing';
 
 @NgModule({
@@ -37,6 +38,7 @@ import {CreateRoutingModule} from './routing';
     CreateFromUrlComponent,
     CreateFromCrdComponent,
     CreateFromFormCardsComponent,
+    FormPluginHostComponent,
   ],
   providers: [CanDeactivateGuard],
 })

@@ -802,6 +802,10 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			Writes(types.CustomResourceObjectDetail{}))
 
 	apiV1Ws.Route(
+		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/raw").
+			To(apiHandler.handleGetCustomResourceObjectRaw))
+
+	apiV1Ws.Route(
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/event").
 			To(apiHandler.handleGetCustomResourceObjectEvents).
 			Writes(common.EventList{}))
@@ -3218,6 +3222,34 @@ func (apiHandler *APIHandler) handleGetCustomResourceObjectDetail(request *restf
 	crdName := request.PathParameter("crd")
 	namespace := parseNamespacePathParameter(request)
 	result, err := customresourcedefinition.GetCustomResourceObjectDetail(apiextensionsclient, namespace, config, crdName, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+// handleGetCustomResourceObjectRaw returns the object's full JSON: the typed
+// detail endpoint strips everything but metadata, so consumers that need the
+// spec (FormPlugin cards) use this route instead.
+func (apiHandler *APIHandler) handleGetCustomResourceObjectRaw(request *restful.Request, response *restful.Response) {
+	config, err := apiHandler.cManager.Config(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	apiextensionsclient, err := apiHandler.cManager.APIExtensionsClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("object")
+	crdName := request.PathParameter("crd")
+	namespace := parseNamespacePathParameter(request)
+	result, err := customresourcedefinition.GetCustomResourceObjectRaw(apiextensionsclient, namespace, config, crdName, name)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

@@ -15,6 +15,7 @@
 package customresourcedefinition
 
 import (
+	"encoding/json"
 	"fmt"
 
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -119,6 +120,20 @@ func GetCustomResourceObjectDetail(client apiextensionsclientset.Interface, name
 	switch version {
 	case v1:
 		return crdv1.GetCustomResourceObjectDetail(client, namespace, config, crdName, name)
+	}
+
+	return nil, errors.NewNotFound(fmt.Sprintf("unsupported extensions api versions: %s", version))
+}
+
+func GetCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) (json.RawMessage, error) {
+	version, err := GetExtensionsAPIVersion(client)
+	if err != nil {
+		return nil, err
+	}
+
+	switch version {
+	case v1:
+		return crdv1.GetCustomResourceObjectRaw(client, namespace, config, crdName, name)
 	}
 
 	return nil, errors.NewNotFound(fmt.Sprintf("unsupported extensions api versions: %s", version))

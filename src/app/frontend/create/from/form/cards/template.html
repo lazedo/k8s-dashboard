@@ -39,7 +39,27 @@ limitations under the License.
   <span class="kd-form-cards-active kd-muted">{{ active.title }}</span>
 
   <kd-create-from-form *ngIf="active.id === 'deployment'"></kd-create-from-form>
-  <kd-create-from-crd *ngIf="active.id !== 'deployment'"
-                      [presetPattern]="active.presetPattern"
-                      [attr.data-preset]="active.presetPattern || ''"></kd-create-from-crd>
+  <kd-form-plugin-host *ngIf="active.script"
+                       [script]="active.script"
+                       [args]="active.args"
+                       (closed)="back()"></kd-form-plugin-host>
+
+  <!-- Action bar: owned by the container, fed by the active form (contract.ts). -->
+  <div class="kd-form-action-bar"
+       *ngIf="barButtons.length">
+    <ng-container *ngFor="let b of barButtons">
+      <button *ngIf="b.raised"
+              mat-raised-button
+              color="primary"
+              type="button"
+              [disabled]="b.disabled"
+              (click)="onBarClick(b.id)">{{ b.label }}</button>
+      <button *ngIf="!b.raised"
+              mat-button
+              color="primary"
+              type="button"
+              [disabled]="b.disabled"
+              (click)="onBarClick(b.id)">{{ b.label }}</button>
+    </ng-container>
+  </div>
 </div>

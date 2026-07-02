@@ -1,0 +1,43 @@
+# Cluster-scoped FormPlugin: a card in the dashboard's "Create from form"
+# gallery. spec.script is plain JavaScript with signature (host, ctx): it
+# renders an HTML form into `host` however it sees fit; the dashboard owns the
+# action bar (the script declares buttons via ctx.buttons.set and receives
+# clicks via ctx.onAction) and every API interaction (ctx.submit hands the
+# manifest to the dashboard's create service). The stock "Custom resource"
+# card runs through the exact same contract.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: formplugins.dashboard.k8s.io
+  annotations:
+    api-approved.kubernetes.io: "unapproved, experimental-only"
+spec:
+  group: dashboard.k8s.io
+  scope: Cluster
+  names:
+    kind: FormPlugin
+    plural: formplugins
+    singular: formplugin
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [title, script]
+              properties:
+                title: { type: string }
+                description: { type: string }
+                # Material icon name shown on the card.
+                icon: { type: string }
+                # JavaScript, signature (host, ctx).
+                script: { type: string }
+                # Passed to the script verbatim as ctx.args.
+                args:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true

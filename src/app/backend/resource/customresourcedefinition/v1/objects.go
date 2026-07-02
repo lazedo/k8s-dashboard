@@ -122,6 +122,34 @@ func GetCustomResourceObjectDetail(client apiextensionsclientset.Interface, name
 	return detail, nil
 }
 
+// GetCustomResourceObjectRaw returns the full JSON of a single custom
+// resource object as served by the API server. The typed detail strips
+// everything but metadata, which is useless for consumers that need the
+// spec — e.g. the dashboard reading FormPlugin scripts.
+func GetCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) (json.RawMessage, error) {
+	customResourceDefinition, err := client.ApiextensionsV1().
+		CustomResourceDefinitions().
+		Get(context.TODO(), crdName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	restClient, err := NewRESTClient(config, customResourceDefinition)
+	if err != nil {
+		return nil, err
+	}
+
+	raw, err := restClient.Get().
+		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensionsv1.NamespaceScoped).
+		Resource(customResourceDefinition.Spec.Names.Plural).
+		Name(name).Do(context.TODO()).Raw()
+	if err != nil {
+		return nil, err
+	}
+
+	return json.RawMessage(raw), nil
+}
+
 // toCRDObject sets the object kind to the full name of the CRD.
 // E.g. changes "Foo" to "foos.samplecontroller.k8s.io"
 func toCRDObject(object *types.CustomResourceObject, crd *apiextensionsv1.CustomResourceDefinition) {

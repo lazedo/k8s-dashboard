@@ -335,6 +335,9 @@ limitations under the License.
   </div>
 </form>
 
+<!-- Embedded under the cards container these buttons live in its action bar
+     (FormPluginForm contract); the inline set stays as a standalone fallback. -->
+<ng-container *ngIf="!hasActionBar()">
 <button type="button"
         [disabled]="isCreateDisabled()"
         color="primary"
@@ -369,3 +372,4 @@ limitations under the License.
         i18n>
   {isMoreOptionsEnabled(), select, true {Hide advanced options} other {Show advanced options}}
 </button>
+</ng-container>

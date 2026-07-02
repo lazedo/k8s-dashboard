@@ -1,0 +1,43 @@
+# Demo FormPlugin: minimal quick-create form for a v1 Namespace. Exercises the
+# whole contract — render into host, declare buttons, receive actions, submit
+# through the dashboard.
+apiVersion: dashboard.k8s.io/v1alpha1
+kind: FormPlugin
+metadata:
+  name: quick-namespace
+spec:
+  title: Namespace
+  description: Quick-create a namespace.
+  icon: folder
+  script: |
+    'use strict';
+    host.innerHTML =
+      '<div class="kdf">' +
+      '<label>Namespace name <span class="kdf-required">*</span></label>' +
+      '<input type="text" class="ns-name" autocomplete="off">' +
+      '<div class="kdf-hint">Creates a v1 Namespace via the dashboard.</div>' +
+      '<div class="kdf-error" style="display:none"></div>' +
+      '</div>';
+    var input = host.querySelector('.ns-name');
+    var err = host.querySelector('.kdf-error');
+    ctx.buttons.set([
+      {id: 'create', label: 'Create namespace', raised: true, disabled: true},
+      {id: 'cancel', label: 'Cancel'},
+    ]);
+    input.addEventListener('input', function () {
+      ctx.markDirty(true);
+      ctx.buttons.patch('create', {disabled: !input.value.trim()});
+    });
+    ctx.onAction(function (id) {
+      if (id === 'cancel') { ctx.close(); return; }
+      if (id !== 'create') { return; }
+      ctx.buttons.patch('create', {disabled: true});
+      ctx.submit({apiVersion: 'v1', kind: 'Namespace', metadata: {name: input.value.trim()}}).then(function () {
+        ctx.close();
+      }, function (e) {
+        var msg = e && e.error && e.error.message ? e.error.message : (e && e.message ? e.message : String(e));
+        err.textContent = 'Create failed: ' + msg;
+        err.style.display = 'block';
+        ctx.buttons.patch('create', {disabled: false});
+      });
+    });

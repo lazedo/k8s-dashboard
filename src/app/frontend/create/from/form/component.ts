@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { HttpClient } from '@angular/common/http';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, Optional} from '@angular/core';
 import {AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -35,6 +35,7 @@ import {HistoryService} from '@common/services/global/history';
 import {NamespaceService} from '@common/services/global/namespace';
 import {take, takeUntil} from 'rxjs/operators';
 
+import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from './cards/contract';
 import {CreateNamespaceDialog} from './createnamespace/dialog';
 import {DeployLabel} from './deploylabel/deploylabel';
 import {validateUniqueName} from './validator/uniquename.validator';
@@ -51,7 +52,7 @@ const APP_LABEL_KEY = 'k8s-app';
     styleUrls: ['./style.scss'],
     standalone: false
 })
-export class CreateFromFormComponent extends ICanDeactivate implements OnInit, OnDestroy {
+export class CreateFromFormComponent extends ICanDeactivate implements OnInit, OnDestroy, FormPluginForm {
   showMoreOptions_ = false;
   namespaces: string[];
   protocols: string[];
@@ -71,7 +72,9 @@ export class CreateFromFormComponent extends ICanDeactivate implements OnInit, O
     private readonly route_: ActivatedRoute,
     private readonly fb_: UntypedFormBuilder,
     private readonly dialog_: MatDialog,
-    private readonly router_: Router
+    private readonly router_: Router,
+    private readonly cdr_: ChangeDetectorRef,
+    @Optional() private readonly actionBar_: FormActionBar
   ) {
     super();
   }
@@ -171,11 +174,57 @@ export class CreateFromFormComponent extends ICanDeactivate implements OnInit, O
     this.http_
       .get('api/v1/appdeployment/protocols')
       .subscribe((protocols: Protocols) => (this.protocols = protocols.protocols));
+
+    if (this.actionBar_) {
+      this.actionBar_.register(this);
+      // Deploy/Preview enablement follows form validity.
+      this.form.statusChanges.pipe(takeUntil(this.unsubscribe_)).subscribe(() => this.actionBar_.update());
+    }
   }
 
   ngOnDestroy(): void {
+    this.actionBar_?.unregister(this);
     this.unsubscribe_.next();
     this.unsubscribe_.complete();
+  }
+
+  // FormPluginForm — the cards container renders these in its action bar.
+  hasActionBar(): boolean {
+    return !!this.actionBar_;
+  }
+
+  formButtons(): FormPluginButtonSpec[] {
+    const disabled = this.isCreateDisabled();
+    return [
+      {id: 'deploy', label: 'Deploy', raised: true, disabled},
+      {id: 'preview', label: 'Preview', disabled},
+      {id: 'cancel', label: 'Cancel'},
+      {
+        id: 'advanced',
+        label: this.isMoreOptionsEnabled() ? 'Hide advanced options' : 'Show advanced options',
+      },
+    ];
+  }
+
+  onFormAction(actionId: string): void {
+    switch (actionId) {
+      case 'deploy':
+        this.deploy();
+        break;
+      case 'preview':
+        this.preview();
+        break;
+      case 'cancel':
+        this.cancel();
+        break;
+      case 'advanced':
+        this.switchMoreOptions();
+        this.actionBar_?.update();
+        break;
+    }
+    // Bar clicks land on the container's view; this form's own bindings
+    // (the [hidden] advanced section) only refresh if this view is marked.
+    this.cdr_.markForCheck();
   }
 
   changeExternal(isExternal: boolean): void {

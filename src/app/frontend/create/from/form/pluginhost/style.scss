@@ -1,0 +1,73 @@
+// Copyright 2026 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+
+// FormPlugin scripts render plain HTML via DOM APIs, so nothing inside the
+// host carries the view-encapsulation attribute — everything needs ::ng-deep.
+// Baseline-ish styling so unstyled form elements don't look alien next to the
+// Material forms.
+:host ::ng-deep .kd-form-plugin-host {
+  display: block;
+  max-width: 640px;
+  padding: 8px 0 16px;
+
+  label {
+    color: rgba(0, 0, 0, 0.54);
+    display: block;
+    font-size: 12px;
+    margin: 14px 0 4px;
+
+    .kdf-required {
+      color: #d32f2f;
+    }
+  }
+
+  input[type='text'],
+  input[type='number'],
+  select,
+  textarea {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 14px;
+    padding: 8px 10px;
+    width: 100%;
+
+    &:focus {
+      border-color: #326ce5;
+      outline: none;
+    }
+  }
+
+  input[type='checkbox'] {
+    margin-right: 8px;
+  }
+
+  fieldset {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    margin: 12px 0;
+    padding: 4px 12px 12px;
+
+    legend {
+      color: rgba(0, 0, 0, 0.54);
+      font-size: 12px;
+      padding: 0 4px;
+    }
+  }
+
+  .kdf-hint {
+    color: rgba(0, 0, 0, 0.42);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .kdf-error {
+    color: #d32f2f;
+    font-size: 12px;
+    margin: 8px 0;
+  }
+}
