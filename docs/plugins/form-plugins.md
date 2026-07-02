@@ -82,7 +82,9 @@ Rules of the road:
 - **All writes go through `ctx.submit`.** It accepts a JSON/YAML string or a
   plain object (serialized for you) and resolves/rejects like the dashboard's
   own deploy-from-input. Deploy errors also surface in the dashboard's error
-  dialog.
+  dialog. Pass an object with `metadata.namespace` set to target a namespace
+  other than the dashboard's currently selected one — deploys are
+  namespace-checked against the manifest.
 - **`ctx.http` is for reads** against the dashboard API (`api/v1/...`) — e.g.
   `api/v1/namespace`, `api/v1/crd`, `api/v1/_raw/...`. Same-origin,
   authenticated as the logged-in user.

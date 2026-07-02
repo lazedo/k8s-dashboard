@@ -124,7 +124,12 @@ export class FormPluginHostComponent implements AfterViewInit, OnDestroy, FormPl
       onAction: (handler: (actionId: string) => void) => (this.actionHandler_ = handler),
       submit: (content: string | {}) => {
         const text = typeof content === 'string' ? content : JSON.stringify(content);
-        return this.create_.createContent(text).then(result => {
+        // Deploys are namespace-checked against the manifest; forms with
+        // their own namespace field must submit to that namespace, not the
+        // dashboard's currently selected one.
+        const manifestNs =
+          typeof content === 'object' ? (content as {metadata?: {namespace?: string}}).metadata?.namespace : undefined;
+        return this.create_.createContent(text, true, '', manifestNs || '').then(result => {
           this.dirty_ = false;
           return result as {};
         });

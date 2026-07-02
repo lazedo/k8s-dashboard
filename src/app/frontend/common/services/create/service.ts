@@ -63,10 +63,13 @@ export class CreateService {
     @Inject(CONFIG_DI_TOKEN) private readonly CONFIG: IConfig
   ) {}
 
-  async createContent(content: string, validate = true, name = ''): Promise<AppDeploymentContentResponse> {
+  async createContent(content: string, validate = true, name = '', namespace = ''): Promise<AppDeploymentContentResponse> {
     const spec: AppDeploymentContentSpec = {
+      // The backend rejects manifests whose metadata.namespace differs from
+      // the request namespace, so callers targeting another namespace (form
+      // plugins with their own namespace field) must pass it explicitly.
       name,
-      namespace: this.namespace_.current(),
+      namespace: namespace || this.namespace_.current(),
       content,
       validate,
     };

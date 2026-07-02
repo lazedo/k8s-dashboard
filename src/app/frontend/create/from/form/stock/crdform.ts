@@ -212,12 +212,14 @@ function fieldHtml(path, name, schema, required, depth, rel) {
   }
   // Free-form/map object (additionalProperties or preserve-unknown-fields):
   // key/value rows. Values follow the declared value schema, otherwise they
-  // are auto-typed (10000 → number, true/false → boolean).
-  if (schema.type === 'object' && !schema.properties && !rel) {
+  // are auto-typed (10000 → number, true/false → boolean). Sections nest
+  // (inside object-array entries too); rows render lazily on Add and the
+  // DOM-walking collector scopes each section's rows to itself.
+  if (schema.type === 'object' && !schema.properties) {
     var valueSchema = typeof schema.additionalProperties === 'object' ? schema.additionalProperties : null;
     return dynSection('map', path, name, schema, valueSchema);
   }
-  if (schema.type === 'array' && !rel) {
+  if (schema.type === 'array') {
     var items = schema.items || {};
     if (items.type === 'object' && items.properties) {
       return dynSection('objarr', path, name, schema, items);
@@ -312,54 +314,64 @@ function leafValue(el) {
   return el.value;
 }
 
+// Value of one dynamic section. Row queries are :scope-anchored so an outer
+// section never swallows the rows/entries of a section nested inside one of
+// its entries.
+function sectionValue(box) {
+  var d = DYN[Number(box.getAttribute('data-dyn'))];
+  if (d.kind === 'map') {
+    var map = {};
+    var rows = box.querySelectorAll(':scope > .kdf-rows > .kdf-row');
+    for (var k = 0; k < rows.length; k++) {
+      var key = rows[k].querySelector('.kdf-k').value.trim();
+      var v = scalarValue(rows[k].querySelector('.kdf-v'), d.schema);
+      if (key && v !== undefined) { map[key] = v; }
+    }
+    return Object.keys(map).length ? map : undefined;
+  }
+  if (d.kind === 'arr') {
+    var list = [];
+    var inputs = box.querySelectorAll(':scope > .kdf-rows > .kdf-row > .kdf-v');
+    for (var m = 0; m < inputs.length; m++) {
+      var item = scalarValue(inputs[m], d.schema);
+      if (item !== undefined) { list.push(item); }
+    }
+    return list.length ? list : undefined;
+  }
+  var entries = [];
+  var entryEls = box.querySelectorAll(':scope > .kdf-rows > .kdf-entry');
+  for (var n2 = 0; n2 < entryEls.length; n2++) {
+    var obj = {};
+    walkCollect(entryEls[n2], 'data-rel', obj);
+    if (Object.keys(obj).length) { entries.push(obj); }
+  }
+  return entries.length ? entries : undefined;
+}
+
+// Recursive DOM walk: schema-rendered leaves keyed by the attr argument,
+// dynamic sections (any nesting depth) delegated to sectionValue and stopped
+// there — their internals use their own scope.
+function walkCollect(rootEl, attr, out) {
+  var kids = rootEl.children;
+  for (var i = 0; i < kids.length; i++) {
+    var el = kids[i];
+    if (el.classList.contains('kdf-dyn')) {
+      var v = sectionValue(el);
+      if (v !== undefined) { setPath(out, el.getAttribute('data-dynpath').split('.'), v); }
+      continue;
+    }
+    if (el.hasAttribute(attr)) {
+      var lv = leafValue(el);
+      if (lv !== undefined) { setPath(out, el.getAttribute(attr).split('.'), lv); }
+      continue;
+    }
+    walkCollect(el, attr, out);
+  }
+}
+
 function collect() {
   var out = {};
-  var els = specBox.querySelectorAll('[data-path]');
-  for (var i = 0; i < els.length; i++) {
-    if (els[i].closest('.kdf-dyn')) { continue; }
-    var value = leafValue(els[i]);
-    if (value === undefined) { continue; }
-    setPath(out, els[i].getAttribute('data-path').split('.'), value);
-  }
-  var dyns = specBox.querySelectorAll('.kdf-dyn');
-  for (var j = 0; j < dyns.length; j++) {
-    var box = dyns[j];
-    var d = DYN[Number(box.getAttribute('data-dyn'))];
-    var collected;
-    if (d.kind === 'map') {
-      var map = {};
-      var rows = box.querySelectorAll('.kdf-row');
-      for (var k = 0; k < rows.length; k++) {
-        var key = rows[k].querySelector('.kdf-k').value.trim();
-        var v = scalarValue(rows[k].querySelector('.kdf-v'), d.schema);
-        if (key && v !== undefined) { map[key] = v; }
-      }
-      if (Object.keys(map).length) { collected = map; }
-    } else if (d.kind === 'arr') {
-      var list = [];
-      var inputs = box.querySelectorAll('.kdf-row .kdf-v');
-      for (var m = 0; m < inputs.length; m++) {
-        var item = scalarValue(inputs[m], d.schema);
-        if (item !== undefined) { list.push(item); }
-      }
-      if (list.length) { collected = list; }
-    } else {
-      var entries = [];
-      var entryEls = box.querySelectorAll('.kdf-entry');
-      for (var n2 = 0; n2 < entryEls.length; n2++) {
-        var obj = {};
-        var leafs = entryEls[n2].querySelectorAll('[data-rel]');
-        for (var p = 0; p < leafs.length; p++) {
-          var lv = leafValue(leafs[p]);
-          if (lv === undefined) { continue; }
-          setPath(obj, leafs[p].getAttribute('data-rel').split('.'), lv);
-        }
-        if (Object.keys(obj).length) { entries.push(obj); }
-      }
-      if (entries.length) { collected = entries; }
-    }
-    if (collected !== undefined) { setPath(out, box.getAttribute('data-dynpath').split('.'), collected); }
-  }
+  walkCollect(specBox, 'data-path', out);
   return out;
 }
 
