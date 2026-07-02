@@ -177,9 +177,10 @@ code {
 
   &:not(:first-child) {
     &:not(:last-child) {
-      // Baseline cells compute 0 horizontal padding; the extra 8px stole
-      // enough width from the labels column to wrap its chips mid-word.
-      padding: 0;
+      // Baseline: 0 4px (the earlier padding:0 made chips of contiguous
+      // columns — images/labels — touch once the chip-set edge margins were
+      // collapsed; 4px a side restores the 8px inter-column gap).
+      padding: 0 ($baseline-grid * 0.5);
     }
   }
 
