@@ -125,7 +125,9 @@
 
     // MDC no longer sizes registered svg icons to the mat-icon box; without
     // this only the svg's top-left corner shows inside the 11px badge icon.
-    svg {
+    // ::ng-deep: MatIcon injects the svg via innerHTML, so it carries no
+    // view-encapsulation attribute and scoped selectors never match it.
+    ::ng-deep svg {
       height: 100%;
       width: 100%;
     }
