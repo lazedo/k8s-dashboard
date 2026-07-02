@@ -139,6 +139,20 @@ func GetCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespa
 	return nil, errors.NewNotFound(fmt.Sprintf("unsupported extensions api versions: %s", version))
 }
 
+func UpdateCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string, body []byte) (json.RawMessage, error) {
+	version, err := GetExtensionsAPIVersion(client)
+	if err != nil {
+		return nil, err
+	}
+
+	switch version {
+	case v1:
+		return crdv1.UpdateCustomResourceObjectRaw(client, namespace, config, crdName, name, body)
+	}
+
+	return nil, errors.NewNotFound(fmt.Sprintf("unsupported extensions api versions: %s", version))
+}
+
 func DeleteCustomResourceObject(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) error {
 	version, err := GetExtensionsAPIVersion(client)
 	if err != nil {

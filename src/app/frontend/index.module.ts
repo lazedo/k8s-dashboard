@@ -20,6 +20,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterModule} from '@angular/router';
 import {ChromeModule} from './chrome/module';
+import {installKdSchemaForm} from '@common/schemaform';
 import {CoreModule} from './core.module';
 import {GlobalErrorHandler} from './error/handler';
 import {RootComponent} from './index.component';
@@ -44,4 +45,10 @@ import {LoginModule} from './login/module';
         // Zoneless-era compatibility: re-render after HTTP responses (see tick.ts).
         { provide: HTTP_INTERCEPTORS, useClass: TickInterceptor, multi: true },
         { provide: ErrorHandler, useClass: GlobalErrorHandler }, provideHttpClient(withInterceptorsFromDi())] })
-export class RootModule {}
+export class RootModule {
+  constructor() {
+    // window.kdSchemaForm: the shared schema->form generator, published for
+    // GlobalPlugin bundles and FormPlugin scripts (see docs/plugins).
+    installKdSchemaForm();
+  }
+}

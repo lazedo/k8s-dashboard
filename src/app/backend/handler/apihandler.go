@@ -15,6 +15,7 @@
 package handler
 
 import (
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -804,6 +805,10 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 	apiV1Ws.Route(
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/raw").
 			To(apiHandler.handleGetCustomResourceObjectRaw))
+
+	apiV1Ws.Route(
+		apiV1Ws.PUT("/crd/{namespace}/{crd}/{object}/raw").
+			To(apiHandler.handleUpdateCustomResourceObjectRaw))
 
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/crd/{namespace}/{crd}/{object}/raw").
@@ -3254,6 +3259,37 @@ func (apiHandler *APIHandler) handleGetCustomResourceObjectRaw(request *restful.
 	crdName := request.PathParameter("crd")
 	namespace := parseNamespacePathParameter(request)
 	result, err := customresourcedefinition.GetCustomResourceObjectRaw(apiextensionsclient, namespace, config, crdName, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleUpdateCustomResourceObjectRaw(request *restful.Request, response *restful.Response) {
+	config, err := apiHandler.cManager.Config(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	apiextensionsclient, err := apiHandler.cManager.APIExtensionsClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	body, err := io.ReadAll(request.Request.Body)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("object")
+	crdName := request.PathParameter("crd")
+	namespace := parseNamespacePathParameter(request)
+	result, err := customresourcedefinition.UpdateCustomResourceObjectRaw(apiextensionsclient, namespace, config, crdName, name, body)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

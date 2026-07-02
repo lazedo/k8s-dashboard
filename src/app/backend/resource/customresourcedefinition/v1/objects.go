@@ -150,6 +150,32 @@ func GetCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespa
 	return json.RawMessage(raw), nil
 }
 
+// UpdateCustomResourceObjectRaw replaces a custom resource object with the
+// provided JSON (which must carry a fresh resourceVersion) and returns the
+// server's resulting object.
+func UpdateCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string, body []byte) (json.RawMessage, error) {
+	customResourceDefinition, err := client.ApiextensionsV1().
+		CustomResourceDefinitions().
+		Get(context.TODO(), crdName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	restClient, err := NewRESTClient(config, customResourceDefinition)
+	if err != nil {
+		return nil, err
+	}
+
+	raw, err := restClient.Put().
+		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensionsv1.NamespaceScoped).
+		Resource(customResourceDefinition.Spec.Names.Plural).
+		Name(name).Body(body).Do(context.TODO()).Raw()
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(raw), nil
+}
+
 // DeleteCustomResourceObject deletes a single custom resource object — the
 // generic delete verber only covers built-in kinds.
 func DeleteCustomResourceObject(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) error {

@@ -576,3 +576,134 @@ kd-logs {
     min-width: 15 * $baseline-grid;
   }
 }
+
+// kdSchemaForm (common/schemaform) + FormPlugin hand-written forms: shared
+// styling for schema-driven form elements. The generator adds
+// .kd-schema-form to its containers; FormPlugin scripts write the same .kdf-*
+// classes inside the plugin host.
+.kd-schema-form,
+.kd-form-plugin-host {
+  label {
+    color: rgba(0, 0, 0, 0.54);
+    display: block;
+    font-size: 12px;
+    margin: 14px 0 4px;
+
+    .kdf-required {
+      color: #d32f2f;
+    }
+  }
+
+  label.kdf-bool {
+    color: inherit;
+    font-size: 13px;
+    margin: 10px 0;
+  }
+
+  input[type='text'],
+  input[type='number'],
+  select,
+  textarea {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 14px;
+    max-width: 640px;
+    padding: 8px 10px;
+    width: 100%;
+
+    &:focus {
+      border-color: #326ce5;
+      outline: none;
+    }
+  }
+
+  input[type='checkbox'] {
+    margin-right: 8px;
+    width: auto;
+  }
+
+  fieldset {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    margin: 12px 0;
+    max-width: 640px;
+    padding: 4px 12px 12px;
+
+    legend {
+      color: rgba(0, 0, 0, 0.54);
+      font-size: 12px;
+      padding: 0 4px;
+    }
+  }
+
+  .kdf-hint {
+    color: rgba(0, 0, 0, 0.42);
+    font-size: 11px;
+    margin-top: 2px;
+    max-width: 640px;
+  }
+
+  .kdf-error {
+    color: #d32f2f;
+    font-size: 12px;
+    margin: 8px 0;
+  }
+
+  .kdf-row {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin: 6px 0;
+    max-width: 640px;
+
+    input,
+    select {
+      flex: 1;
+    }
+
+    .kdf-k {
+      max-width: 40%;
+    }
+  }
+
+  .kdf-add {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 4px;
+    color: #326ce5;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    margin-top: 6px;
+    padding: 4px 14px;
+    width: auto;
+
+    &:hover {
+      border-color: #326ce5;
+    }
+  }
+
+  .kdf-remove {
+    background: none;
+    border: none;
+    color: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    flex: none;
+    font-size: 14px;
+    padding: 4px;
+    width: auto;
+
+    &:hover {
+      color: #d32f2f;
+    }
+  }
+
+  .kdf-entry {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.15);
+    margin: 8px 0;
+    padding-bottom: 8px;
+  }
+}

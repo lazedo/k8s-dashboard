@@ -3,126 +3,13 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 
-// FormPlugin scripts render plain HTML via DOM APIs, so nothing inside the
-// host carries the view-encapsulation attribute — everything needs ::ng-deep.
-// Baseline-ish styling so unstyled form elements don't look alien next to the
-// Material forms.
+// Form-element styling lives in index.scss under `.kd-schema-form,
+// .kd-form-plugin-host` (shared with kdSchemaForm consumers); here only the
+// host sizing and the Documentation card remain.
 :host ::ng-deep .kd-form-plugin-host {
   display: block;
   max-width: 640px;
   padding: 8px 0 16px;
-
-  label {
-    color: rgba(0, 0, 0, 0.54);
-    display: block;
-    font-size: 12px;
-    margin: 14px 0 4px;
-
-    .kdf-required {
-      color: #d32f2f;
-    }
-  }
-
-  input[type='text'],
-  input[type='number'],
-  select,
-  textarea {
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.23);
-    border-radius: 4px;
-    box-sizing: border-box;
-    font: inherit;
-    font-size: 14px;
-    padding: 8px 10px;
-    width: 100%;
-
-    &:focus {
-      border-color: #326ce5;
-      outline: none;
-    }
-  }
-
-  input[type='checkbox'] {
-    margin-right: 8px;
-  }
-
-  fieldset {
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 4px;
-    margin: 12px 0;
-    padding: 4px 12px 12px;
-
-    legend {
-      color: rgba(0, 0, 0, 0.54);
-      font-size: 12px;
-      padding: 0 4px;
-    }
-  }
-
-  .kdf-hint {
-    color: rgba(0, 0, 0, 0.42);
-    font-size: 11px;
-    margin-top: 2px;
-  }
-
-  .kdf-error {
-    color: #d32f2f;
-    font-size: 12px;
-    margin: 8px 0;
-  }
-
-  // Dynamic sections: key/value maps, scalar lists, object lists.
-  .kdf-row {
-    align-items: center;
-    display: flex;
-    gap: 8px;
-    margin: 6px 0;
-
-    input,
-    select {
-      flex: 1;
-    }
-
-    .kdf-k {
-      max-width: 40%;
-    }
-  }
-
-  .kdf-add {
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.23);
-    border-radius: 4px;
-    color: #326ce5;
-    cursor: pointer;
-    font: inherit;
-    font-size: 13px;
-    margin-top: 6px;
-    padding: 4px 14px;
-
-    &:hover {
-      border-color: #326ce5;
-    }
-  }
-
-  .kdf-remove {
-    background: none;
-    border: none;
-    color: rgba(0, 0, 0, 0.4);
-    cursor: pointer;
-    flex: none;
-    font-size: 14px;
-    padding: 4px;
-
-    &:hover {
-      color: #d32f2f;
-    }
-  }
-
-  .kdf-entry {
-    border-bottom: 1px dashed rgba(0, 0, 0, 0.15);
-    margin: 8px 0;
-    padding-bottom: 8px;
-  }
 
   // Documentation card (stock docs.ts) — rendered markdown.
   .kdf-doc {

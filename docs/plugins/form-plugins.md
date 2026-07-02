@@ -105,6 +105,33 @@ API:
 - `.kdf-hint` — small helper text under a field
 - `.kdf-error` — error line (toggle `display` yourself)
 
+## window.kdSchemaForm — the shared schema→form generator
+
+The dashboard publishes its schema-driven form generator (the one behind the
+stock Custom-resource card) for plugins and FormPlugin scripts:
+
+```ts
+window.kdSchemaForm = {
+  version: 1,
+  render(container: HTMLElement, schema: object, opts?): Handle,
+};
+interface Handle {
+  collect(): object;   // throws Error with a user-readable message
+  destroy(): void;
+}
+// opts: pathPrefix (root collected object under a key), skipKeys,
+// requiredMarkers, defaultsAsPlaceholders (helm-values mode: defaults show as
+// placeholders, only changed fields are collected), initial (seed values —
+// upgrade flows), maxDepth.
+```
+
+It renders openAPI/JSON-Schema objects as fieldsets, enums as selects,
+maps/arrays as add-remove rows (nested to any depth), and falls back to a JSON
+textarea for schema-less shapes. Styling comes with it (`.kd-schema-form`).
+Feature-detect (`if (window.kdSchemaForm)`) and treat the surface as
+append-only; `version` bumps when it grows. The Apps plugin's helm-values form
+is the reference consumer.
+
 ## Authoring beyond hand-written scripts
 
 For anything bigger than a few fields, don't write the final script by hand —
