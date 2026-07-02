@@ -26,7 +26,6 @@ limitations under the License.
 <ng-container *ngIf="shouldShowGraph; else noData">
   <ngx-charts-area-chart fxFlex
                          inViewport
-                         [inViewportOptions]="{partial: false}"
                          (inViewportAction)="changeState($event)"
                          [xAxis]="true"
                          [yAxis]="true"

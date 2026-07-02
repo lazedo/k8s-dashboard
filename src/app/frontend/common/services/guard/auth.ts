@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {Injectable} from '@angular/core';
-import {CanActivate, Router, UrlTree} from '@angular/router';
+import { Router, UrlTree } from '@angular/router';
 import {LoginStatus} from '@api/root.api';
 import {Observable, of} from 'rxjs';
 import {catchError, switchMap, take} from 'rxjs/operators';
@@ -21,7 +21,7 @@ import {AuthService} from '../global/authentication';
 import {HistoryService} from '../global/history';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AuthGuard  {
   constructor(
     private readonly authService_: AuthService,
     private readonly router_: Router,
