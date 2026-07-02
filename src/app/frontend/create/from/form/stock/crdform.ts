@@ -203,7 +203,11 @@ function rowHtml(d) {
 function fieldHtml(path, name, schema, required, depth, rel) {
   schema = schema || {};
   var attrs = ' ' + (rel ? 'data-rel' : 'data-path') + '="' + esc(path) + '"';
-  if (schema.type === 'object' && schema.properties && depth < 3) {
+  // Objects with declared properties always expand to fieldsets — CRD
+  // structural schemas are finite trees, and anything bulky below (arrays,
+  // maps) renders lazily via its dynamic section, so there is no depth to
+  // cap. Only schema-less shapes are left to the JSON fallback.
+  if (schema.type === 'object' && schema.properties) {
     var requiredChildren = schema.required || [];
     var children = Object.keys(schema.properties).map(function (key) {
       return fieldHtml(path + '.' + key, key, schema.properties[key], requiredChildren.indexOf(key) >= 0, depth + 1, rel);
