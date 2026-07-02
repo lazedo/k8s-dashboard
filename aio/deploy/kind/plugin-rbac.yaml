@@ -23,4 +23,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kubernetes-dashboard
-    namespace: kubernetes-dashboard
+    # The deployment's actual namespace. Keep it explicit: kustomize rewrites
+    # subject namespaces anyway, but a raw `kubectl apply -f` of this file
+    # must not strip the SA's access (it did once — demo-plugin 403).
+    namespace: dashboard-plugins
