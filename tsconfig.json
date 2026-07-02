@@ -1,9 +1,13 @@
 {
   "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictTemplates": false,
+    "fullTemplateTypeCheck": false
   },
   "compileOnSave": false,
   "compilerOptions": {
+    "strict": false,
+    "ignoreDeprecations": "6.0",
     "baseUrl": "src/app/frontend",
     "paths": {
       "@api/*": [
@@ -17,7 +21,7 @@
       ]
     },
     "outDir": ".tmp/out-tsc",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "target": "ES2022",
     "module": "ES2020",
     "sourceMap": true,

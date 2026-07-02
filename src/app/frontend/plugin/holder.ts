@@ -48,8 +48,9 @@ export class PluginHolderComponent implements OnInit {
       const moduleRef = moduleFactory.create(this.injector);
       const entryComponent = (moduleFactory.moduleType as any).entry;
       try {
-        const compFactory = moduleRef.componentFactoryResolver.resolveComponentFactory(entryComponent);
-        this.vcRef.createComponent(compFactory);
+        // ComponentFactoryResolver is gone in Angular 22; createComponent takes
+        // the type plus the plugin module's injector/ngModuleRef directly.
+        this.vcRef.createComponent(entryComponent, {ngModuleRef: moduleRef});
       } catch (e) {
         this.entryError = true;
       }

@@ -14,7 +14,6 @@
 
 import {
   Component,
-  ComponentFactoryResolver,
   ComponentRef,
   Input,
   OnChanges,
@@ -37,8 +36,6 @@ export class ColumnComponent<T extends ActionColumn> implements OnChanges {
   @ViewChild('target', {read: ViewContainerRef, static: true}) target: ViewContainerRef;
   private componentRef_: ComponentRef<T> = undefined;
 
-  constructor(private readonly resolver_: ComponentFactoryResolver) {}
-
   ngOnChanges(changes: SimpleChanges): void {
     if (this.componentRef_ && changes.component) {
       this.target.remove();
@@ -46,8 +43,9 @@ export class ColumnComponent<T extends ActionColumn> implements OnChanges {
     }
 
     if (!this.componentRef_) {
-      const factory = this.resolver_.resolveComponentFactory(this.component);
-      this.componentRef_ = this.target.createComponent(factory);
+      // ComponentFactoryResolver was removed in Angular 22; ViewContainerRef
+      // resolves the component type directly.
+      this.componentRef_ = this.target.createComponent(this.component);
     }
 
     this.componentRef_.instance.setObjectMeta(this.resource.objectMeta);
