@@ -71,6 +71,59 @@
     margin: 8px 0;
   }
 
+  // Dynamic sections: key/value maps, scalar lists, object lists.
+  .kdf-row {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin: 6px 0;
+
+    input,
+    select {
+      flex: 1;
+    }
+
+    .kdf-k {
+      max-width: 40%;
+    }
+  }
+
+  .kdf-add {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 4px;
+    color: #326ce5;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    margin-top: 6px;
+    padding: 4px 14px;
+
+    &:hover {
+      border-color: #326ce5;
+    }
+  }
+
+  .kdf-remove {
+    background: none;
+    border: none;
+    color: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    flex: none;
+    font-size: 14px;
+    padding: 4px;
+
+    &:hover {
+      color: #d32f2f;
+    }
+  }
+
+  .kdf-entry {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.15);
+    margin: 8px 0;
+    padding-bottom: 8px;
+  }
+
   // Documentation card (stock docs.ts) — rendered markdown.
   .kdf-doc {
     font-size: 14px;

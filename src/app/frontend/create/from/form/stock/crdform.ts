@@ -44,6 +44,21 @@ crdSel.addEventListener('change', function () {
 
 host.addEventListener('input', function () { ctx.markDirty(true); });
 
+// Add/remove rows of the dynamic sections (maps, arrays, object arrays).
+host.addEventListener('click', function (ev) {
+  var target = ev.target;
+  if (!target.classList) { return; }
+  if (target.classList.contains('kdf-add')) {
+    var box = target.closest('.kdf-dyn');
+    var d = DYN[Number(box.getAttribute('data-dyn'))];
+    box.querySelector('.kdf-rows').insertAdjacentHTML('beforeend', rowHtml(d));
+    ctx.markDirty(true);
+  } else if (target.classList.contains('kdf-remove')) {
+    var row = target.closest('.kdf-row') || target.closest('.kdf-entry');
+    if (row) { row.remove(); ctx.markDirty(true); }
+  }
+});
+
 function esc(value) {
   return String(value).replace(/[&<>"]/g, function (c) {
     return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c];
@@ -132,15 +147,84 @@ function labelHtml(name, required) {
   return '<label>' + esc(name) + (required ? ' <span class="kdf-required">*</span>' : '') + '</label>';
 }
 
-function fieldHtml(path, name, schema, required, depth) {
+// Dynamic sections (maps, arrays, arrays-of-objects): rendered rows are
+// added/removed by the user; the section's value schema lives here, indexed
+// by the container's data-dyn attribute. Reset on every renderSpec.
+var DYN = [];
+
+function isScalar(schema) {
+  return !!schema && (schema.type === 'string' || schema.type === 'integer' || schema.type === 'number' || schema.type === 'boolean');
+}
+
+function scalarInputHtml(schema, cls, extra) {
   schema = schema || {};
-  var attrs = ' data-path="' + esc(path) + '"';
+  if (schema.type === 'integer' || schema.type === 'number') {
+    return '<input type="number" class="' + cls + '"' + extra + '>';
+  }
+  if (schema.enum) {
+    var options = ['<option value=""></option>'].concat(schema.enum.map(function (value) {
+      return '<option>' + esc(value) + '</option>';
+    }));
+    return '<select class="' + cls + '"' + extra + '>' + options.join('') + '</select>';
+  }
+  return '<input type="text" class="' + cls + '"' + extra + ' autocomplete="off">';
+}
+
+function dynSection(kind, path, name, schema, valueSchema) {
+  var idx = DYN.length;
+  DYN.push({kind: kind, schema: valueSchema});
+  return '<fieldset class="kdf-dyn" data-dyn="' + idx + '" data-dynpath="' + esc(path) + '">' +
+    '<legend>' + esc(name) + '</legend>' + hintHtml(schema) +
+    '<div class="kdf-rows"></div>' +
+    '<button type="button" class="kdf-add">Add</button>' +
+    '</fieldset>';
+}
+
+function rowHtml(d) {
+  if (d.kind === 'map') {
+    return '<div class="kdf-row">' +
+      '<input type="text" class="kdf-k" placeholder="key" autocomplete="off">' +
+      scalarInputHtml(d.schema, 'kdf-v', ' placeholder="value"') +
+      '<button type="button" class="kdf-remove" title="Remove">&#10005;</button></div>';
+  }
+  if (d.kind === 'arr') {
+    return '<div class="kdf-row">' + scalarInputHtml(d.schema, 'kdf-v', '') +
+      '<button type="button" class="kdf-remove" title="Remove">&#10005;</button></div>';
+  }
+  // objarr: one entry rendered from the item object's schema (relative paths).
+  var requiredChildren = d.schema.required || [];
+  var fields = Object.keys(d.schema.properties).map(function (key) {
+    return fieldHtml(key, key, d.schema.properties[key], requiredChildren.indexOf(key) >= 0, 0, true);
+  });
+  return '<div class="kdf-entry">' + fields.join('') +
+    '<button type="button" class="kdf-remove">Remove</button></div>';
+}
+
+function fieldHtml(path, name, schema, required, depth, rel) {
+  schema = schema || {};
+  var attrs = ' ' + (rel ? 'data-rel' : 'data-path') + '="' + esc(path) + '"';
   if (schema.type === 'object' && schema.properties && depth < 3) {
     var requiredChildren = schema.required || [];
     var children = Object.keys(schema.properties).map(function (key) {
-      return fieldHtml(path + '.' + key, key, schema.properties[key], requiredChildren.indexOf(key) >= 0, depth + 1);
+      return fieldHtml(path + '.' + key, key, schema.properties[key], requiredChildren.indexOf(key) >= 0, depth + 1, rel);
     });
     return '<fieldset><legend>' + esc(name) + '</legend>' + hintHtml(schema) + children.join('') + '</fieldset>';
+  }
+  // Free-form/map object (additionalProperties or preserve-unknown-fields):
+  // key/value rows. Values follow the declared value schema, otherwise they
+  // are auto-typed (10000 → number, true/false → boolean).
+  if (schema.type === 'object' && !schema.properties && !rel) {
+    var valueSchema = typeof schema.additionalProperties === 'object' ? schema.additionalProperties : null;
+    return dynSection('map', path, name, schema, valueSchema);
+  }
+  if (schema.type === 'array' && !rel) {
+    var items = schema.items || {};
+    if (items.type === 'object' && items.properties) {
+      return dynSection('objarr', path, name, schema, items);
+    }
+    if (isScalar(items) || items.enum) {
+      return dynSection('arr', path, name, schema, items);
+    }
   }
   if (schema.type === 'boolean') {
     return '<label><input type="checkbox" data-kind="boolean"' + attrs + '>' + esc(name) + '</label>' + hintHtml(schema);
@@ -157,11 +241,13 @@ function fieldHtml(path, name, schema, required, depth) {
   if (schema.type === 'string') {
     return labelHtml(name, required) + '<input type="text" data-kind="string"' + attrs + ' autocomplete="off">' + hintHtml(schema);
   }
-  // Arrays, maps and deeply nested/free-form objects fall back to JSON.
-  return labelHtml(name + ' (JSON)', required) + '<textarea rows="3" data-kind="json"' + attrs + '></textarea>' + hintHtml(schema);
+  // Only truly schema-less shapes are left to raw JSON.
+  return labelHtml(name + ' (JSON)', required) +
+    '<textarea rows="3" data-kind="json"' + attrs + ' placeholder=\\'{"key": "value"}\\'></textarea>' + hintHtml(schema);
 }
 
 function renderSpec() {
+  DYN.length = 0;
   var properties = (state.schema && state.schema.properties) || {};
   var required = (state.schema && state.schema.required) || [];
   var parts = [];
@@ -183,31 +269,96 @@ function setPath(target, segments, value) {
   target[segments[segments.length - 1]] = value;
 }
 
+function coerceAuto(value) {
+  if (value === 'true') { return true; }
+  if (value === 'false') { return false; }
+  if (/^-?\\d+(\\.\\d+)?$/.test(value)) { return Number(value); }
+  return value;
+}
+
+// Value of a dynamic-row input, typed by the section's value schema when it
+// declares one, auto-typed otherwise. undefined = empty, skip.
+function scalarValue(el, schema) {
+  var value = el.value;
+  if (value === '' || value == null) { return undefined; }
+  if (schema && (schema.type === 'integer' || schema.type === 'number')) {
+    var n = Number(value);
+    if (isNaN(n)) { throw new Error('Invalid number: ' + value); }
+    return n;
+  }
+  if (schema && schema.type === 'boolean') { return value === 'true'; }
+  if (schema) { return value; }
+  return coerceAuto(value);
+}
+
+// Value of a schema-rendered leaf input (data-path/data-rel + data-kind).
+function leafValue(el) {
+  var where = el.getAttribute('data-path') || el.getAttribute('data-rel');
+  var kind = el.getAttribute('data-kind');
+  if (kind === 'boolean') { return el.checked ? true : undefined; }
+  if (el.value === '' || el.value == null) { return undefined; }
+  if (kind === 'integer' || kind === 'number') {
+    var n = Number(el.value);
+    if (isNaN(n)) { throw new Error('Invalid number in ' + where); }
+    return n;
+  }
+  if (kind === 'json') {
+    try {
+      return JSON.parse(el.value);
+    } catch (err) {
+      throw new Error('Invalid JSON in ' + where);
+    }
+  }
+  return el.value;
+}
+
 function collect() {
   var out = {};
   var els = specBox.querySelectorAll('[data-path]');
   for (var i = 0; i < els.length; i++) {
-    var el = els[i];
-    var kind = el.getAttribute('data-kind');
-    var value;
-    if (kind === 'boolean') {
-      if (!el.checked) { continue; }
-      value = true;
-    } else if (el.value === '' || el.value == null) {
-      continue;
-    } else if (kind === 'integer' || kind === 'number') {
-      value = Number(el.value);
-      if (isNaN(value)) { throw new Error('Invalid number in ' + el.getAttribute('data-path')); }
-    } else if (kind === 'json') {
-      try {
-        value = JSON.parse(el.value);
-      } catch (err) {
-        throw new Error('Invalid JSON in ' + el.getAttribute('data-path'));
+    if (els[i].closest('.kdf-dyn')) { continue; }
+    var value = leafValue(els[i]);
+    if (value === undefined) { continue; }
+    setPath(out, els[i].getAttribute('data-path').split('.'), value);
+  }
+  var dyns = specBox.querySelectorAll('.kdf-dyn');
+  for (var j = 0; j < dyns.length; j++) {
+    var box = dyns[j];
+    var d = DYN[Number(box.getAttribute('data-dyn'))];
+    var collected;
+    if (d.kind === 'map') {
+      var map = {};
+      var rows = box.querySelectorAll('.kdf-row');
+      for (var k = 0; k < rows.length; k++) {
+        var key = rows[k].querySelector('.kdf-k').value.trim();
+        var v = scalarValue(rows[k].querySelector('.kdf-v'), d.schema);
+        if (key && v !== undefined) { map[key] = v; }
       }
+      if (Object.keys(map).length) { collected = map; }
+    } else if (d.kind === 'arr') {
+      var list = [];
+      var inputs = box.querySelectorAll('.kdf-row .kdf-v');
+      for (var m = 0; m < inputs.length; m++) {
+        var item = scalarValue(inputs[m], d.schema);
+        if (item !== undefined) { list.push(item); }
+      }
+      if (list.length) { collected = list; }
     } else {
-      value = el.value;
+      var entries = [];
+      var entryEls = box.querySelectorAll('.kdf-entry');
+      for (var n2 = 0; n2 < entryEls.length; n2++) {
+        var obj = {};
+        var leafs = entryEls[n2].querySelectorAll('[data-rel]');
+        for (var p = 0; p < leafs.length; p++) {
+          var lv = leafValue(leafs[p]);
+          if (lv === undefined) { continue; }
+          setPath(obj, leafs[p].getAttribute('data-rel').split('.'), lv);
+        }
+        if (Object.keys(obj).length) { entries.push(obj); }
+      }
+      if (entries.length) { collected = entries; }
     }
-    setPath(out, el.getAttribute('data-path').split('.'), value);
+    if (collected !== undefined) { setPath(out, box.getAttribute('data-dynpath').split('.'), collected); }
   }
   return out;
 }
