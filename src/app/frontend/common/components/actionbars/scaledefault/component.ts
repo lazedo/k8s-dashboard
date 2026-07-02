@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
@@ -29,16 +29,22 @@ export class ScaleDefaultActionbar implements OnInit, OnDestroy {
 
   private unsubscribe_ = new Subject<void>();
 
-  constructor(private readonly actionbar_: ActionbarService) {}
+  constructor(private readonly actionbar_: ActionbarService,
+    private readonly cdr_: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.actionbar_.onInit.pipe(takeUntil(this.unsubscribe_)).subscribe((resourceMeta: ResourceMeta) => {
       this.resourceMeta = resourceMeta;
       this.isInitialized = true;
       this.isVisible = true;
+      this.cdr_.markForCheck();
     });
 
-    this.actionbar_.onDetailsLeave.pipe(takeUntil(this.unsubscribe_)).subscribe(() => (this.isVisible = false));
+    this.actionbar_.onDetailsLeave.pipe(takeUntil(this.unsubscribe_)).subscribe(() => {
+      this.isVisible = false;
+      this.cdr_.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {

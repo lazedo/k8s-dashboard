@@ -23,6 +23,10 @@ import {VerberService} from './verber';
 @Injectable()
 export class PinnerService {
   onPinUpdate = new Subject<void>();
+  // Fires whenever the cached pin list content changes (optimistic updates and
+  // server reloads) so views reading it (pinned nav, plugin cards) can
+  // markForCheck — required since the zoneless default.
+  changed = new Subject<void>();
   private isInitialized_ = false;
   private pinnedResources_: PinnedResource[] = [];
   private readonly endpoint_ = 'api/v1/settings/pinner';
@@ -43,6 +47,7 @@ export class PinnerService {
     this.http_.get<PinnedResource[]>(this.endpoint_).subscribe(resources => {
       this.pinnedResources_ = resources;
       this.isInitialized_ = true;
+      this.changed.next();
     });
   }
 
@@ -56,6 +61,7 @@ export class PinnerService {
     // trips. The server response reconciles via load(); errors revert it.
     if (!this.isPinned(kind, name, namespace)) {
       this.pinnedResources_ = [...this.pinnedResources_, {kind, name, namespace, displayName, namespaced}];
+      this.changed.next();
     }
     this.http_.put(this.endpoint_, {kind, name, namespace, displayName, namespaced}).subscribe(() => this.load(), err => {
       this.load();
@@ -73,6 +79,7 @@ export class PinnerService {
     this.pinnedResources_ = this.pinnedResources_.filter(
       r => !(r.kind === kind && r.name === name && r.namespace === namespace)
     );
+    this.changed.next();
     this.http_.delete(url).subscribe(() => this.load(), err => {
       this.load();
       this.handleErrorResponse_(err);

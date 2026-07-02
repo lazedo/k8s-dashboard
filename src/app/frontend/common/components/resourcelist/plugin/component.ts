@@ -17,6 +17,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@ang
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {Plugin, PluginList} from '@api/root.api';
 import {EMPTY, Observable} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 import {ResourceListBase} from '@common/resources/list';
 import {NotificationsService} from '@common/services/global/notifications';
 import {PinnerService} from '@common/services/global/pinner';
@@ -50,6 +51,9 @@ export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
     super('plugin', notifications, cdr);
     this.id = ListIdentifier.plugin;
     this.groupId = ListGroupIdentifier.none;
+    // OnPush: re-render the pin badges when the pin cache changes (optimistic
+    // updates and server reconciliation).
+    this.pinner_.changed.pipe(takeUntil(this.unsubscribe_)).subscribe(() => this.cdr_.markForCheck());
   }
 
   getResourceObservable(params?: HttpParams): Observable<PluginList> {
@@ -94,5 +98,7 @@ export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
     } else {
       this.pinner_.pin(PLUGIN_KIND, p.objectMeta.name, namespace, p.objectMeta.name, !p.global);
     }
+    // OnPush list: reflect the optimistic pin state immediately.
+    this.cdr_.markForCheck();
   }
 }

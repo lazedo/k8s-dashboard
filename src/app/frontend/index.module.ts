@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {ErrorHandler, NgModule} from '@angular/core';
+import {MAT_FORM_FIELD_DEFAULT_OPTIONS} from '@angular/material/form-field';
+import {TickInterceptor} from '@common/services/global/tick';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterModule} from '@angular/router';
@@ -33,5 +35,13 @@ import {LoginModule} from './login/module';
         RouterModule.forRoot(routes, {
             useHash: true,
             onSameUrlNavigation: 'reload',
-        })], providers: [{ provide: ErrorHandler, useClass: GlobalErrorHandler }, provideHttpClient(withInterceptorsFromDi())] })
+        })], providers: [
+        // Zone-based CD itself is requested via applicationProviders in
+        // index.ts — in NgModule.providers it would be silently ineffective.
+        // MDC form fields reserve subscript (hint/error) space by default,
+        // inflating every field; size it dynamically like the legacy fields.
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { subscriptSizing: 'dynamic' } },
+        // Zoneless-era compatibility: re-render after HTTP responses (see tick.ts).
+        { provide: HTTP_INTERCEPTORS, useClass: TickInterceptor, multi: true },
+        { provide: ErrorHandler, useClass: GlobalErrorHandler }, provideHttpClient(withInterceptorsFromDi())] })
 export class RootModule {}

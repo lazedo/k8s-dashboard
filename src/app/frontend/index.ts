@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {enableProdMode} from '@angular/core';
+import {enableProdMode, provideZoneChangeDetection} from '@angular/core';
 import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 
 import {environment} from '@environments/environment';
@@ -22,7 +22,11 @@ if (environment.production) {
   enableProdMode();
 }
 
-// Angular 22 defaults to zoneless change detection; this codebase still relies
-// on ZoneJS-driven ticks (plain property mutation after HTTP responses), so
-// request the zone-based NgZone explicitly.
-platformBrowserDynamic().bootstrapModule(RootModule, {ngZone: 'zone.js'});
+// Angular 22 no longer runs ZoneJS-driven change detection by default: without
+// it, only the subtree hosting a DOM event refreshes, so state mutated in async
+// callbacks (HTTP subscribes) or read across subtrees (pinned nav, workload
+// charts) goes stale. For NgModule bootstrap the provider must be passed as
+// applicationProviders — in NgModule.providers it is silently ineffective.
+platformBrowserDynamic().bootstrapModule(RootModule, {
+  applicationProviders: [provideZoneChangeDetection()],
+});

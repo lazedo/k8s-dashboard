@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Input} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {PinnedResource} from '@api/root.api';
 import {NamespaceService} from '@common/services/global/namespace';
 import {PinnerService} from '@common/services/global/pinner';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
     selector: 'kd-pinner-nav',
@@ -23,12 +25,27 @@ import {PinnerService} from '@common/services/global/pinner';
     styleUrls: ['../style.scss'],
     standalone: false
 })
-export class PinnerNavComponent {
+export class PinnerNavComponent implements OnInit, OnDestroy {
   @Input() kind: string;
+
+  private readonly unsubscribe_ = new Subject<void>();
+
   constructor(
     private readonly pinner_: PinnerService,
-    private readonly namespace_: NamespaceService
+    private readonly namespace_: NamespaceService,
+    private readonly cdr_: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    // Re-render when the pin list changes (pins/unpins land asynchronously and
+    // the zoneless default no longer refreshes this view on its own).
+    this.pinner_.changed.pipe(takeUntil(this.unsubscribe_)).subscribe(() => this.cdr_.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe_.next();
+    this.unsubscribe_.complete();
+  }
 
   isInitialized(): boolean {
     return this.pinner_.isInitialized();
