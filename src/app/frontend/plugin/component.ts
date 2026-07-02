@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-plugin',
-  templateUrl: './template.html',
+    selector: 'kd-plugin',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class PluginComponent {}

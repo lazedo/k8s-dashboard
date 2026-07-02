@@ -17,8 +17,9 @@ import {MatTableDataSource} from '@angular/material/table';
 import {PolicyRule} from 'typings/root.api';
 
 @Component({
-  selector: 'kd-policy-rule-list',
-  templateUrl: './template.html',
+    selector: 'kd-policy-rule-list',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class PolicyRuleListComponent implements OnInit {
   @Input() initialized: boolean;

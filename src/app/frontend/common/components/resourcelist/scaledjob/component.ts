@@ -25,9 +25,10 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-scaled-job-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-scaled-job-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ScaledJobListComponent extends ResourceListBase<ScaledJobList, ScaledJob> {
   @Input() endpoint = EndpointManager.resource(Resource.scaledJob, true).list();

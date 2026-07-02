@@ -23,8 +23,9 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-job-detail',
-  templateUrl: './template.html',
+    selector: 'kd-job-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class JobDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.job, true);

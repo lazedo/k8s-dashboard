@@ -16,7 +16,8 @@ import {Component} from '@angular/core';
 import {GroupedResourceList} from '@common/resources/groupedlist';
 
 @Component({
-  selector: 'kd-autoscaling',
-  templateUrl: './template.html',
+    selector: 'kd-autoscaling',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class AutoscalingComponent extends GroupedResourceList {}

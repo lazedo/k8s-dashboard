@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-machine-list-state',
-  template: '<kd-machine-list></kd-machine-list>',
+    selector: 'kd-machine-list-state',
+    template: '<kd-machine-list></kd-machine-list>',
+    standalone: false
 })
 export class MachineListComponent {}

@@ -16,10 +16,11 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Event} from 'typings/root.api';
 
 @Component({
-  selector: 'kd-row-detail',
-  templateUrl: 'template.html',
-  styleUrls: ['style.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-row-detail',
+    templateUrl: 'template.html',
+    styleUrls: ['style.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RowDetailComponent {
   @Input() events: Event[] = [];

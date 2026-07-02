@@ -16,7 +16,8 @@ import {Component} from '@angular/core';
 import {GroupedResourceList} from '@common/resources/groupedlist';
 
 @Component({
-  selector: 'kd-access-control',
-  templateUrl: './template.html',
+    selector: 'kd-access-control',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class AccessControlComponent extends GroupedResourceList {}

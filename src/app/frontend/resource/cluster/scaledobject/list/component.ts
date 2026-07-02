@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-scaled-object-list-state',
-  template: '<kd-scaled-object-list></kd-scaled-object-list>',
+    selector: 'kd-scaled-object-list-state',
+    template: '<kd-scaled-object-list></kd-scaled-object-list>',
+    standalone: false
 })
 export class ScaledObjectListComponent {}

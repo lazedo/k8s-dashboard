@@ -16,8 +16,9 @@ import {Component, OnInit} from '@angular/core';
 import {StatusFilterService} from '@common/services/global/statusfilter';
 
 @Component({
-  selector: 'kd-replication-controller-list-state',
-  template: '<kd-replication-controller-list [statusFilter]="statusFilter"></kd-replication-controller-list>',
+    selector: 'kd-replication-controller-list-state',
+    template: '<kd-replication-controller-list [statusFilter]="statusFilter"></kd-replication-controller-list>',
+    standalone: false
 })
 export class ReplicationControllerListComponent implements OnInit {
   // Optional one-shot status filter set by clicking a status on the Workload

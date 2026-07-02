@@ -18,8 +18,9 @@ import {ListGroupIdentifier} from '@common/components/resourcelist/groupids';
 import {GroupedResourceList} from '@common/resources/groupedlist';
 
 @Component({
-  selector: 'kd-workloads',
-  templateUrl: './template.html',
+    selector: 'kd-workloads',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class WorkloadsComponent extends GroupedResourceList {
   hasWorkloads(): boolean {

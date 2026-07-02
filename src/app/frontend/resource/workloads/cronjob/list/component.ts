@@ -16,8 +16,9 @@ import {Component, OnInit} from '@angular/core';
 import {StatusFilterService} from '@common/services/global/statusfilter';
 
 @Component({
-  selector: 'kd-cron-job-list-state',
-  template: '<kd-cron-job-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-cron-job-list>',
+    selector: 'kd-cron-job-list-state',
+    template: '<kd-cron-job-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-cron-job-list>',
+    standalone: false
 })
 export class CronJobListComponent implements OnInit {
   // Optional one-shot status filter set by clicking a status on the Workload

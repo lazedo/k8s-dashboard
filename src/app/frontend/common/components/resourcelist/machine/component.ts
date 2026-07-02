@@ -25,9 +25,10 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-machine-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-machine-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class MachineListComponent extends ResourceListBase<MachineList, Machine> {
   @Input() endpoint = EndpointManager.resource(Resource.machine, true).list();

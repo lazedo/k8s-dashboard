@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-machine-deployment-list-state',
-  template: '<kd-machine-deployment-list></kd-machine-deployment-list>',
+    selector: 'kd-machine-deployment-list-state',
+    template: '<kd-machine-deployment-list></kd-machine-deployment-list>',
+    standalone: false
 })
 export class MachineDeploymentListComponent {}

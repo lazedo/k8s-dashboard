@@ -17,8 +17,9 @@ import {ResourceOwner} from '@api/root.api';
 import {KdStateService} from '../../services/global/state';
 
 @Component({
-  selector: 'kd-creator-card',
-  templateUrl: './template.html',
+    selector: 'kd-creator-card',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class CreatorCardComponent {
   @Input() creator: ResourceOwner;

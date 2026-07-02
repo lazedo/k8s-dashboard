@@ -17,8 +17,9 @@ import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {ResourceMeta} from '../../services/global/actionbar';
 
 @Component({
-  selector: 'kd-restart-resource-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-restart-resource-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class RestartResourceDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public data: ResourceMeta) {}

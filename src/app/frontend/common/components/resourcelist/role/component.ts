@@ -25,9 +25,10 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-role-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-role-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RoleListComponent extends ResourceListBase<RoleList, Role> {
   @Input() endpoint = EndpointManager.resource(Resource.role, true).list();

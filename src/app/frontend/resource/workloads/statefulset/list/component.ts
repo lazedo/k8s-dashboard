@@ -16,8 +16,9 @@ import {Component, OnInit} from '@angular/core';
 import {StatusFilterService} from '@common/services/global/statusfilter';
 
 @Component({
-  selector: 'kd-stateful-set-state',
-  template: '<kd-stateful-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-stateful-set-list>',
+    selector: 'kd-stateful-set-state',
+    template: '<kd-stateful-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-stateful-set-list>',
+    standalone: false
 })
 export class StatefulSetListComponent implements OnInit {
   // Optional one-shot status filter set by clicking a status on the Workload

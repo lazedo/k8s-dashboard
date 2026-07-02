@@ -25,9 +25,10 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {Status} from '../statuses';
 
 @Component({
-  selector: 'kd-pod-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-pod-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   @Input() endpoint = EndpointManager.resource(Resource.pod, true).list();

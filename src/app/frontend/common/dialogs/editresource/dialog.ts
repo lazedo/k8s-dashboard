@@ -25,8 +25,9 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-delete-resource-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-delete-resource-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class EditResourceDialog implements OnInit, OnDestroy {
   selectedMode = EditorMode.YAML;

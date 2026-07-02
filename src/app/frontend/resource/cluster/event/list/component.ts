@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-event-list-state',
-  template: '<kd-event-list></kd-event-list>',
+    selector: 'kd-event-list-state',
+    template: '<kd-event-list></kd-event-list>',
+    standalone: false
 })
 export class EventListComponent {}

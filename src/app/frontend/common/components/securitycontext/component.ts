@@ -17,8 +17,9 @@ import {StringMap} from '@api/root.shared';
 import {ContainerSecurityContext, PodSecurityContext, Sysctl} from '@api/root.api';
 
 @Component({
-  selector: 'kd-security-context',
-  templateUrl: './template.html',
+    selector: 'kd-security-context',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class SecurityContextComponent {
   @Input() initialized: boolean;

@@ -33,20 +33,21 @@ interface DeployLabelI {
 }
 
 @Component({
-  selector: 'kd-deploy-label',
-  templateUrl: './template.html',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DeployLabelComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => DeployLabelComponent),
-      multi: true,
-    },
-  ],
+    selector: 'kd-deploy-label',
+    templateUrl: './template.html',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DeployLabelComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => DeployLabelComponent),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class DeployLabelComponent implements ControlValueAccessor {
   @Input() labelArr: DeployLabel[];

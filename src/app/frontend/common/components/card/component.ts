@@ -18,10 +18,11 @@ import {MESSAGES_DI_TOKEN} from '../../../index.messages';
 import {Animations} from '../../animations/animations';
 
 @Component({
-  selector: 'kd-card',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  animations: [Animations.expandInOut],
+    selector: 'kd-card',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    animations: [Animations.expandInOut],
+    standalone: false
 })
 export class CardComponent {
   @Input() initialized = true;

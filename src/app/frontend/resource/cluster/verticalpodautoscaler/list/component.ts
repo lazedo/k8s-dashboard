@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-vertical-pod-autoscaler-list-state',
-  template: '<kd-vertical-pod-autoscaler-list></kd-vertical-pod-autoscaler-list>',
+    selector: 'kd-vertical-pod-autoscaler-list-state',
+    template: '<kd-vertical-pod-autoscaler-list></kd-vertical-pod-autoscaler-list>',
+    standalone: false
 })
 export class VerticalPodAutoscalerListComponent {}

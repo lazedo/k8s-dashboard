@@ -27,20 +27,21 @@ import {
 import {EnvironmentVariable} from '@api/root.api';
 
 @Component({
-  selector: 'kd-environment-variables',
-  templateUrl: './template.html',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => EnvironmentVariablesComponent),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => EnvironmentVariablesComponent),
-      multi: true,
-    },
-  ],
+    selector: 'kd-environment-variables',
+    templateUrl: './template.html',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => EnvironmentVariablesComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => EnvironmentVariablesComponent),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class EnvironmentVariablesComponent implements ControlValueAccessor {
   form: UntypedFormGroup;

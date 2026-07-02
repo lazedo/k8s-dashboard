@@ -18,8 +18,9 @@ import {ObjectMeta, TypeMeta} from '@api/root.api';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
 
 @Component({
-  selector: 'kd-plugin-detail',
-  template: ' <kd-plugin-holder [pluginName]="this.pluginName()"></kd-plugin-holder> ',
+    selector: 'kd-plugin-detail',
+    template: ' <kd-plugin-holder [pluginName]="this.pluginName()"></kd-plugin-holder> ',
+    standalone: false
 })
 export class PluginDetailComponent implements OnInit, OnDestroy {
   constructor(

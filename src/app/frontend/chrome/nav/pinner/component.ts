@@ -18,9 +18,10 @@ import {NamespaceService} from '@common/services/global/namespace';
 import {PinnerService} from '@common/services/global/pinner';
 
 @Component({
-  selector: 'kd-pinner-nav',
-  templateUrl: './template.html',
-  styleUrls: ['../style.scss'],
+    selector: 'kd-pinner-nav',
+    templateUrl: './template.html',
+    styleUrls: ['../style.scss'],
+    standalone: false
 })
 export class PinnerNavComponent {
   @Input() kind: string;

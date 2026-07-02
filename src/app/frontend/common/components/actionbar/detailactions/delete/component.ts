@@ -20,8 +20,9 @@ import {take} from 'rxjs/operators';
 import {VerberService} from '@common/services/global/verber';
 
 @Component({
-  selector: 'kd-actionbar-detail-delete',
-  templateUrl: './template.html',
+    selector: 'kd-actionbar-detail-delete',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ActionbarDetailDeleteComponent implements OnInit {
   @Input() objectMeta: ObjectMeta;

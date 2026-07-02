@@ -25,9 +25,10 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-service-account-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-service-account-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ServiceAccountListComponent extends ResourceListBase<ServiceAccountList, ServiceAccount> {
   @Input() endpoint = EndpointManager.resource(Resource.serviceAccount, true).list();

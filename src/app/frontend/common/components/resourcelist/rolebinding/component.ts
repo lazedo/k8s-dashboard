@@ -25,9 +25,10 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {Observable} from 'rxjs';
 
 @Component({
-  selector: 'kd-role-binding-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-role-binding-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RoleBindingListComponent extends ResourceListBase<RoleBindingList, Role> {
   @Input() endpoint = EndpointManager.resource(Resource.roleBinding, true).list();

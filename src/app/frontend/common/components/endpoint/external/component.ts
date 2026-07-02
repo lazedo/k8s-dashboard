@@ -20,9 +20,10 @@ import {Endpoint} from '@api/root.api';
  * from the outside of the cluster.
  */
 @Component({
-  selector: 'kd-external-endpoint',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-external-endpoint',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class ExternalEndpointComponent implements OnInit {
   @Input() endpoints: Endpoint[];

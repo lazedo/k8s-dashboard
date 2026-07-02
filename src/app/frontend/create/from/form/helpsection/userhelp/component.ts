@@ -15,8 +15,9 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-user-help',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-user-help',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class UserHelpComponent {}

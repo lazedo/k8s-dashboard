@@ -20,9 +20,10 @@ import {KdStateService} from '@common/services/global/state';
 import _ from 'lodash';
 
 @Component({
-  selector: 'kd-container-card',
-  templateUrl: './template.html',
-  styleUrls: ['style.scss'],
+    selector: 'kd-container-card',
+    templateUrl: './template.html',
+    styleUrls: ['style.scss'],
+    standalone: false
 })
 export class ContainerCardComponent implements OnChanges {
   @Input() container: Container;

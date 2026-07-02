@@ -16,7 +16,8 @@ import {Observable, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Directive({
-  selector: '[kdAutofocus]',
+    selector: '[kdAutofocus]',
+    standalone: false
 })
 export class AutofocusDirective implements AfterViewInit, OnDestroy {
   @Input() opened: Observable<boolean>;

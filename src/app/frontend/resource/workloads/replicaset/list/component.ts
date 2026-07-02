@@ -16,8 +16,9 @@ import {Component, OnInit} from '@angular/core';
 import {StatusFilterService} from '@common/services/global/statusfilter';
 
 @Component({
-  selector: 'kd-replica-set-list-state',
-  template: '<kd-replica-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-replica-set-list>',
+    selector: 'kd-replica-set-list-state',
+    template: '<kd-replica-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-replica-set-list>',
+    standalone: false
 })
 export class ReplicaSetListComponent implements OnInit {
   // Optional one-shot status filter set by clicking a status on the Workload

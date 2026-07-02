@@ -26,8 +26,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {NamespacedResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-secret-detail',
-  templateUrl: './template.html',
+    selector: 'kd-secret-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class SecretDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.secret, true);

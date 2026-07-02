@@ -25,14 +25,15 @@ export const validProtocolValidationKey = 'validProtocol';
  * If the name exists, error with name `uniqueName` will be added to errors.
  */
 @Directive({
-  selector: '[kdValidProtocol]',
-  providers: [
-    {
-      provide: NG_ASYNC_VALIDATORS,
-      useExisting: forwardRef(() => ProtocolValidator),
-      multi: true,
-    },
-  ],
+    selector: '[kdValidProtocol]',
+    providers: [
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => ProtocolValidator),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class ProtocolValidator implements AsyncValidator {
   @Input() isExternal: boolean;

@@ -25,14 +25,15 @@ export const uniqueNameValidationKey = 'uniqueName';
  * If the name exists, error with name `uniqueName` will be added to errors.
  */
 @Directive({
-  selector: '[kdUniqueName]',
-  providers: [
-    {
-      provide: NG_ASYNC_VALIDATORS,
-      useExisting: forwardRef(() => UniqueNameValidator),
-      multi: true,
-    },
-  ],
+    selector: '[kdUniqueName]',
+    providers: [
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => UniqueNameValidator),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class UniqueNameValidator implements AsyncValidator {
   @Input() namespace: string;

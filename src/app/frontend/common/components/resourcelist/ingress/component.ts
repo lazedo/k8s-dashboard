@@ -25,10 +25,11 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-ingress-list',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-ingress-list',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IngressListComponent extends ResourceListBase<IngressList, Ingress> {
   @Input() endpoint = EndpointManager.resource(Resource.ingress, true).list();

@@ -17,8 +17,9 @@ import {MatTableDataSource} from '@angular/material/table';
 import {ResourceQuotaDetail} from 'typings/root.api';
 
 @Component({
-  selector: 'kd-resource-quota-list',
-  templateUrl: './template.html',
+    selector: 'kd-resource-quota-list',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ResourceQuotaListComponent {
   @Input() initialized: boolean;

@@ -24,9 +24,10 @@ import {HistoryService} from '@common/services/global/history';
 import {NamespaceService} from '@common/services/global/namespace';
 
 @Component({
-  selector: 'kd-create-from-file',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-create-from-file',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class CreateFromFileComponent extends ICanDeactivate {
   file: KdFile;

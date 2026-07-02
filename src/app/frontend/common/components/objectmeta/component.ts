@@ -16,8 +16,9 @@ import {Component, Input} from '@angular/core';
 import {ObjectMeta} from '@api/root.api';
 
 @Component({
-  selector: 'kd-object-meta',
-  templateUrl: './template.html',
+    selector: 'kd-object-meta',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ObjectMetaComponent {
   @Input() initialized = false;

@@ -24,9 +24,10 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {ResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-ingress-class-detail',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-ingress-class-detail',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class IngressClassDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.ingressClass);

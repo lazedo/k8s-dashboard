@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-scaled-job-list-state',
-  template: '<kd-scaled-job-list></kd-scaled-job-list>',
+    selector: 'kd-scaled-job-list-state',
+    template: '<kd-scaled-job-list></kd-scaled-job-list>',
+    standalone: false
 })
 export class ScaledJobListComponent {}

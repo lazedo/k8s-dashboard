@@ -26,8 +26,9 @@ import {KdStateService} from '@common/services/global/state';
 import {GlobalServicesModule} from '@common/services/global/module';
 
 @Component({
-  selector: 'kd-persistent-volume-claim-detail',
-  templateUrl: './template.html',
+    selector: 'kd-persistent-volume-claim-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class PersistentVolumeClaimDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolumeClaim, true);

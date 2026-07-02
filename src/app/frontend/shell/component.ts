@@ -29,9 +29,10 @@ import {UtilityService} from '@common/services/resource/utility';
 declare let SockJS: any;
 
 @Component({
-  selector: 'kd-shell',
-  templateUrl: './template.html',
-  styleUrls: ['./styles.scss'],
+    selector: 'kd-shell',
+    templateUrl: './template.html',
+    styleUrls: ['./styles.scss'],
+    standalone: false
 })
 export class ShellComponent implements AfterViewInit, OnDestroy {
   @ViewChild('anchor', {static: true}) anchorRef: ElementRef;

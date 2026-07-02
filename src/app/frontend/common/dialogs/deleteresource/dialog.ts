@@ -24,8 +24,9 @@ export enum DeletionPropagation {
 }
 
 @Component({
-  selector: 'kd-delete-resource-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-delete-resource-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class DeleteResourceDialog {
   // Cascade in the background by default (delete the object, GC dependents async).

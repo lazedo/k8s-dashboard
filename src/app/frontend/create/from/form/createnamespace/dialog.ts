@@ -30,8 +30,9 @@ export interface CreateNamespaceDialogMeta {
  * Displays new namespace creation dialog.
  */
 @Component({
-  selector: 'kd-create-namespace-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-create-namespace-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class CreateNamespaceDialog implements OnInit {
   form: UntypedFormGroup;

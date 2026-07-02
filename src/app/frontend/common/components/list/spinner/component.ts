@@ -15,12 +15,13 @@
 import {Component, Input, OnInit} from '@angular/core';
 
 @Component({
-  selector: '[kdLoadingSpinner]',
-  templateUrl: './template.html',
-  host: {
-    // kd-loading-share class is defined globally in index.scss file.
-    '[class.kd-loading-shade]': 'isLoading',
-  },
+    selector: '[kdLoadingSpinner]',
+    templateUrl: './template.html',
+    host: {
+        // kd-loading-share class is defined globally in index.scss file.
+        '[class.kd-loading-shade]': 'isLoading',
+    },
+    standalone: false
 })
 export class LoadingSpinner implements OnInit {
   @Input() isLoading: boolean;

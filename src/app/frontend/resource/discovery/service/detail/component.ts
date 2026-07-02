@@ -23,8 +23,9 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-service-detail',
-  templateUrl: './template.html',
+    selector: 'kd-service-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ServiceDetailComponent implements OnInit, OnDestroy {
   service: ServiceDetail;

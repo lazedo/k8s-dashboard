@@ -16,8 +16,9 @@ import {Component, OnInit} from '@angular/core';
 import {StatusFilterService} from '@common/services/global/statusfilter';
 
 @Component({
-  selector: 'kd-daemon-set-list-state',
-  template: '<kd-daemon-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-daemon-set-list>',
+    selector: 'kd-daemon-set-list-state',
+    template: '<kd-daemon-set-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-daemon-set-list>',
+    standalone: false
 })
 export class DaemonSetListComponent implements OnInit {
   // Optional one-shot status filter set by clicking a status on the Workload

@@ -17,8 +17,9 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {Chip} from '../component';
 
 @Component({
-  selector: 'kd-chip-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-chip-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class ChipDialog {
   constructor(public dialogRef: MatDialogRef<ChipDialog>, @Inject(MAT_DIALOG_DATA) public data: Chip) {}

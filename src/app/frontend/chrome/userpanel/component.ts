@@ -22,12 +22,13 @@ import {CookieService} from 'ngx-cookie-service';
 import {CONFIG_DI_TOKEN} from '../../index.config';
 
 @Component({
-  selector: 'kd-user-panel',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  host: {
-    '[class.kd-hidden]': 'this.isAuthEnabled() === false',
-  },
+    selector: 'kd-user-panel',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    host: {
+        '[class.kd-hidden]': 'this.isAuthEnabled() === false',
+    },
+    standalone: false
 })
 export class UserPanelComponent implements OnInit {
   @ViewChild(MatMenuTrigger)

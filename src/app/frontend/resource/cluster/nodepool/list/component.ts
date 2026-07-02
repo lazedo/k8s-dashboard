@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-node-pool-list-state',
-  template: '<kd-node-pool-list></kd-node-pool-list>',
+    selector: 'kd-node-pool-list-state',
+    template: '<kd-node-pool-list></kd-node-pool-list>',
+    standalone: false
 })
 export class NodePoolListComponent {}

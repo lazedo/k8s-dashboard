@@ -25,9 +25,10 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-network-policy-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-network-policy-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NetworkPolicyListComponent extends ResourceListBase<NetworkPolicyList, NetworkPolicy> {
   @Input() endpoint = EndpointManager.resource(Resource.networkPolicy, true).list();

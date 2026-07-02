@@ -18,8 +18,9 @@ import {ObjectMeta, TypeMeta} from '@api/root.api';
 import {VerberService} from '@common/services/global/verber';
 
 @Component({
-  selector: 'kd-actionbar-detail-edit',
-  templateUrl: './template.html',
+    selector: 'kd-actionbar-detail-edit',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ActionbarDetailEditComponent {
   @Input() objectMeta: ObjectMeta;

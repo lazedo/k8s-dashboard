@@ -20,8 +20,9 @@ import {PersistentVolumeSource} from '@api/volume.api';
 import {KdStateService} from '../../services/global/state';
 
 @Component({
-  selector: 'kd-volumemounts-list',
-  templateUrl: './template.html',
+    selector: 'kd-volumemounts-list',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class VolumeMountComponent {
   @Input() initialized: boolean;

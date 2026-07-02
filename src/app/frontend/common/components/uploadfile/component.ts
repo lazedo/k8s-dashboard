@@ -18,9 +18,10 @@ import {HTMLInputEvent, KdFile} from '@api/root.ui';
 import {AlertDialog, AlertDialogConfig} from 'common/dialogs/alert/dialog';
 
 @Component({
-  selector: 'kd-upload-file',
-  templateUrl: 'template.html',
-  styleUrls: ['style.scss'],
+    selector: 'kd-upload-file',
+    templateUrl: 'template.html',
+    styleUrls: ['style.scss'],
+    standalone: false
 })
 export class UploadFileComponent {
   @Input() label: string;

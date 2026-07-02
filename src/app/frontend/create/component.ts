@@ -20,9 +20,10 @@ import {CreateFromInputComponent} from './from/input/component';
 import {CreateFromUrlComponent} from './from/url/component';
 
 @Component({
-  selector: 'kd-create',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-create',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class CreateComponent extends ICanDeactivate {
   @ViewChild(CreateFromInputComponent) fromInput: CreateFromInputComponent;

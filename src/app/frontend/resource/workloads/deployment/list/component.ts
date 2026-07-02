@@ -16,8 +16,9 @@ import {Component, OnInit} from '@angular/core';
 import {StatusFilterService} from '@common/services/global/statusfilter';
 
 @Component({
-  selector: 'kd-deployment-list-state',
-  template: '<kd-deployment-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-deployment-list>',
+    selector: 'kd-deployment-list-state',
+    template: '<kd-deployment-list [showMetrics]="true" [statusFilter]="statusFilter"></kd-deployment-list>',
+    standalone: false
 })
 export class DeploymentListComponent implements OnInit {
   // Optional one-shot status filter set by clicking a status on the Workload

@@ -46,9 +46,10 @@ import {Subject} from 'rxjs';
 const APP_LABEL_KEY = 'k8s-app';
 
 @Component({
-  selector: 'kd-create-from-form',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-create-from-form',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class CreateFromFormComponent extends ICanDeactivate implements OnInit, OnDestroy {
   showMoreOptions_ = false;

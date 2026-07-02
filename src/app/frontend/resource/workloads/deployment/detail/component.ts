@@ -25,8 +25,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {NamespacedResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-deployment-detail',
-  templateUrl: './template.html',
+    selector: 'kd-deployment-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class DeploymentDetailComponent implements OnInit, OnDestroy {
   private unsubscribe_ = new Subject<void>();

@@ -27,9 +27,10 @@ export const EXEC_PARENT_PLACEHOLDER = '___EXEC_PARENT_PLACEHOLDER___';
 export const SEARCH_BREADCRUMB_PLACEHOLDER = '___SEARCH_BREADCRUMB_PLACEHOLDER___';
 
 @Component({
-  selector: 'kd-breadcrumbs',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-breadcrumbs',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class BreadcrumbsComponent implements OnInit {
   breadcrumbs: Breadcrumb[];

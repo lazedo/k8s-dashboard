@@ -38,9 +38,10 @@ export enum EditorMode {
 }
 
 @Component({
-  selector: 'kd-text-input',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-text-input',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class TextInputComponent implements OnInit, AfterViewInit, OnChanges {
   @Output() textChange = new EventEmitter<string>();

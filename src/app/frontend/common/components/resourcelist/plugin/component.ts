@@ -27,10 +27,11 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 const PLUGIN_KIND = 'plugin';
 
 @Component({
-  selector: 'kd-plugin-list',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-plugin-list',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
   @Input() endpoint = EndpointManager.resource(Resource.plugin, true).list();

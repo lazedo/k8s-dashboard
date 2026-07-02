@@ -20,8 +20,9 @@ export interface AddFallbackNamespaceDialogData {
 }
 
 @Component({
-  selector: 'kd-namespace-settings-add-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-namespace-settings-add-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class AddFallbackNamespaceDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public data: AddFallbackNamespaceDialogData) {}

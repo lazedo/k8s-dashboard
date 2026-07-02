@@ -20,9 +20,10 @@ import {map} from 'rxjs/operators';
 import {KdError} from '@common/errors/errors';
 
 @Component({
-  selector: 'kd-error',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-error',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class ErrorComponent implements OnInit {
   private error_: KdError;

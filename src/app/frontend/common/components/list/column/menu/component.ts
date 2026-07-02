@@ -36,8 +36,9 @@ const triggerableResources: string[] = [Resource.cronJob];
 const drainableResources: string[] = [Resource.node];
 
 @Component({
-  selector: 'kd-resource-context-menu',
-  templateUrl: './template.html',
+    selector: 'kd-resource-context-menu',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class MenuComponent implements ActionColumn {
   @Input() objectMeta: ObjectMeta;

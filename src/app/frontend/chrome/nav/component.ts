@@ -20,9 +20,10 @@ import {PluginsConfigService} from '@common/services/global/plugin';
 import {CrdAvailabilityService} from '@common/services/global/crd';
 
 @Component({
-  selector: 'kd-nav',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-nav',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class NavComponent implements OnInit {
   @ViewChild(MatDrawer, {static: true}) private readonly nav_: MatDrawer;

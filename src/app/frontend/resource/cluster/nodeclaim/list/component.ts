@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-node-claim-list-state',
-  template: '<kd-node-claim-list></kd-node-claim-list>',
+    selector: 'kd-node-claim-list-state',
+    template: '<kd-node-claim-list></kd-node-claim-list>',
+    standalone: false
 })
 export class NodeClaimListComponent {}

@@ -21,9 +21,10 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-search',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-search',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class SearchComponent implements OnInit, OnDestroy {
   query: string;

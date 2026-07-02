@@ -19,8 +19,9 @@ import {KdStateService} from '../../services/global/state';
 import {Resource} from '../../services/resource/endpoint';
 
 @Component({
-  selector: 'kd-subject-list',
-  templateUrl: './template.html',
+    selector: 'kd-subject-list',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class SubjectListComponent {
   @Input() initialized: boolean;

@@ -35,10 +35,11 @@ import {switchMap, takeUntil} from 'rxjs/operators';
  *
  */
 @Component({
-  selector: 'kd-date',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-date',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DateComponent implements OnChanges, OnDestroy {
   @Input() date: string;

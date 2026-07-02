@@ -26,8 +26,9 @@ export interface PreviewDeploymentDialogData {
 }
 
 @Component({
-  selector: 'kd-preview-deploy-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-preview-deploy-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class PreviewDeploymentDialog implements OnInit, OnDestroy {
   @ViewChild('group', {static: true}) buttonToggleGroup: MatButtonToggleGroup;

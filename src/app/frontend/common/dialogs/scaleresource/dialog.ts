@@ -20,8 +20,9 @@ import {ReplicaCounts} from '@api/root.api';
 import {ResourceMeta} from '../../services/global/actionbar';
 
 @Component({
-  selector: 'kd-delete-resource-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-delete-resource-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class ScaleResourceDialog implements OnInit {
   actual = 0;

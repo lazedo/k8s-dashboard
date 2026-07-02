@@ -20,10 +20,11 @@ import {Notification, NotificationsService} from '@common/services/global/notifi
 import {MESSAGES_DI_TOKEN} from '../../index.messages';
 
 @Component({
-  selector: 'kd-notifications',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  animations: [Animations.easeOut],
+    selector: 'kd-notifications',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    animations: [Animations.easeOut],
+    standalone: false
 })
 export class NotificationsComponent {
   isOpen_ = false;

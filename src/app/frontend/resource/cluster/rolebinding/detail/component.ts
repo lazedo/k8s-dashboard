@@ -25,8 +25,9 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-role-detail',
-  templateUrl: './template.html',
+    selector: 'kd-role-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class RoleBingingDetailComponent implements OnInit, OnDestroy {
   private _unsubscribe = new Subject<void>();

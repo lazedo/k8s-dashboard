@@ -24,8 +24,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {NamespacedResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-config-map-detail',
-  templateUrl: './template.html',
+    selector: 'kd-config-map-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ConfigMapDetailComponent implements OnInit, OnDestroy {
   private endpoint_ = EndpointManager.resource(Resource.configMap, true);

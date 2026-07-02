@@ -25,9 +25,10 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {ClusterRoleBinding, ClusterRoleBindingList} from '@api/root.api';
 
 @Component({
-  selector: 'kd-cluster-role-binding-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-cluster-role-binding-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterRoleBindingListComponent extends ResourceListBase<ClusterRoleBindingList, ClusterRoleBinding> {
   @Input() endpoint = EndpointManager.resource(Resource.clusterRoleBinding).list();

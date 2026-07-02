@@ -15,8 +15,9 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-help-section',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-help-section',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class HelpSectionComponent {}

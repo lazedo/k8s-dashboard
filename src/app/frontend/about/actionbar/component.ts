@@ -16,7 +16,10 @@ import {Component} from '@angular/core';
 import {VersionInfo} from '@api/root.ui';
 import {ConfigService} from '@common/services/global/config';
 
-@Component({selector: '', templateUrl: './template.html'})
+@Component({
+    selector: '', templateUrl: './template.html',
+    standalone: false
+})
 export class ActionbarComponent {
   versionInfo: VersionInfo;
 

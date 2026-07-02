@@ -32,8 +32,9 @@ interface IngressSpecTLSFlat {
 }
 
 @Component({
-  selector: 'kd-ingressruleflat-card-list',
-  templateUrl: './template.html',
+    selector: 'kd-ingressruleflat-card-list',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class IngressRuleFlatListComponent implements OnInit, OnChanges {
   @Input() initialized: boolean;

@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-service-list-state',
-  template: '<kd-service-list></kd-service-list>',
+    selector: 'kd-service-list-state',
+    template: '<kd-service-list></kd-service-list>',
+    standalone: false
 })
 export class ServiceListComponent {}

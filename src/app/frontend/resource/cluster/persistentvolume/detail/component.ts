@@ -27,8 +27,9 @@ import {KdStateService} from '@common/services/global/state';
 import {GlobalServicesModule} from '@common/services/global/module';
 
 @Component({
-  selector: 'kd-persistent-volume-detail',
-  templateUrl: './template.html',
+    selector: 'kd-persistent-volume-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolume);

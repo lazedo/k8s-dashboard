@@ -21,8 +21,9 @@ import {NAMESPACE_STATE_PARAM} from '@common/params/params';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
 
 @Component({
-  selector: '',
-  templateUrl: './template.html',
+    selector: '',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ActionbarComponent implements OnInit {
   isInitialized = false;

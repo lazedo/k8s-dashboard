@@ -25,14 +25,15 @@ export const uniqueNameValidationKey = 'validImageReference';
  * If the name exists, error with name `uniqueName` will be added to errors.
  */
 @Directive({
-  selector: '[kdValidImageReference]',
-  providers: [
-    {
-      provide: NG_ASYNC_VALIDATORS,
-      useExisting: forwardRef(() => ValidImageReferenceValidator),
-      multi: true,
-    },
-  ],
+    selector: '[kdValidImageReference]',
+    providers: [
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => ValidImageReferenceValidator),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class ValidImageReferenceValidator implements AsyncValidator, Validator {
   @Input() namespace: string;

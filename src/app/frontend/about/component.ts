@@ -18,9 +18,10 @@ import {AssetsService} from '@common/services/global/assets';
 import {ConfigService} from '@common/services/global/config';
 
 @Component({
-  selector: 'kd-about',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-about',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class AboutComponent {
   latestCopyrightYear: number;

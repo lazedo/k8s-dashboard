@@ -25,9 +25,10 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {Status} from '../statuses';
 
 @Component({
-  selector: 'kd-deployment-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-deployment-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DeploymentListComponent extends ResourceListWithStatuses<DeploymentList, Deployment> {
   @Input() endpoint = EndpointManager.resource(Resource.deployment, true).list();

@@ -17,9 +17,10 @@ import {ReplaySubject, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-card-list-filter',
-  templateUrl: './template.html',
-  styleUrls: ['style.scss'],
+    selector: 'kd-card-list-filter',
+    templateUrl: './template.html',
+    styleUrls: ['style.scss'],
+    standalone: false
 })
 export class CardListFilterComponent implements OnInit, OnDestroy {
   query = '';

@@ -58,21 +58,22 @@ const EXT_SERVICE: ServiceType = {
 };
 
 @Component({
-  selector: 'kd-port-mappings',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => PortMappingsComponent),
-      multi: true,
-    },
-    {
-      provide: NG_ASYNC_VALIDATORS,
-      useExisting: forwardRef(() => PortMappingsComponent),
-      multi: true,
-    },
-  ],
+    selector: 'kd-port-mappings',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => PortMappingsComponent),
+            multi: true,
+        },
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => PortMappingsComponent),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class PortMappingsComponent implements OnInit, ControlValueAccessor {
   @Input() protocols: string[];

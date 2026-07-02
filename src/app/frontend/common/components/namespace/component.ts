@@ -33,9 +33,10 @@ import {ResourceService} from '../../services/resource/resource';
 import {NamespaceChangeDialog} from './changedialog/dialog';
 
 @Component({
-  selector: 'kd-namespace-selector',
-  templateUrl: './template.html',
-  styleUrls: ['style.scss'],
+    selector: 'kd-namespace-selector',
+    templateUrl: './template.html',
+    styleUrls: ['style.scss'],
+    standalone: false
 })
 export class NamespaceSelectorComponent implements OnInit, OnDestroy {
   namespaces: string[] = [];

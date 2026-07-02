@@ -18,8 +18,9 @@ import {takeUntil} from 'rxjs/operators';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
 
 @Component({
-  selector: '',
-  templateUrl: './template.html',
+    selector: '',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class TriggerDefaultActionbar implements OnInit, OnDestroy {
   isInitialized = false;

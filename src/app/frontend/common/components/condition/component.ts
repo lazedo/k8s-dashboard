@@ -17,8 +17,9 @@ import {MatTableDataSource} from '@angular/material/table';
 import {Condition} from 'typings/root.api';
 
 @Component({
-  selector: 'kd-condition-list',
-  templateUrl: './template.html',
+    selector: 'kd-condition-list',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ConditionListComponent implements OnInit {
   @Input() initialized: boolean;

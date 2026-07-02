@@ -17,8 +17,9 @@ import {Subject} from 'rxjs';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
 
 @Component({
-  selector: '',
-  templateUrl: './template.html',
+    selector: '',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ActionbarComponent implements OnInit {
   private readonly unsubscribe_ = new Subject<void>();

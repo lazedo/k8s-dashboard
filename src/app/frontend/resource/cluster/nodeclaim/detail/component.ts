@@ -24,8 +24,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {ResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-node-claim-detail',
-  templateUrl: './template.html',
+    selector: 'kd-node-claim-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class NodeClaimDetailComponent implements OnInit, OnDestroy {
   private readonly unsubscribe_ = new Subject<void>();

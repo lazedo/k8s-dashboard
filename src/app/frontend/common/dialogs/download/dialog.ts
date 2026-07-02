@@ -29,9 +29,10 @@ export interface LogsDownloadDialogMeta {
 }
 
 @Component({
-  selector: 'kd-logs-download-dialog',
-  templateUrl: 'template.html',
-  styleUrls: ['style.scss'],
+    selector: 'kd-logs-download-dialog',
+    templateUrl: 'template.html',
+    styleUrls: ['style.scss'],
+    standalone: false
 })
 export class LogsDownloadDialog implements OnDestroy {
   loaded = 0;

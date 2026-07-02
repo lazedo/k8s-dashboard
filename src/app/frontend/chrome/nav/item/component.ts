@@ -47,10 +47,11 @@ const rollInOut = trigger('rollInOut', [
 ]);
 
 @Component({
-  selector: 'kd-nav-item',
-  templateUrl: 'template.html',
-  styleUrls: ['style.scss'],
-  animations: [rollInOut],
+    selector: 'kd-nav-item',
+    templateUrl: 'template.html',
+    styleUrls: ['style.scss'],
+    animations: [rollInOut],
+    standalone: false
 })
 export class NavItemComponent implements OnInit, OnDestroy {
   @Input() state: string;

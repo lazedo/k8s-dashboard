@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-pod-disruption-budget-list-state',
-  template: '<kd-pod-disruption-budget-list></kd-pod-disruption-budget-list>',
+    selector: 'kd-pod-disruption-budget-list-state',
+    template: '<kd-pod-disruption-budget-list></kd-pod-disruption-budget-list>',
+    standalone: false
 })
 export class PodDisruptionBudgetListComponent {}

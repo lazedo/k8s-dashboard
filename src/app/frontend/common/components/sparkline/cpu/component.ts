@@ -16,8 +16,9 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Sparkline} from '../sparkline';
 
 @Component({
-  selector: 'kd-cpu-sparkline',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-cpu-sparkline',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class CpuSparklineComponent extends Sparkline {}

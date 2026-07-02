@@ -24,9 +24,10 @@ import {CookieService} from 'ngx-cookie-service';
 import {CONFIG_DI_TOKEN} from '../../index.config';
 
 @Component({
-  selector: 'kd-local-settings',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-local-settings',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class LocalSettingsComponent implements OnInit {
   settings: LocalSettings = {} as LocalSettings;

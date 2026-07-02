@@ -24,8 +24,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {NamespacedResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-cron-job-detail',
-  templateUrl: './template.html',
+    selector: 'kd-cron-job-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class CronJobDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.cronJob, true);

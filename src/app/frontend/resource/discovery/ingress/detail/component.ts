@@ -24,8 +24,9 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-  selector: 'kd-ingress-detail',
-  templateUrl: './template.html',
+    selector: 'kd-ingress-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class IngressDetailComponent implements OnInit, OnDestroy {
   ingress: IngressDetail;

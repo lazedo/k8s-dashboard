@@ -18,8 +18,9 @@ import {ResourceMeta} from '@common/services/global/actionbar';
 import {KdStateService} from '@common/services/global/state';
 
 @Component({
-  selector: 'kd-actionbar-detail-logs',
-  templateUrl: './template.html',
+    selector: 'kd-actionbar-detail-logs',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ActionbarDetailLogsComponent {
   @Input() resourceMeta: ResourceMeta;

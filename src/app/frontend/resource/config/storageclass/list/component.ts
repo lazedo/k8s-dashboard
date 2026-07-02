@@ -15,7 +15,8 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'kd-storage-class-list-state',
-  template: '<kd-storage-class-list></kd-storage-class-list>',
+    selector: 'kd-storage-class-list-state',
+    template: '<kd-storage-class-list></kd-storage-class-list>',
+    standalone: false
 })
 export class StorageClassListComponent {}

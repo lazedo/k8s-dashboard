@@ -43,16 +43,17 @@ interface NamespaceSettings {
 }
 
 @Component({
-  selector: 'kd-namespace-settings',
-  templateUrl: './template.html',
-  styleUrls: ['style.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NamespaceSettingsComponent),
-      multi: true,
-    },
-  ],
+    selector: 'kd-namespace-settings',
+    templateUrl: './template.html',
+    styleUrls: ['style.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => NamespaceSettingsComponent),
+            multi: true,
+        },
+    ],
+    standalone: false
 })
 export class NamespaceSettingsComponent implements OnInit, OnDestroy, ControlValueAccessor {
   readonly Controls = Controls;

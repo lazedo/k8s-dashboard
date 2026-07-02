@@ -17,9 +17,10 @@ import {MatTableDataSource} from '@angular/material/table';
 import {Endpoint} from '@api/root.api';
 
 @Component({
-  selector: 'kd-endpoint-card-list',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-endpoint-card-list',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class EndpointListComponent {
   @Input() initialized: boolean;

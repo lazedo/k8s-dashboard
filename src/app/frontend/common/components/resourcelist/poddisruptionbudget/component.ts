@@ -25,9 +25,10 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-pod-disruption-budget-list',
-  templateUrl: './template.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'kd-pod-disruption-budget-list',
+    templateUrl: './template.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class PodDisruptionBudgetListComponent extends ResourceListBase<PodDisruptionBudgetList, PodDisruptionBudget> {
   @Input() endpoint = EndpointManager.resource(Resource.podDisruptionBudget, true).list();

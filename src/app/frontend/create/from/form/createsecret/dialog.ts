@@ -27,8 +27,9 @@ export interface CreateSecretDialogMeta {
 }
 
 @Component({
-  selector: 'kd-create-secret-dialog',
-  templateUrl: 'template.html',
+    selector: 'kd-create-secret-dialog',
+    templateUrl: 'template.html',
+    standalone: false
 })
 export class CreateSecretDialog implements OnInit {
   form: UntypedFormGroup;

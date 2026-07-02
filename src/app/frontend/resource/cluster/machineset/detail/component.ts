@@ -24,8 +24,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {NamespacedResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-machine-set-detail',
-  templateUrl: './template.html',
+    selector: 'kd-machine-set-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class MachineSetDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.machineSet, true);

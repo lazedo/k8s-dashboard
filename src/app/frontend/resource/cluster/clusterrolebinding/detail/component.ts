@@ -25,8 +25,9 @@ import {takeUntil} from 'rxjs/operators';
 import {Subject, Subscription} from 'rxjs';
 
 @Component({
-  selector: 'kd-cluster-role-binding-detail',
-  templateUrl: './template.html',
+    selector: 'kd-cluster-role-binding-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ClusterRoleBindingDetailComponent implements OnInit, OnDestroy {
   private _unsubscribe = new Subject<void>();

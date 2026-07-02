@@ -21,9 +21,10 @@ export enum HiddenPropertyMode {
 }
 
 @Component({
-  selector: 'kd-hidden-property',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-hidden-property',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class HiddenPropertyComponent {
   @Input() mode = HiddenPropertyMode.Hidden;

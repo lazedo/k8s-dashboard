@@ -15,9 +15,10 @@
 import {Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'kd-property',
-  templateUrl: './template.html',
-  styleUrls: ['./style.scss'],
+    selector: 'kd-property',
+    templateUrl: './template.html',
+    styleUrls: ['./style.scss'],
+    standalone: false
 })
 export class PropertyComponent {
   @Input() stretched = false;

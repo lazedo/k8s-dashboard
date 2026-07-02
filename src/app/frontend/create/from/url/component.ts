@@ -23,8 +23,9 @@ import {HistoryService} from '@common/services/global/history';
 import {NamespaceService} from '@common/services/global/namespace';
 
 @Component({
-  selector: 'kd-create-from-url',
-  templateUrl: './template.html',
+    selector: 'kd-create-from-url',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class CreateFromUrlComponent extends ICanDeactivate {
   url = '';

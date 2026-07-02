@@ -24,8 +24,9 @@ import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 import {ResourceService} from '@common/services/resource/resource';
 
 @Component({
-  selector: 'kd-cluster-role-detail',
-  templateUrl: './template.html',
+    selector: 'kd-cluster-role-detail',
+    templateUrl: './template.html',
+    standalone: false
 })
 export class ClusterRoleDetailComponent implements OnInit, OnDestroy {
   private readonly unsubscribe_ = new Subject<void>();

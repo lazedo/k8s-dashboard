@@ -17,8 +17,8 @@ import {Component, Injector, Input, OnInit, ViewChild, ViewContainerRef} from '@
 import {PluginLoaderService} from '@common/services/pluginloader/pluginloader.service';
 
 @Component({
-  selector: 'kd-plugin-holder',
-  template: `
+    selector: 'kd-plugin-holder',
+    template: `
     <div>
       <div class="plugin">
         <mat-card appearance="outlined" *ngIf="entryError">This plugin has no entry component</mat-card>
@@ -26,6 +26,7 @@ import {PluginLoaderService} from '@common/services/pluginloader/pluginloader.se
       </div>
     </div>
   `,
+    standalone: false
 })
 export class PluginHolderComponent implements OnInit {
   @ViewChild('pluginViewRef', {read: ViewContainerRef, static: true}) vcRef: ViewContainerRef;
