@@ -15,6 +15,7 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 @use './theming';
+@use './typography';
 
 $colors-light: (
   primary: #326de6,
@@ -38,6 +39,8 @@ $theme-light: mat.m2-define-light-theme((
     accent: $kd-palette,
     warn: $kd-palette,
   ),
+  typography: typography.$kd-typography,
+  density: -1,
 ));
 $background: map.get($theme-light, background);
 $background: map.merge($background, (background: #edeff0));

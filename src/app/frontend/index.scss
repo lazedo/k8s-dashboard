@@ -22,6 +22,10 @@
 
 html,
 body {
+  // The pre-MDC Material set the font on every component (.mat-card etc.);
+  // MDC components inherit instead, so text in bare containers fell back to
+  // the browser serif default without this.
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
   height: 100%;
   margin: 0;
 }
@@ -91,22 +95,41 @@ code {
 }
 
 .mat-mdc-chip.mat-mdc-standard-chip {
-  box-shadow: none !important;
-  font-size: $body-font-size-base;
-  font-weight: $regular-font-weight;
-  height: fit-content;
-  line-height: $body-font-size-base;
-  min-height: unset;
-  padding: ($baseline-grid * 0.75) ($baseline-grid * 1.25);
-  transition: none !important;
-  word-break: break-all !important;
+  // Compact pre-MDC chip (measured on the baseline: ~26px tall, 6x10 padding,
+  // 4px margins): MDC sizes chips via a container-height token, pads the inner
+  // action element and reserves leading space for the filter checkmark — all
+  // of which must be flattened.
+  --mdc-chip-container-height: auto;
 
-  &:hover::after {
+  box-shadow: none !important;
+  height: auto !important;
+  min-height: unset;
+  margin: (0.5 * $baseline-grid) !important;
+  transition: none !important;
+
+  .mdc-evolution-chip__action--primary {
+    padding: ($baseline-grid * 0.75) ($baseline-grid * 1.25) !important;
+  }
+
+  .mdc-evolution-chip__graphic {
+    display: none !important;
+  }
+
+  .mdc-evolution-chip__text-label {
+    font-size: $body-font-size-base;
+    font-weight: $regular-font-weight;
+    letter-spacing: normal;
+    line-height: $body-font-size-base;
+    word-break: break-all !important;
+  }
+
+  &:hover::after,
+  &:focus::after {
     opacity: 0 !important;
   }
 
-  &:focus::after {
-    opacity: 0 !important;
+  .mdc-evolution-chip__action::before {
+    border: 0;
   }
 }
 
@@ -232,6 +255,14 @@ router-outlet::after {
 
 .kd-code-block-font {
   font-size: $body-font-size-base;
+}
+
+// Full-width block form field. Global: used by the create-from-url and
+// create-from-crd tabs (a copy in the create-from-form component styles is
+// scoped to that component and never reached them).
+.kd-block {
+  display: block;
+  width: 100%;
 }
 
 .kd-minimized-card {
@@ -417,13 +448,55 @@ router-outlet::after {
   font-family: Roboto, sans-serif;
 }
 
+// ngx-charts >=24 no longer styles its svg text; without this, chart labels
+// fall back to the browser serif default.
+.ngx-charts text {
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+// MDC tabs keep their own 1.25px tracking even with the button typography
+// level overridden — match the pre-MDC look.
+.mat-mdc-tab .mdc-tab__text-label,
+.mat-mdc-tab-link .mdc-tab__text-label {
+  letter-spacing: normal;
+}
+
+// Pre-MDC toolbars used 20px text (MDC bumps them to headline-6/24px, which
+// also inflates the breadcrumbs living inside).
+mat-toolbar.mat-toolbar {
+  font-size: 20px;
+}
+
+// Pre-MDC icon buttons were 40px with 8px padding; MDC sizes them 44-48px via
+// the state-layer token, emitted under the theme class (higher specificity),
+// hence the !important.
+.mat-mdc-icon-button.mat-mdc-button-base {
+  --mdc-icon-button-state-layer-size: 40px !important;
+
+  height: var(--mdc-icon-button-state-layer-size) !important;
+  padding: 8px !important;
+  width: var(--mdc-icon-button-state-layer-size) !important;
+}
+
+// Chips must stay inside their table cell and show their full content like
+// the pre-MDC chips: short labels on one line, long values (image digests)
+// wrapping inside the chip via break-all.
+.mat-mdc-standard-chip {
+  max-width: 100%;
+
+  .mdc-evolution-chip__text-label {
+    // No overflow:hidden here: with the global ::-webkit-scrollbar styling,
+    // Safari paints a scrollbar thumb on hidden-overflow inline boxes.
+    white-space: normal;
+  }
+}
+
 .kd-secret-detail-text {
-  /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-  .mat-form-field-wrapper {
+  .mat-mdc-text-field-wrapper {
     padding-bottom: $baseline-grid;
   }
-  /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-  .mat-form-field-infix {
+
+  .mat-mdc-form-field-infix {
     padding-top: 2px;
   }
 
@@ -438,10 +511,6 @@ router-outlet::after {
   &:focus {
     outline: none;
   }
-  /* TODO(mdc-migration): The following rule targets internal classes of chips that may no longer apply for the MDC version.*/
-  // .mat-chip-list-wrapper is the pre-MDC internal class; the MDC chip set
-  // wraps chips in .mdc-evolution-chip-set__chips.
-  .mat-chip-list-wrapper,
   .mdc-evolution-chip-set__chips {
     flex-wrap: nowrap;
     overflow-x: hidden;
@@ -460,28 +529,25 @@ kd-logs {
   .mat-mdc-form-field {
     max-width: 22 * $baseline-grid;
     width: auto;
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-underline {
-      margin-top: 0.25 * $baseline-grid;
-      position: initial;
-    }
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-wrapper {
+
+    .mat-mdc-text-field-wrapper {
+      background-color: transparent;
       padding-bottom: 0;
     }
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-infix {
+
+    .mat-mdc-form-field-infix {
       border-top: 0;
+      min-height: unset;
       padding: 0;
       width: auto;
     }
-    /* TODO(mdc-migration): The following rule targets internal classes of select that may no longer apply for the MDC version.*/
-    .mat-select-trigger {
+
+    .mat-mdc-select-trigger {
       align-items: center;
       display: flex;
     }
-    /* TODO(mdc-migration): The following rule targets internal classes of select that may no longer apply for the MDC version.*/
-    .mat-select-value {
+
+    .mat-mdc-select-value {
       display: inline-flex;
       max-width: 100%;
       padding-right: $baseline-grid;

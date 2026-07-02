@@ -96,16 +96,25 @@
   // Small badge tucked flush into the card's top-right corner (~1/4 the default
   // mat-icon-button). Behaves like the detail actionbar pin: dashboard-blue
   // background, white pin; glyph conveys state — `pin` vs `pin-crossed`.
+  // MDC icon buttons size themselves via the state-layer custom property and an
+  // inner 48px touch target — both must shrink or the badge renders as a huge
+  // circle with the icon cropped out of it.
+  --mdc-icon-button-state-layer-size: 14px !important;
+  --mdc-icon-button-icon-size: 11px;
+
   position: absolute;
   top: 3px;
   right: 3px;
-  width: 14px;
-  height: 14px;
+  width: 14px !important;
+  height: 14px !important;
   min-width: 0;
-  padding: 0;
+  padding: 0 !important;
   line-height: 14px;
   background: #326ce5;
   transition: background 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   mat-icon {
     width: 11px;
@@ -113,18 +122,18 @@
     font-size: 11px;
     line-height: 11px;
     color: #fff;
+
+    // MDC no longer sizes registered svg icons to the mat-icon box; without
+    // this only the svg's top-left corner shows inside the 11px badge icon.
+    svg {
+      height: 100%;
+      width: 100%;
+    }
   }
-  /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
-  .mat-button-wrapper {
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
-  .mat-button-ripple,
-  .mat-button-focus-overlay {
-    border-radius: 50%;
+
+  .mat-mdc-button-touch-target {
+    height: 14px;
+    width: 14px;
   }
 
   &:hover {

@@ -15,7 +15,11 @@
 @use '../../../variables' as *;
 
 .kd-graph-container {
-  flex: auto;
+  // Basis anchored to the fixed 350px chart view so three graphs fit per row
+  // like pre-MDC; flex:auto let newer ngx-charts hosts inflate the basis and
+  // drop the layout to two per row.
+  flex: 1 1 (44 * $baseline-grid);
+  max-width: 60 * $baseline-grid;
   text-align: center;
 }
 

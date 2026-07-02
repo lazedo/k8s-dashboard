@@ -14,6 +14,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import {Injectable} from '@angular/core';
+import {Subject} from 'rxjs';
 import {Me} from '@api/root.api';
 
 // MeService exposes the identity behind the current request, read from the backend
@@ -25,14 +26,24 @@ export class MeService {
 
   constructor(private readonly http_: HttpClient) {}
 
+  // Emits when the identity finishes (re)loading, so views reading the
+  // getters can markForCheck (required since the zoneless default).
+  loaded = new Subject<void>();
+
   init(): void {
     this.reload();
   }
 
   reload(): void {
     this.http_.get<Me>('api/v1/me').subscribe({
-      next: user => (this.user_ = user || {authenticated: false}),
-      error: () => (this.user_ = {authenticated: false}),
+      next: user => {
+        this.user_ = user || {authenticated: false};
+        this.loaded.next();
+      },
+      error: () => {
+        this.user_ = {authenticated: false};
+        this.loaded.next();
+      },
     });
   }
 

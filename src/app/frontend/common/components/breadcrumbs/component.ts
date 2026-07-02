@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Inject, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Params, Route, Router} from '@angular/router';
 import {Breadcrumb, IMessage} from '@api/root.ui';
 import {distinctUntilChanged, filter} from 'rxjs/operators';
@@ -36,6 +36,7 @@ export class BreadcrumbsComponent implements OnInit {
   breadcrumbs: Breadcrumb[];
 
   constructor(
+    private readonly _cdr: ChangeDetectorRef,
     private readonly _router: Router,
     private readonly _activatedRoute: ActivatedRoute,
     @Inject(MESSAGES_DI_TOKEN) private readonly message_: IMessage
@@ -54,6 +55,8 @@ export class BreadcrumbsComponent implements OnInit {
       )
       .subscribe(() => {
         this._initBreadcrumbs();
+        // Zoneless default: navigation events no longer refresh this view.
+        this._cdr.markForCheck();
       });
   }
 

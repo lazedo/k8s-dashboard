@@ -224,12 +224,11 @@
     }
 
     .kd-namespace-select-input-container {
-      /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-      .mat-form-field-underline {
+      .mdc-line-ripple {
         display: none;
       }
-      /* TODO(mdc-migration): The following rule targets internal classes of select that may no longer apply for the MDC version.*/
-      .mat-select-arrow {
+
+      .mat-mdc-select-arrow {
         color: $muted-light !important;
       }
     }
@@ -282,6 +281,12 @@
     background-color: $border !important;
   }
 
+  // Pre-MDC table headers were secondary-text grey; the MDC table paints them
+  // with the full on-surface color.
+  .mat-mdc-header-cell {
+    color: $muted;
+  }
+
   .ngx-charts {
     text {
       fill: mat.m2-get-color-from-palette($foreground-palette, text) !important;
@@ -289,18 +294,16 @@
   }
 
   .kd-secret-detail-text {
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-infix {
+    .mat-mdc-form-field-infix {
       border-top: 0;
     }
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-underline {
-      background: none;
-      /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-      .mat-form-field-ripple {
-        background: none;
-      }
+
+    .mat-mdc-text-field-wrapper {
+      background-color: transparent;
+    }
+
+    .mdc-line-ripple {
+      display: none;
     }
 
     textarea {

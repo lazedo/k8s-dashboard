@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {MatMenuTrigger} from '@angular/material/menu';
 import {LoginStatus} from '@api/root.api';
 import {IConfig} from '@api/root.ui';
@@ -38,6 +38,7 @@ export class UserPanelComponent implements OnInit {
   isLoginStatusInitialized = false;
 
   constructor(
+    private readonly cdr_: ChangeDetectorRef,
     private readonly authService_: AuthService,
     private readonly cookieService_: CookieService,
     private readonly me_: MeService,
@@ -68,9 +69,13 @@ export class UserPanelComponent implements OnInit {
 
   ngOnInit(): void {
     this.me_.init();
+    // Zoneless default: both async loads must mark this view or the avatar and
+    // login status only appear after an unrelated user event.
+    this.me_.loaded.subscribe(() => this.cdr_.markForCheck());
     this.authService_.getLoginStatus().subscribe(status => {
       this.loginStatus = status;
       this.isLoginStatusInitialized = true;
+      this.cdr_.markForCheck();
     });
   }
 

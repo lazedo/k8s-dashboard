@@ -22,22 +22,40 @@
   padding-right: 3.5 * $baseline-grid;
 
   ::ng-deep {
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-infix {
+    // MDC internals: keep the toolbar namespace selector the compact bare
+    // control it was pre-MDC (no fill background, no underline, no reserved
+    // subscript space, content vertically centered).
+    .mat-mdc-form-field-infix {
       border: 0;
-      padding: 0;
+      min-height: unset;
+      // Left inset lives here (inside the box) rather than as a margin on the
+      // trigger — a trigger margin overflows the infix and pushes the select
+      // arrow past the container border, invisible on the white toolbar.
+      padding: 0 0 0 (2 * $baseline-grid) !important;
+      // Host ends up 174px wide like the baseline (infix + the container's
+      // 3.5bg right padding), with breathing room between value and arrow.
       width: 18 * $baseline-grid;
     }
-    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
-    .mat-form-field-wrapper {
+
+    .mat-mdc-text-field-wrapper,
+    .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+      background-color: transparent !important;
       padding: 0;
+    }
+
+    .mat-mdc-form-field-focus-overlay,
+    .mdc-line-ripple {
+      display: none;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none;
     }
 
     .kd-namespace-select {
       font-family: $font-family-sans;
       font-size: $subhead-font-size-base;
       line-height: 4.5 * $baseline-grid;
-      margin-left: 2 * $baseline-grid;
     }
   }
 }
