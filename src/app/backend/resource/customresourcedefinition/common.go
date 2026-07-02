@@ -139,6 +139,20 @@ func GetCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespa
 	return nil, errors.NewNotFound(fmt.Sprintf("unsupported extensions api versions: %s", version))
 }
 
+func DeleteCustomResourceObject(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) error {
+	version, err := GetExtensionsAPIVersion(client)
+	if err != nil {
+		return err
+	}
+
+	switch version {
+	case v1:
+		return crdv1.DeleteCustomResourceObject(client, namespace, config, crdName, name)
+	}
+
+	return errors.NewNotFound(fmt.Sprintf("unsupported extensions api versions: %s", version))
+}
+
 func NewRESTClient(config *rest.Config, group, version string) (*rest.RESTClient, error) {
 	groupVersion := schema.GroupVersion{
 		Group:   group,

@@ -150,6 +150,27 @@ func GetCustomResourceObjectRaw(client apiextensionsclientset.Interface, namespa
 	return json.RawMessage(raw), nil
 }
 
+// DeleteCustomResourceObject deletes a single custom resource object — the
+// generic delete verber only covers built-in kinds.
+func DeleteCustomResourceObject(client apiextensionsclientset.Interface, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) error {
+	customResourceDefinition, err := client.ApiextensionsV1().
+		CustomResourceDefinitions().
+		Get(context.TODO(), crdName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	restClient, err := NewRESTClient(config, customResourceDefinition)
+	if err != nil {
+		return err
+	}
+
+	return restClient.Delete().
+		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensionsv1.NamespaceScoped).
+		Resource(customResourceDefinition.Spec.Names.Plural).
+		Name(name).Do(context.TODO()).Error()
+}
+
 // toCRDObject sets the object kind to the full name of the CRD.
 // E.g. changes "Foo" to "foos.samplecontroller.k8s.io"
 func toCRDObject(object *types.CustomResourceObject, crd *apiextensionsv1.CustomResourceDefinition) {

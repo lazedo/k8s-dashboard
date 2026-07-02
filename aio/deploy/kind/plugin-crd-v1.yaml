@@ -57,3 +57,13 @@ spec:
                 description: { type: string }
                 # icon: image URL or data-URI shown next to the plugin in the list.
                 icon: { type: string }
+                # Per-plugin proxy allow-list (schema parity with GlobalPlugin;
+                # the backend route currently serves global plugins).
+                proxy:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, url]
+                    properties:
+                      name: { type: string }
+                      url: { type: string }

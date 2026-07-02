@@ -47,3 +47,15 @@ spec:
                   items: { type: string }
                 description: { type: string }
                 icon: { type: string }
+                # Per-plugin proxy allow-list: the dashboard forwards GETs on
+                # /api/v1/globalplugin/{name}/proxy/{route.name}/... to the
+                # declared url, so browser-side plugin code can reach
+                # CORS-restricted upstreams (e.g. artifacthub.io).
+                proxy:
+                  type: array
+                  items:
+                    type: object
+                    required: [name, url]
+                    properties:
+                      name: { type: string }
+                      url: { type: string }

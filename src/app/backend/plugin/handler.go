@@ -15,15 +15,19 @@
 package plugin
 
 import (
+	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/kubernetes/dashboard/src/app/backend/handler/parser"
 
 	"github.com/emicklei/go-restful/v3"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 )
 
@@ -61,6 +65,10 @@ func (h *Handler) Install(ws *restful.WebService) {
 	ws.Route(
 		ws.GET("/globalplugin/{pluginName}").
 			To(h.serveGlobalPluginSource))
+
+	ws.Route(
+		ws.GET("/globalplugin/{pluginName}/proxy/{route}/{subpath:*}").
+			To(h.handleGlobalPluginProxy))
 }
 
 // globalPluginClient builds a dynamic client (per-request auth) to read the
@@ -130,6 +138,66 @@ func (h *Handler) serveGlobalPluginSource(request *restful.Request, response *re
 	}
 	response.AddHeader(contentTypeHeader, jsContentType)
 	response.Write(result)
+}
+
+// handleGlobalPluginProxy forwards GET requests to an external API declared in
+// the plugin's spec.proxy — a per-plugin allow-list (à la Grafana app plugin
+// routes) so browser-side plugin code can reach CORS-restricted upstreams
+// (e.g. artifacthub.io) without the dashboard becoming an open proxy. GET
+// only; the target is spec.proxy[route].url + subpath + query.
+func (h *Handler) handleGlobalPluginProxy(request *restful.Request, response *restful.Response) {
+	dynClient, err := dynamic.NewForConfig(h.cManager.InsecureConfig())
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	item, err := dynClient.Resource(globalPluginGVR).Get(request.Request.Context(), request.PathParameter("pluginName"), metav1.GetOptions{})
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	route := request.PathParameter("route")
+	base := ""
+	proxies, _, _ := unstructured.NestedSlice(item.Object, "spec", "proxy")
+	for _, p := range proxies {
+		if m, ok := p.(map[string]interface{}); ok && m["name"] == route {
+			base, _ = m["url"].(string)
+		}
+	}
+	if base == "" {
+		response.WriteHeaderAndEntity(http.StatusNotFound, "no such proxy route declared in spec.proxy")
+		return
+	}
+
+	target := strings.TrimSuffix(base, "/") + "/" + request.PathParameter("subpath")
+	if query := request.Request.URL.RawQuery; query != "" {
+		target += "?" + query
+	}
+
+	upstreamReq, err := http.NewRequestWithContext(request.Request.Context(), http.MethodGet, target, nil)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if accept := request.Request.Header.Get("Accept"); accept != "" {
+		upstreamReq.Header.Set("Accept", accept)
+	}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	upstream, err := client.Do(upstreamReq)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	defer upstream.Body.Close()
+
+	if contentType := upstream.Header.Get(contentTypeHeader); contentType != "" {
+		response.AddHeader(contentTypeHeader, contentType)
+	}
+	response.WriteHeader(upstream.StatusCode)
+	io.Copy(response, upstream.Body)
 }
 
 func (h *Handler) servePluginSource(request *restful.Request, response *restful.Response) {

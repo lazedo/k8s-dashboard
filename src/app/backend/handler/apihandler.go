@@ -806,6 +806,10 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			To(apiHandler.handleGetCustomResourceObjectRaw))
 
 	apiV1Ws.Route(
+		apiV1Ws.DELETE("/crd/{namespace}/{crd}/{object}/raw").
+			To(apiHandler.handleDeleteCustomResourceObject))
+
+	apiV1Ws.Route(
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/event").
 			To(apiHandler.handleGetCustomResourceObjectEvents).
 			Writes(common.EventList{}))
@@ -3256,6 +3260,30 @@ func (apiHandler *APIHandler) handleGetCustomResourceObjectRaw(request *restful.
 	}
 
 	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleDeleteCustomResourceObject(request *restful.Request, response *restful.Response) {
+	config, err := apiHandler.cManager.Config(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	apiextensionsclient, err := apiHandler.cManager.APIExtensionsClient(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("object")
+	crdName := request.PathParameter("crd")
+	namespace := parseNamespacePathParameter(request)
+	if err := customresourcedefinition.DeleteCustomResourceObject(apiextensionsclient, namespace, config, crdName, name); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	response.WriteHeader(http.StatusNoContent)
 }
 
 func (apiHandler *APIHandler) handleGetCustomResourceObjectEvents(request *restful.Request, response *restful.Response) {
