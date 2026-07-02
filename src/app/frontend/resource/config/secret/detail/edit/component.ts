@@ -18,7 +18,7 @@ import {DecoderService} from '@common/services/global/decoder';
 import {RawResource} from 'common/resources/rawresource';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {AlertDialogConfig, AlertDialog} from 'common/dialogs/alert/dialog';
-import {MatLegacyDialogConfig as MatDialogConfig, MatLegacyDialog as MatDialog} from '@angular/material/legacy-dialog';
+import {MatDialogConfig, MatDialog} from '@angular/material/dialog';
 import {encode} from 'js-base64';
 
 @Component({

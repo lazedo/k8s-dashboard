@@ -41,28 +41,30 @@ limitations under the License.
                      i18n-key
                      desc="List of namespaces that should be presented to user without namespace list privileges."
                      i18n-desc>
-    <mat-form-field fxFlex>
+    <!-- Plain layout wrapper: MDC's mat-form-field requires a MatFormFieldControl
+         child and throws on this chip list, which isn't one. -->
+    <div fxFlex>
       <div fxFlex="100"
            fxLayout="row">
-        <mat-chip-list [formArrayName]="Controls.FallbackList"
+        <mat-chip-listbox [formArrayName]="Controls.FallbackList"
                        fxFlex="80"
                        fxLayoutAlign=" center"
                        class="kd-namespace-chip-list">
-          <mat-chip *ngFor="let namespace of form.get(Controls.FallbackList).value | slice: 0:visibleNamespaces"
+          <mat-chip-option *ngFor="let namespace of form.get(Controls.FallbackList).value | slice: 0:visibleNamespaces"
                     style="max-width: 100px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; display: block"
                     [matTooltip]="namespace"
                     [selectable]="false"
                     [removable]="false">
             {{ namespace }}
-          </mat-chip>
-          <mat-chip *ngIf="form.get(Controls.FallbackList).value.length === 0"
+          </mat-chip-option>
+          <mat-chip-option *ngIf="form.get(Controls.FallbackList).value.length === 0"
                     [disabled]="true"
-                    i18n>Add namespaces...</mat-chip>
-          <mat-chip *ngIf="invisibleCount > 0"
+                    i18n>Add namespaces...</mat-chip-option>
+          <mat-chip-option *ngIf="invisibleCount > 0"
                     [disabled]="true"
                     fxFlex
-                    fxLayoutAlign=" center">+ {{ invisibleCount }}</mat-chip>
-        </mat-chip-list>
+                    fxLayoutAlign=" center">+ {{ invisibleCount }}</mat-chip-option>
+        </mat-chip-listbox>
         <div fxFlex="20"
              fxLayoutAlign="end">
           <button mat-icon-button
@@ -76,6 +78,6 @@ limitations under the License.
           </button>
         </div>
       </div>
-    </mat-form-field>
+    </div>
   </kd-settings-entry>
 </form>

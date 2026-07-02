@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {PinnedResource} from '@api/root.api';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Subject} from 'rxjs';
-import {MatLegacyDialog as MatDialog, MatLegacyDialogConfig as MatDialogConfig} from '@angular/material/legacy-dialog';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import {AlertDialog, AlertDialogConfig} from '../../dialogs/alert/dialog';
 import {VerberService} from './verber';
 

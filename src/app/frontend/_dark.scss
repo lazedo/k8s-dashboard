@@ -50,7 +50,7 @@ $color: map.merge(map.get($theme-dark, color), (background: $background));
 $theme-dark: map.merge($theme-dark, (color: $color));
 
 .kd-dark-theme {
-  @include mat.all-legacy-component-themes($theme-dark);
+  @include mat.all-component-themes($theme-dark);
   @include theming.kd-theme($theme-dark, $colors-dark);
 
   .kd-toolbar-logo-text,

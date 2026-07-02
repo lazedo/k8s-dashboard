@@ -47,7 +47,7 @@ $color: map.merge(map.get($theme-light, color), (background: $background));
 $theme-light: map.merge($theme-light, (color: $color));
 
 .kd-light-theme {
-  @include mat.all-legacy-component-themes($theme-light);
+  @include mat.all-component-themes($theme-light);
   @include theming.kd-theme($theme-light, $colors-light);
 
   .kd-toolbar-logo-text,
