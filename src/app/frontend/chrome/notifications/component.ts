@@ -36,8 +36,10 @@ export class NotificationsComponent {
     @Inject(MESSAGES_DI_TOKEN) readonly message: IMessage
   ) {}
 
+  // Not private: Angular 21 forbids @HostListener on private members (the
+  // generated host binding accesses it from outside the class).
   @HostListener('document:click', ['$event'])
-  private onOutsideClick_(event: Event): void {
+  onOutsideClick_(event: Event): void {
     if (!this.element_.nativeElement.contains(event.target) && this.isOpen()) {
       this.close_();
     }
