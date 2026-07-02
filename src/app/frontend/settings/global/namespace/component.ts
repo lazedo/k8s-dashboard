@@ -15,7 +15,7 @@
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {Component, forwardRef, OnDestroy, OnInit} from '@angular/core';
 import {ControlValueAccessor, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, NG_VALUE_ACCESSOR} from '@angular/forms';
-import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import {MatLegacyDialog as MatDialog, MatLegacyDialogConfig as MatDialogConfig} from '@angular/material/legacy-dialog';
 import {GlobalSettings, NamespaceList} from '@api/root.api';
 import {Subject} from 'rxjs';
 import {map, take, takeUntil} from 'rxjs/operators';

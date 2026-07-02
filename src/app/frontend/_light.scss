@@ -13,7 +13,7 @@
 // limitations under the License.
 
 @use 'sass:map';
-@use '~@angular/material/theming' as mat-theming;
+@use '@angular/material' as mat;
 @use './theming';
 
 $colors-light: (
@@ -30,18 +30,24 @@ $colors-light: (
   log-viewer-text: #fff,
   log-viewer-scrollbar: rgb(200 200 200 / 0.66),
 );
-$kd-blue: map_merge(mat-theming.$mat-blue, (500: #326de6));
-$theme-light: mat-theming.mat-light-theme(
-  mat-theming.mat-palette($kd-blue),
-  mat-theming.mat-palette($kd-blue),
-  mat-theming.mat-palette($kd-blue)
-);
+$kd-blue: map.merge(mat.$blue-palette, (500: #326de6));
+$kd-palette: mat.define-palette($kd-blue);
+$theme-light: mat.define-light-theme((
+  color: (
+    primary: $kd-palette,
+    accent: $kd-palette,
+    warn: $kd-palette,
+  ),
+));
 $background: map.get($theme-light, background);
-$background: map_merge($background, (background: #edeff0));
-$theme-light: map_merge($theme-light, (background: $background));
+$background: map.merge($background, (background: #edeff0));
+$theme-light: map.merge($theme-light, (background: $background));
+// Component themes read background/foreground from the color map — patch both.
+$color: map.merge(map.get($theme-light, color), (background: $background));
+$theme-light: map.merge($theme-light, (color: $color));
 
 .kd-light-theme {
-  @include mat-theming.angular-material-theme($theme-light);
+  @include mat.all-legacy-component-themes($theme-light);
   @include theming.kd-theme($theme-light, $colors-light);
 
   .kd-toolbar-logo-text,

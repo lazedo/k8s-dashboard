@@ -25,9 +25,9 @@ import {
   Type,
   ViewChild,
 } from '@angular/core';
-import {MatPaginator} from '@angular/material/paginator';
+import {MatLegacyPaginator as MatPaginator} from '@angular/material/legacy-paginator';
 import {MatSort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
+import {MatLegacyTableDataSource as MatTableDataSource} from '@angular/material/legacy-table';
 import {Router} from '@angular/router';
 import {Event as KdEvent, Resource, ResourceList} from '@api/root.api';
 import {ActionColumn, ActionColumnDef, ColumnWhenCallback, ColumnWhenCondition, OnListChangeEvent} from '@api/root.ui';
@@ -303,8 +303,8 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
     return result;
   }
 
-  // Optional status filter, driven from the Workload Status chart
-  // (?statusFilter=Running). Requires the resource's dataselect cell to support
+  // Optional status filter, driven one-shot from the Workload Status chart via
+  // StatusFilterService. Requires the resource's dataselect cell to support
   // StatusProperty (all workloads do). Shown as a removable chip on the card.
   @Input()
   set statusFilter(status: string) {
@@ -315,15 +315,11 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
     return this.statusFilter_;
   }
 
+  // Re-renders the current list without the filter. The filter itself is
+  // one-shot (StatusFilterService) and never stored in the URL, so clearing is
+  // purely local.
   clearStatusFilter(): void {
     this.applyStatusFilter('');
-    // Also drop ?statusFilter from the URL — nav links preserve query params, so
-    // a leftover param would re-apply the filter on the next list navigated to.
-    this.router_.navigate([], {
-      queryParams: {statusFilter: null},
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
   }
 
   // applyStatusFilter sets (or clears) the status filter and reloads the list.

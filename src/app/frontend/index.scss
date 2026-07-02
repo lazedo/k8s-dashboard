@@ -15,7 +15,8 @@
 @use 'sass:map';
 @use './variables' as *;
 @use './mixins' as *;
-@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
+// Material prebuilt base theme moved to the angular.json "styles" array —
+// css-loader in Angular 15 no longer resolves node_modules (~) imports here.
 @import './dark';
 @import './light';
 

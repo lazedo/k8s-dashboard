@@ -13,7 +13,7 @@
 // limitations under the License.
 
 @use 'sass:map';
-@use '~@angular/material/theming' as mat-theming;
+@use '@angular/material' as mat;
 @use './theming';
 
 $colors-dark: (
@@ -30,21 +30,27 @@ $colors-dark: (
   log-viewer-text: #fff,
   log-viewer-scrollbar: rgb(200 200 200 / 0.66),
 );
-$kd-blue: map_merge(mat-theming.$mat-blue, (500: #327df4));
-$theme-dark: mat-theming.mat-dark-theme(
-  mat-theming.mat-palette($kd-blue),
-  mat-theming.mat-palette($kd-blue),
-  mat-theming.mat-palette($kd-blue)
-);
+$kd-blue: map.merge(mat.$blue-palette, (500: #327df4));
+$kd-palette: mat.define-palette($kd-blue);
+$theme-dark: mat.define-dark-theme((
+  color: (
+    primary: $kd-palette,
+    accent: $kd-palette,
+    warn: $kd-palette,
+  ),
+));
 $background: map.get($theme-dark, background);
-$background: map_merge($background, (background: #1d1d1d));
-$background: map_merge($background, (app-bar: #1d1d1d));
-$background: map_merge($background, (card: #2d2d2d));
-$background: map_merge($background, (dialog: #2d2d2d));
-$theme-dark: map_merge($theme-dark, (background: $background));
+$background: map.merge($background, (background: #1d1d1d));
+$background: map.merge($background, (app-bar: #1d1d1d));
+$background: map.merge($background, (card: #2d2d2d));
+$background: map.merge($background, (dialog: #2d2d2d));
+$theme-dark: map.merge($theme-dark, (background: $background));
+// Component themes read background/foreground from the color map — patch both.
+$color: map.merge(map.get($theme-dark, color), (background: $background));
+$theme-dark: map.merge($theme-dark, (color: $color));
 
 .kd-dark-theme {
-  @include mat-theming.angular-material-theme($theme-dark);
+  @include mat.all-legacy-component-themes($theme-dark);
   @include theming.kd-theme($theme-dark, $colors-dark);
 
   .kd-toolbar-logo-text,
