@@ -14,7 +14,6 @@
 
 import {HttpClient} from '@angular/common/http';
 import {ChangeDetectorRef, Component, OnInit, ViewChild, forwardRef} from '@angular/core';
-import {CrdAvailabilityService} from '@common/services/global/crd';
 import {CreateFromFormComponent} from '../component';
 import {FormPluginHostComponent} from '../pluginhost/component';
 import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from './contract';
@@ -67,7 +66,6 @@ export class CreateFromFormCardsComponent extends FormActionBar implements OnIni
   private activeForm_: FormPluginForm = null;
 
   constructor(
-    private readonly crdAvailability_: CrdAvailabilityService,
     private readonly http_: HttpClient,
     private readonly cdr_: ChangeDetectorRef
   ) {
@@ -124,19 +122,6 @@ export class CreateFromFormCardsComponent extends FormActionBar implements OnIni
         script: CRD_FORM_SCRIPT,
       },
     ];
-
-    // Product example card: only offered when a Kazoo media CRD is installed.
-    const kazooMediaCrd = this.crdAvailability_.installedNames().find(name => /media.*kazoo|kazoo.*media/.test(name));
-    if (kazooMediaCrd) {
-      this.cards.push({
-        id: 'kazoo-media',
-        title: 'Kazoo Media',
-        description: `Create a Kazoo media resource (${kazooMediaCrd}).`,
-        icon: 'library_music',
-        script: CRD_FORM_SCRIPT,
-        args: {presetPattern: 'media.*kazoo|kazoo.*media'},
-      });
-    }
 
     this.loadFormPlugins_();
   }
