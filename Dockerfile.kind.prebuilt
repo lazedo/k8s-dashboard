@@ -1,0 +1,14 @@
+# Assemble-only image for artifacts prebuilt by ./build-kind.sh (context =
+# dist-kind/). Same final layout as Dockerfile.kind's last stage; the build
+# itself runs in throwaway containers with host-mounted caches, so the docker
+# VM disk no longer accumulates ~6GB of buildkit cache per build.
+FROM alpine:3.20
+RUN apk add --no-cache git ca-certificates
+# git and kustomize's git loader clone into TMPDIR; give a writable HOME so git
+# runs as any (non-root) uid the pod is scheduled with.
+ENV HOME=/tmp
+COPY dashboard /dashboard
+COPY en /public/en
+COPY locale_conf.json /locale_conf.json
+EXPOSE 9090 8443
+ENTRYPOINT ["/dashboard", "--insecure-bind-address=0.0.0.0", "--bind-address=0.0.0.0"]

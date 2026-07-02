@@ -15,9 +15,11 @@
 @use '../../../../variables' as *;
 
 .kd-form-cards {
-  display: flex;
-  flex-wrap: wrap;
+  // Uniform grid (not content-sized flex): equal card widths and columns
+  // that line up across rows.
+  display: grid;
   gap: 2 * $baseline-grid;
+  grid-template-columns: repeat(auto-fill, minmax(45 * $baseline-grid, 1fr));
   padding: (2 * $baseline-grid) 0;
 }
 
@@ -27,8 +29,6 @@
   border-radius: 0.5 * $baseline-grid;
   display: flex;
   gap: 2 * $baseline-grid;
-  min-width: 40 * $baseline-grid;
-  max-width: 56 * $baseline-grid;
   padding: 2 * $baseline-grid;
 
   &:hover {

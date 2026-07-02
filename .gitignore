@@ -39,3 +39,7 @@ npm-debug.log
 aio/deploy/helm-chart/kubernetes-dashboard/charts
 # Stray go build artifact (package main built without -o):
 /backend
+
+# build-kind.sh host-side build artifacts and caches
+dist-kind/
+.build-cache/
