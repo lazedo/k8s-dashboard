@@ -6,9 +6,8 @@
 #   docker build -f Dockerfile.kind -t k8s-dashboard-plugins:dev .
 #   kind load docker-image k8s-dashboard-plugins:dev --name <cluster>
 
-# ---- frontend (Angular 14, Node 18 — node>=18 required by transitive deps
-#      with the repo's engine-strict npmrc) ----
-FROM node:18-bullseye AS frontend
+# ---- frontend (Angular 20+, Node 22) ----
+FROM node:22-bookworm AS frontend
 WORKDIR /src
 COPY package.json package-lock.json ./
 # --ignore-scripts: the postinstall is `make ensure-version && ngcc`, which needs
