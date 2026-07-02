@@ -23,7 +23,7 @@ import {CreateComponent} from './component';
 import {CreateFromCrdComponent} from './from/crd/component';
 import {CreateFromFileComponent} from './from/file/component';
 import {CreateFromFormCardsComponent} from './from/form/cards/component';
-import {CreateFromFormModule} from './from/form/module';
+import {CreateFromFormModule} from './from/form/stock/application/module';
 import {CreateFromInputComponent} from './from/input/component';
 import {CreateFromUrlComponent} from './from/url/component';
 import {FormPluginHostComponent} from './from/form/pluginhost/component';

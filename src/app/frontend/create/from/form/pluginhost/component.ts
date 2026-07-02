@@ -18,7 +18,7 @@ import {CreateService} from '@common/services/create/service';
 import {NamespaceService} from '@common/services/global/namespace';
 import {firstValueFrom} from 'rxjs';
 
-import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from '../cards/contract';
+import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from '../contract';
 
 // The ctx object handed to a FormPlugin script. The script renders arbitrary
 // HTML into its host element; the dashboard keeps ownership of the action bar

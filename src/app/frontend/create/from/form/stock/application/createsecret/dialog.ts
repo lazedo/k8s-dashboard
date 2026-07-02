@@ -20,35 +20,38 @@ import {IConfig} from '@api/root.ui';
 import {switchMap} from 'rxjs/operators';
 import {AlertDialog, AlertDialogConfig} from '@common/dialogs/alert/dialog';
 import {CsrfTokenService} from '@common/services/global/csrftoken';
-import {CONFIG_DI_TOKEN} from '../../../../index.config';
+import {CONFIG_DI_TOKEN} from '../../../../../../index.config';
 
-export interface CreateNamespaceDialogMeta {
-  namespaces: string[];
+export interface CreateSecretDialogMeta {
+  namespace: string;
 }
 
-/**
- * Displays new namespace creation dialog.
- */
 @Component({
-    selector: 'kd-create-namespace-dialog',
+    selector: 'kd-create-secret-dialog',
     templateUrl: 'template.html',
     standalone: false
 })
-export class CreateNamespaceDialog implements OnInit {
+export class CreateSecretDialog implements OnInit {
   form: UntypedFormGroup;
 
   /**
-   * Max-length validation rule for namespace
+   * Max-length validation rule for secretName.
    */
-  namespaceMaxLength = 63;
+  secretNameMaxLength = 253;
+
   /**
-   * Pattern validation rule for namespace
+   * Pattern validation rule for secretName.
    */
-  namespacePattern = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+  secretNamePattern = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$');
+
+  /**
+   * Pattern validating if the secret data is Base64 encoded.
+   */
+  dataPattern = new RegExp('^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$');
 
   constructor(
-    public dialogRef: MatDialogRef<CreateNamespaceDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: CreateNamespaceDialogMeta,
+    public dialogRef: MatDialogRef<CreateSecretDialog>,
+    @Inject(MAT_DIALOG_DATA) public data_: CreateSecretDialogMeta,
     private readonly http_: HttpClient,
     private readonly csrfToken_: CsrfTokenService,
     private readonly matDialog_: MatDialog,
@@ -58,44 +61,56 @@ export class CreateNamespaceDialog implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb_.group({
-      namespace: [
+      secretName: [
         '',
-        Validators.compose([Validators.maxLength(this.namespaceMaxLength), Validators.pattern(this.namespacePattern)]),
+        Validators.compose([
+          Validators.maxLength(this.secretNameMaxLength),
+          Validators.pattern(this.secretNamePattern),
+        ]),
       ],
+      data: ['', Validators.pattern(this.dataPattern)],
     });
   }
 
-  get namespace(): AbstractControl {
-    return this.form.get('namespace');
+  get secretName(): AbstractControl {
+    return this.form.get('secretName');
+  }
+
+  get data(): AbstractControl {
+    return this.form.get('data');
   }
 
   /**
-   * Creates new namespace based on the state of the controller.
+   * Creates new secret based on the state of the controller.
    */
-  createNamespace(): void {
+  createSecret(): void {
     if (!this.form.valid) return;
 
-    const namespaceSpec = {name: this.namespace.value};
+    const secretSpec = {
+      name: this.secretName.value,
+      namespace: this.data_.namespace,
+      data: this.data.value,
+    };
 
-    const tokenPromise = this.csrfToken_.getTokenForAction('namespace');
+    const tokenPromise = this.csrfToken_.getTokenForAction('secret');
     tokenPromise
       .pipe(
         switchMap(csrfToken =>
           this.http_.post<{valid: boolean}>(
-            'api/v1/namespace',
-            {...namespaceSpec},
+            'api/v1/secret/',
+            {...secretSpec},
             {headers: new HttpHeaders().set(this.appConfig_.csrfHeaderName, csrfToken.token)}
           )
         )
       )
       .subscribe(
         () => {
-          this.dialogRef.close(this.namespace.value);
+          this.dialogRef.close(this.secretName.value);
         },
         error => {
           this.dialogRef.close();
           const configData: AlertDialogConfig = {
-            title: 'Error creating namespace',
+            title: 'Error creating secret',
             message: error.data,
             confirmLabel: 'OK',
           };
@@ -105,14 +120,7 @@ export class CreateNamespaceDialog implements OnInit {
   }
 
   /**
-   * Returns true if new namespace name hasn't been filled by the user, i.e, is empty.
-   */
-  isDisabled(): boolean {
-    return this.data.namespaces.indexOf(this.namespace.value) >= 0;
-  }
-
-  /**
-   * Cancels the new namespace form.
+   * Cancels the create secret form.
    */
   cancel(): void {
     this.dialogRef.close();

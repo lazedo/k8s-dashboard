@@ -78,6 +78,11 @@
                 "glob": "**/*",
                 "input": "node_modules/ace-builds/src-noconflict",
                 "output": "/ace"
+              },
+              {
+                "glob": "form-plugins.md",
+                "input": "docs/plugins",
+                "output": "/assets/docs"
               }
             ],
             "stylePreprocessorOptions": {

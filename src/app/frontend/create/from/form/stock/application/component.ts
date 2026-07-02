@@ -35,7 +35,7 @@ import {HistoryService} from '@common/services/global/history';
 import {NamespaceService} from '@common/services/global/namespace';
 import {take, takeUntil} from 'rxjs/operators';
 
-import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from './cards/contract';
+import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from '../../contract';
 import {CreateNamespaceDialog} from './createnamespace/dialog';
 import {DeployLabel} from './deploylabel/deploylabel';
 import {validateUniqueName} from './validator/uniquename.validator';

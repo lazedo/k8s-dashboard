@@ -14,10 +14,11 @@
 
 import {HttpClient} from '@angular/common/http';
 import {ChangeDetectorRef, Component, OnInit, ViewChild, forwardRef} from '@angular/core';
-import {CreateFromFormComponent} from '../component';
+import {CreateFromFormComponent} from '../stock/application/component';
 import {FormPluginHostComponent} from '../pluginhost/component';
-import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from './contract';
-import {CRD_FORM_SCRIPT} from './scripts/crdform';
+import {FormActionBar, FormPluginButtonSpec, FormPluginForm} from '../contract';
+import {CRD_FORM_SCRIPT} from '../stock/crdform';
+import {DOCS_FORM_SCRIPT} from '../stock/docs';
 
 export interface FormCard {
   id: string;
@@ -120,6 +121,13 @@ export class CreateFromFormCardsComponent extends FormActionBar implements OnIni
         description: 'Create an object of any installed Custom Resource Definition from a form generated off its openAPI schema.',
         icon: 'extension',
         script: CRD_FORM_SCRIPT,
+      },
+      {
+        id: 'docs',
+        title: 'Documentation',
+        description: 'How to build a form plugin: the CRD, the (host, ctx) contract, styling and authoring.',
+        icon: 'menu_book',
+        script: DOCS_FORM_SCRIPT,
       },
     ];
 
