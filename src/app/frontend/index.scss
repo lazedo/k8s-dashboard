@@ -94,6 +94,14 @@ code {
   }
 }
 
+.mat-mdc-chip-set .mdc-evolution-chip-set__chips {
+  // Legacy .mat-chip-list-wrapper carried margin:-4px to swallow the outer
+  // chip margins at the stack edges; MDC dropped it (it only compensates the
+  // left side, -8px). Without this every chip stack grows 8px and list rows
+  // get visibly taller than the baseline.
+  margin: (-0.5 * $baseline-grid) !important;
+}
+
 .mat-mdc-chip.mat-mdc-standard-chip {
   // Compact pre-MDC chip (measured on the baseline: ~26px tall, 6x10 padding,
   // 4px margins): MDC sizes chips via a container-height token, pads the inner

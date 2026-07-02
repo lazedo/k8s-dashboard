@@ -359,10 +359,13 @@ limitations under the License.
         mat-button
         i18n>Cancel</button>
 
+<!-- No [hidden] here: the old `[hidden]="!isMoreOptionsEnabled()"` was inverted
+     (it would hide the toggle whenever advanced was off, making it unreachable)
+     and only "worked" pre-MDC because legacy .mat-button's display:inline-block
+     accidentally overrode the UA [hidden] rule. -->
 <button mat-button
         color="primary"
         (click)="switchMoreOptions()"
-        [hidden]="!isMoreOptionsEnabled()"
         i18n>
   {isMoreOptionsEnabled(), select, true {Hide advanced options} other {Show advanced options}}
 </button>
