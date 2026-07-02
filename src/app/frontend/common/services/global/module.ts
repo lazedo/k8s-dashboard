@@ -41,6 +41,7 @@ import {ClientPluginLoaderService} from '../pluginloader/clientloader.service';
 import {PinnerService} from './pinner';
 import {MeService} from './me';
 import {CrdAvailabilityService} from './crd';
+import {StatusFilterService} from './statusfilter';
 
 @NgModule({
   providers: [
@@ -67,6 +68,7 @@ import {CrdAvailabilityService} from './crd';
     LocalConfigLoaderService,
     DecoderService,
     CrdAvailabilityService,
+    StatusFilterService,
     {
       provide: APP_INITIALIZER,
       useFactory: init,

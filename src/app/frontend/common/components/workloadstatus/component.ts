@@ -15,6 +15,7 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {ResourcesRatio} from '@api/root.ui';
+import {StatusFilterService} from '@common/services/global/statusfilter';
 
 export const emptyResourcesRatio: ResourcesRatio = {
   cronJobRatio: [],
@@ -40,17 +41,23 @@ export class WorkloadStatusComponent {
   trimLabels = false;
   size = [350, 250];
 
-  constructor(private readonly router_: Router) {}
+  constructor(
+    private readonly router_: Router,
+    private readonly statusFilter_: StatusFilterService
+  ) {}
 
   // Clicking a status slice of a workload chart navigates to that workload's list
-  // filtered by the clicked status (?statusFilter=Running), preserving the
-  // namespace query param. `route` is the list route segment (e.g. 'deployment').
+  // filtered by the clicked status. The filter travels one-shot via
+  // StatusFilterService (not the URL), so it applies only to the list navigated
+  // to and never leaks into later navigations. `route` is the list route segment
+  // (e.g. 'deployment').
   onSelect(event: {name?: string; label?: string; value?: string} | string, route: string): void {
     const raw = typeof event === 'string' ? event : event?.name ?? event?.label ?? event?.value ?? '';
     // Ratio labels look like "Running: 3"; keep just the status word.
     const status = `${raw}`.split(':')[0].trim();
     if (status) {
-      this.router_.navigate([route], {queryParams: {statusFilter: status}, queryParamsHandling: 'merge'});
+      this.statusFilter_.set(route, status);
+      this.router_.navigate([route], {queryParamsHandling: 'preserve'});
     }
   }
 
