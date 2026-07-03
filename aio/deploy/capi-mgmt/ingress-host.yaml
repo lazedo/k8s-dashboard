@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/rules/0/host
+  value: dash.capi.m2.lazedo.k8s.2600hz.dev
+- op: replace
+  path: /spec/tls/0/hosts/0
+  value: dash.capi.m2.lazedo.k8s.2600hz.dev

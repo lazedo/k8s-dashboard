@@ -1,0 +1,15 @@
+# Dashboard on the capi-mgmt management cluster (CAPI fleet UI). Same stack as
+# kind/, different hostname and pinned image tag.
+#   kubectl --context kind-capi-mgmt apply -k aio/deploy/capi-mgmt
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../kind
+patches:
+  - path: ingress-host.yaml
+    target: {kind: Ingress, name: kubernetes-dashboard}
+images:
+  # The base already rewrites kubernetesui/dashboard → k8s-dashboard-plugins;
+  # overlays transform the base's OUTPUT, so match the rewritten name.
+  - name: k8s-dashboard-plugins
+    newTag: ng22-44
