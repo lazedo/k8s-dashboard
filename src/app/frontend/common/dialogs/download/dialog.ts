@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { HttpClient, HttpEventType, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
-import {Component, Inject, OnDestroy} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnDestroy} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {LogOptions} from '@api/root.api';
 import {saveAs} from 'file-saver';
@@ -53,7 +53,8 @@ export class LogsDownloadDialog implements OnDestroy {
     private readonly _dialogRef: MatDialogRef<LogsDownloadDialog>,
     @Inject(MAT_DIALOG_DATA) public data: LogsDownloadDialogMeta,
     private readonly logService: LogService,
-    private readonly http_: HttpClient
+    private readonly http_: HttpClient,
+    private readonly cdr_: ChangeDetectorRef
   ) {
     const logUrl = `api/v1/log/file/${data.namespace}/${data.pod}/${data.container}`;
 
@@ -75,8 +76,13 @@ export class LogsDownloadDialog implements OnDestroy {
             this.finished = true;
             this._result = new Blob([event.body as BlobPart], {type: 'text/plan'});
           }
+          // Zoneless: progress/completion land outside any marked view.
+          this.cdr_.markForCheck();
         },
-        error => (this._error = error.status)
+        error => {
+          this._error = error.status;
+          this.cdr_.markForCheck();
+        }
       );
   }
 

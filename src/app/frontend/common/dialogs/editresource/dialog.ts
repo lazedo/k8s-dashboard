@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { HttpClient } from '@angular/common/http';
+import {ChangeDetectorRef} from '@angular/core';
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatButtonToggleGroup} from '@angular/material/button-toggle';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
@@ -40,7 +41,8 @@ export class EditResourceDialog implements OnInit, OnDestroy {
   constructor(
     public dialogRef: MatDialogRef<EditResourceDialog>,
     @Inject(MAT_DIALOG_DATA) public data: ResourceMeta,
-    private readonly http_: HttpClient
+    private readonly http_: HttpClient,
+    private readonly cdr_: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +52,10 @@ export class EditResourceDialog implements OnInit, OnDestroy {
       .toPromise()
       .then(response => {
         this.text = toYaml(response);
+        // Zoneless: the response lands after the dialog's first render and
+        // nothing else marks this view — without this the editor stays blank
+        // until the YAML/JSON toggle forces a repaint.
+        this.cdr_.markForCheck();
       });
 
     this.buttonToggleGroup.valueChange.pipe(takeUntil(this.unsubscribe_)).subscribe((selectedMode: EditorMode) => {

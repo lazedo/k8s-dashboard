@@ -707,3 +707,32 @@ kd-logs {
     padding-bottom: 8px;
   }
 }
+
+// Namespace selector dropdown: the MDC panel inherits the trigger's width —
+// the toolbar trigger is deliberately compact (174px), which cramped the
+// panel and mid-word-wrapped long namespace names.
+.kd-namespace-select-panel.mat-mdc-select-panel {
+  min-width: 34 * $baseline-grid;
+
+  .mat-mdc-option .mdc-list-item__primary-text {
+    letter-spacing: normal;
+    white-space: nowrap;
+  }
+
+  .kd-namespace-select-input-container {
+    padding: $baseline-grid (2 * $baseline-grid);
+  }
+}
+
+// Icon buttons: MDC paints a state layer on hover and on ANY focus (a click
+// leaves a grey disc on the last-used action button until blur); the legacy
+// buttons only showed it for keyboard focus. Neutralize the always-on focus
+// veil, keep a subtle hover and restore the ring for keyboard users.
+.mat-mdc-icon-button {
+  --mat-mdc-icon-button-hover-state-layer-opacity: 0.04;
+  --mat-mdc-icon-button-focus-state-layer-opacity: 0;
+}
+
+.mat-mdc-icon-button.cdk-keyboard-focused .mat-mdc-button-persistent-ripple::before {
+  opacity: 0.12;
+}
