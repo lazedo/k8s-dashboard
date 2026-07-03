@@ -121,6 +121,9 @@ export interface PluginMetadata {
   name: string;
   path: string;
   dependencies: string[];
+  namespace?: string;
+  global?: boolean;
+  navHidden?: boolean;
 }
 
 export interface PluginsConfig {

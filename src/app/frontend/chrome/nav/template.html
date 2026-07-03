@@ -173,10 +173,46 @@ limitations under the License.
 
       <!-- Cluster API (hidden entirely when Cluster API is not installed) -->
       <ng-container *ngIf="hasAnyCrd(['machinedeployments.cluster.x-k8s.io', 'machinesets.cluster.x-k8s.io', 'machines.cluster.x-k8s.io'])">
-        <kd-nav-item class="kd-nav-group-item"
-                     state="/clusterapi"
+        <!-- The group header opens the navigator's map when the plugin's
+             CRDs are around; otherwise it stays the plain group label. -->
+        <kd-nav-item *ngIf="hasCrd('clusters.cluster.x-k8s.io')"
+                     class="kd-nav-group-item"
+                     state="/plugin/capi"
+                     [queryParams]="{view: 'map'}"
                      id="nav-clusterapi"
                      i18n>Cluster API </kd-nav-item>
+        <kd-nav-item *ngIf="!hasCrd('clusters.cluster.x-k8s.io')"
+                     class="kd-nav-group-item"
+                     state="/clusterapi"
+                     id="nav-clusterapi-plain"
+                     i18n>Cluster API </kd-nav-item>
+        <!-- Navigator plugin views (deep links; the plugin reacts to ?view=) -->
+        <ng-container *ngIf="hasCrd('clusters.cluster.x-k8s.io')">
+          <kd-nav-item class="kd-nav-item"
+                       state="/plugin/capi"
+                       [queryParams]="{view: 'clusters'}"
+                       id="nav-capi-clusters"
+                       i18n>Clusters
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item"
+                       state="/plugin/capi"
+                       [queryParams]="{view: 'clustersets'}"
+                       id="nav-capi-clustersets"
+                       i18n>Cluster Sets
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item"
+                       state="/plugin/capi"
+                       [queryParams]="{view: 'classes'}"
+                       id="nav-capi-classes"
+                       i18n>Classes
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item"
+                       state="/plugin/capi"
+                       [queryParams]="{view: 'providers'}"
+                       id="nav-capi-providers"
+                       i18n>Providers
+          </kd-nav-item>
+        </ng-container>
         <kd-nav-item *ngIf="hasCrd('machinedeployments.cluster.x-k8s.io')"
                      class="kd-nav-item"
                      state="/machinedeployment"

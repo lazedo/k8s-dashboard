@@ -16,6 +16,7 @@ import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/c
 import {PinnedResource} from '@api/root.api';
 import {NamespaceService} from '@common/services/global/namespace';
 import {PinnerService} from '@common/services/global/pinner';
+import {PluginsConfigService} from '@common/services/global/plugin';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
@@ -33,6 +34,7 @@ export class PinnerNavComponent implements OnInit, OnDestroy {
   constructor(
     private readonly pinner_: PinnerService,
     private readonly namespace_: NamespaceService,
+    private readonly plugins_: PluginsConfigService,
     private readonly cdr_: ChangeDetectorRef
   ) {}
 
@@ -62,7 +64,21 @@ export class PinnerNavComponent implements OnInit, OnDestroy {
   }
 
   getPinnedResources(): PinnedResource[] {
-    return this.pinner_.getPinnedForKind(this.kind).filter(r => this.isVisibleInCurrentNamespace_(r));
+    return this.pinner_
+      .getPinnedForKind(this.kind)
+      .filter(r => this.isVisibleInCurrentNamespace_(r))
+      .filter(r => !this.hasOwnNav_(r));
+  }
+
+  // Plugins that bring their own nav section (spec.navHidden) don't repeat
+  // under Plugins.
+  private hasOwnNav_(resource: PinnedResource): boolean {
+    if (this.kind !== 'plugin') {
+      return false;
+    }
+    return this.plugins_
+      .pluginsMetadata()
+      .some(p => p.navHidden && p.name === resource.name && (p.global ? resource.namespace === undefined : p.namespace === resource.namespace));
   }
 
   // A namespaced pin (e.g. a namespaced Plugin) only makes sense when its namespace

@@ -38,6 +38,7 @@ type Metadata struct {
 	Global       bool     `json:"global"`
 	Description  string   `json:"description,omitempty"`
 	Icon         string   `json:"icon,omitempty"`
+	NavHidden    bool     `json:"navHidden,omitempty"`
 }
 
 func toPluginMetadata(vs []Plugin, f func(plugin Plugin) Metadata) []Metadata {
@@ -92,6 +93,7 @@ func (h *Handler) handleConfig(request *restful.Request, response *restful.Respo
 			Global:       plugin.Global,
 			Description:  plugin.Description,
 			Icon:         plugin.Icon,
+			NavHidden:    plugin.NavHidden,
 		}
 	})
 	cfg.Errors = result.Errors

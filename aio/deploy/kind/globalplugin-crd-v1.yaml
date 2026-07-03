@@ -47,6 +47,9 @@ spec:
                   items: { type: string }
                 description: { type: string }
                 icon: { type: string }
+                # Plugins with their own nav section opt out of the pinned
+                # entries under the Plugins group.
+                navHidden: { type: boolean }
                 # Per-plugin proxy allow-list: the dashboard forwards GETs on
                 # /api/v1/globalplugin/{name}/proxy/{route.name}/... to the
                 # declared url, so browser-side plugin code can reach

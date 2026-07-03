@@ -45,6 +45,7 @@ type Plugin struct {
 	Global       bool           `json:"global"`
 	Description  string         `json:"description,omitempty"`
 	Icon         string         `json:"icon,omitempty"`
+	NavHidden    bool           `json:"navHidden,omitempty"`
 }
 
 type PluginCell v1alpha1.Plugin
@@ -103,6 +104,7 @@ func toPlugin(plugin v1alpha1.Plugin) Plugin {
 		Global:       false,
 		Description:  plugin.Spec.Description,
 		Icon:         plugin.Spec.Icon,
+		NavHidden:    plugin.Spec.NavHidden,
 	}
 }
 

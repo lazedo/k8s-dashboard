@@ -18,7 +18,8 @@ limitations under the License.
    class="kd-nav-item-button"
    [routerLink]="state"
    [routerLinkActiveOptions]="{exact: exact}"
-   queryParamsHandling="preserve"
+   [queryParams]="queryParams"
+   [queryParamsHandling]="queryParams ? 'merge' : 'preserve'"
    [routerLinkActive]="['kd-nav-item-button-active']">
   <ng-content></ng-content>
   <span *ngIf="namespaced"

@@ -40,6 +40,9 @@ type PluginSpec struct {
 	Description string `json:"description,omitempty"`
 	// Icon is an image URL or data-URI shown next to the plugin in the list.
 	Icon string `json:"icon,omitempty"`
+	// NavHidden keeps the plugin out of the side navigation (pinned plugin
+	// entries) — for plugins that bring their own nav section.
+	NavHidden bool `json:"navHidden,omitempty"`
 }
 
 // Source holds the information about the plugin's source code origin. Exactly one

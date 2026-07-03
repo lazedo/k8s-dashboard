@@ -57,6 +57,8 @@ export class NavItemComponent implements OnInit, OnDestroy {
   @Input() state: string;
   @Input() exact = false;
   @Input() namespaced = false;
+  // Optional query params (e.g. plugin deep links: /plugin/capi?view=map).
+  @Input() queryParams: {[key: string]: string} = null;
 
   animationState = NamespacedIndicatorState.Leave;
 
