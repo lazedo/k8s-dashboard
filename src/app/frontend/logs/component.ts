@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { HttpParams } from '@angular/common/http';
-import {Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {ActivatedRoute, Router} from '@angular/router';
 import {LogControl, LogDetails, LogLine, LogSelection, LogSources} from '@api/root.api';
@@ -59,7 +59,8 @@ export class LogsComponent implements OnDestroy {
     private readonly settingsService_: GlobalSettingsService,
     private readonly dialog_: MatDialog,
     private readonly notifications_: NotificationsService,
-    private readonly _router: Router
+    private readonly _router: Router,
+    private readonly cdr_: ChangeDetectorRef
   ) {
     this.isLoading = true;
     this.refreshInterval = this.settingsService_.getLogsAutoRefreshTimeInterval();
@@ -87,6 +88,9 @@ export class LogsComponent implements OnDestroy {
       .subscribe(data => {
         this.updateUiModel_(data);
         this.isLoading = false;
+        // Zoneless: the sources+logs chain resolves after the first render;
+        // without a mark the spinner never leaves.
+        this.cdr_.markForCheck();
       });
   }
 
@@ -281,6 +285,7 @@ export class LogsComponent implements OnDestroy {
         if (onLoad) {
           onLoad();
         }
+        this.cdr_.markForCheck();
       });
   }
 
