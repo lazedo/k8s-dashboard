@@ -184,12 +184,13 @@ code {
     }
   }
 
-  &:last-child {
-    padding-right: 0 !important;
-  }
-
+  // Baseline computes 0 padding on edge cells. MDC's default is 0 16px, and
+  // zeroing only the outer side left 16px of inner padding — in the 40px
+  // actions column that pushed the icon button out of its cell, clipping the
+  // state-layer disc against the card edge.
+  &:last-child,
   &:first-child {
-    padding-left: 0 !important;
+    padding: 0 !important;
   }
 }
 
