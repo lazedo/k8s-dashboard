@@ -16,14 +16,29 @@ limitations under the License.
 
 <div fxLayout="row"
      *ngIf="isVisible">
-  <kd-actionbar-detail-pin *ngIf="isInitialized"
+  <ng-container *ngFor="let button of plugin.buttons">
+    <button *ngIf="button.icon"
+            mat-icon-button
+            [matTooltip]="button.title || button.label"
+            (click)="runPluginAction(button)">
+      <mat-icon>{{ button.icon }}</mat-icon>
+    </button>
+    <button *ngIf="!button.icon"
+            mat-button
+            [matTooltip]="button.title"
+            (click)="runPluginAction(button)">{{ button.label }}</button>
+  </ng-container>
+
+  <kd-actionbar-detail-pin *ngIf="isInitialized && plugin.stock.pin"
                            [objectMeta]="resourceMeta?.objectMeta"
                            [typeMeta]="resourceMeta?.typeMeta"
                            [displayName]="resourceMeta?.displayName"
                            [namespaced]="resourceMeta?.namespaced"></kd-actionbar-detail-pin>
 
-  <kd-actionbar-detail-actions *ngIf="isInitialized"
+  <kd-actionbar-detail-actions *ngIf="isInitialized && (plugin.stock.edit || plugin.stock.delete)"
                                [objectMeta]="resourceMeta.objectMeta"
                                [typeMeta]="resourceMeta.typeMeta"
-                               [displayName]="resourceMeta.displayName"></kd-actionbar-detail-actions>
+                               [displayName]="resourceMeta.displayName"
+                               [showEdit]="plugin.stock.edit"
+                               [showDelete]="plugin.stock.delete"></kd-actionbar-detail-actions>
 </div>

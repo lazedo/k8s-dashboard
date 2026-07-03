@@ -16,6 +16,7 @@ import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ObjectMeta, TypeMeta} from '@api/root.api';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {resetPluginActionbar} from '@common/services/global/pluginactionbar';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
@@ -40,6 +41,8 @@ export class PluginDetailComponent implements OnInit, OnDestroy {
     // (plugin → plugin navigation), so track params as a stream — snapshot
     // alone would freeze the first plugin in place.
     this.activatedRoute_.params.pipe(takeUntil(this.unsubscribe_)).subscribe(params => {
+      // Each plugin declares its own actionbar; start from stock defaults.
+      resetPluginActionbar();
       this.pluginName = params.pluginName;
       this.emitActionbar_(params.pluginName, params.pluginNamespace);
       this.cdr_.markForCheck();
@@ -49,6 +52,7 @@ export class PluginDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe_.next();
     this.unsubscribe_.complete();
+    resetPluginActionbar();
     this.actionbar_.onDetailsLeave.emit();
   }
 

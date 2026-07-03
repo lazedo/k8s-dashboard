@@ -21,6 +21,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterModule} from '@angular/router';
 import {ChromeModule} from './chrome/module';
 import {installKdSchemaForm} from '@common/schemaform';
+import {installKdActionbar} from '@common/services/global/pluginactionbar';
 import {CoreModule} from './core.module';
 import {GlobalErrorHandler} from './error/handler';
 import {RootComponent} from './index.component';
@@ -50,5 +51,6 @@ export class RootModule {
     // window.kdSchemaForm: the shared schema->form generator, published for
     // GlobalPlugin bundles and FormPlugin scripts (see docs/plugins).
     installKdSchemaForm();
+    installKdActionbar();
   }
 }

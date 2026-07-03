@@ -24,4 +24,6 @@ export class ActionbarDetailActionsComponent {
   @Input() objectMeta: ObjectMeta;
   @Input() typeMeta: TypeMeta;
   @Input() displayName: string;
+  @Input() showEdit = true;
+  @Input() showDelete = true;
 }

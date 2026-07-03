@@ -16,6 +16,7 @@ import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {PluginActionButton, PluginActionbarState, pluginActionbarState} from '@common/services/global/pluginactionbar';
 
 @Component({
     selector: '',
@@ -26,6 +27,8 @@ export class PinDefaultActionbar implements OnInit, OnDestroy {
   isInitialized = false;
   isVisible = false;
   resourceMeta: ResourceMeta;
+  // Plugin-provided actionbar state (custom buttons + stock visibility).
+  plugin: PluginActionbarState = pluginActionbarState.value;
 
   private unsubscribe_ = new Subject<void>();
 
@@ -45,6 +48,20 @@ export class PinDefaultActionbar implements OnInit, OnDestroy {
       this.isVisible = false;
       this.cdr_.markForCheck();
     });
+
+    pluginActionbarState.pipe(takeUntil(this.unsubscribe_)).subscribe(state => {
+      this.plugin = state;
+      this.cdr_.markForCheck();
+    });
+  }
+
+  runPluginAction(button: PluginActionButton): void {
+    try {
+      button.onClick();
+    } catch (e) {
+      // A broken plugin button must not take the actionbar down with it.
+      console.error('plugin actionbar button failed', e);
+    }
   }
 
   ngOnDestroy(): void {
