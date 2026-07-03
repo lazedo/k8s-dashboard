@@ -13,8 +13,12 @@
 // No Angular dependencies on purpose: plain DOM, per-handle state, styling
 // via the global .kd-schema-form rules (index.scss).
 
+import {dump as toYaml, load as fromYaml} from 'js-yaml';
+
 interface Schema {
-  type?: string;
+  // JSON Schema allows union types ("type": ["boolean","null"]); normType_
+  // flattens those to the first non-null entry before any widget decision.
+  type?: string | string[];
   properties?: {[key: string]: Schema};
   required?: string[];
   items?: Schema;
@@ -51,7 +55,7 @@ export interface SchemaFormHandle {
 }
 
 interface DynEntry {
-  kind: 'map' | 'arr' | 'objarr';
+  kind: 'map' | 'arr' | 'objarr' | 'maparr';
   schema: Schema | null;
 }
 
@@ -62,8 +66,18 @@ function esc(value: unknown): string {
   );
 }
 
+function normType(schema: Schema | null | undefined): string | undefined {
+  if (!schema || schema.type == null) {
+    return undefined;
+  }
+  if (Array.isArray(schema.type)) {
+    return (schema.type as string[]).filter(t => t !== 'null')[0];
+  }
+  return schema.type as string;
+}
+
 function isScalar(schema: Schema | null | undefined): boolean {
-  return !!schema && ['string', 'integer', 'number', 'boolean'].indexOf(schema.type || '') >= 0;
+  return !!schema && ['string', 'integer', 'number', 'boolean'].indexOf(normType(schema) || '') >= 0;
 }
 
 function setPath(target: {[k: string]: unknown}, segments: string[], value: unknown): void {
@@ -120,6 +134,9 @@ class Form implements SchemaFormHandle {
       if (target.classList.contains('kdf-add')) {
         const box = target.closest('.kdf-dyn') as HTMLElement;
         box.querySelector('.kdf-rows').insertAdjacentHTML('beforeend', this.row_(this.dyn_[Number(box.getAttribute('data-dyn'))]));
+      } else if (target.classList.contains('kdf-addpair')) {
+        // Free-form entry of a maparr: append one key/value pair to it.
+        target.closest('.kdf-entry').querySelector('.kdf-rows').insertAdjacentHTML('beforeend', this.pairRow_());
       } else if (target.classList.contains('kdf-remove')) {
         const row = target.closest('.kdf-row') || target.closest('.kdf-entry');
         if (row) {
@@ -179,7 +196,8 @@ class Form implements SchemaFormHandle {
       );
     }
     const placeholder = def != null && typeof def !== 'object' ? ` placeholder="${esc(def)}"` : '';
-    if (schema.type === 'integer' || schema.type === 'number') {
+    const type = normType(schema);
+    if (type === 'integer' || type === 'number') {
       return `<input type="number" class="${cls}"${extra}${placeholder}${value}>`;
     }
     return `<input type="text" class="${cls}"${extra}${placeholder}${value} autocomplete="off">`;
@@ -204,6 +222,15 @@ class Form implements SchemaFormHandle {
     );
   }
 
+  private pairRow_(key?: string, value?: unknown): string {
+    const keyAttr = key != null ? ` value="${esc(key)}"` : '';
+    return (
+      `<div class="kdf-row"><input type="text" class="kdf-k" placeholder="key"${keyAttr} autocomplete="off">` +
+      this.scalarInput_(null, 'kdf-v', '', value) +
+      '<button type="button" class="kdf-remove" title="Remove">&#10005;</button></div>'
+    );
+  }
+
   private row_(entry: DynEntry, key?: string, value?: unknown): string {
     if (entry.kind === 'map') {
       const keyAttr = key != null ? ` value="${esc(key)}"` : '';
@@ -220,6 +247,22 @@ class Form implements SchemaFormHandle {
         '<button type="button" class="kdf-remove" title="Remove">&#10005;</button></div>'
       );
     }
+    if (entry.kind === 'maparr') {
+      // One list entry = a free-form object edited as key/value pairs
+      // (tolerations, extraEnv and friends — schemas that say "array of
+      // objects" without naming the fields).
+      const pairs =
+        value != null && typeof value === 'object' && !Array.isArray(value)
+          ? Object.keys(value as object)
+              .map(k => this.pairRow_(k, (value as {[k: string]: unknown})[k]))
+              .join('')
+          : this.pairRow_();
+      return (
+        `<div class="kdf-entry"><div class="kdf-rows">${pairs}</div>` +
+        '<button type="button" class="kdf-addpair">Add field</button>' +
+        '<button type="button" class="kdf-remove">Remove</button></div>'
+      );
+    }
     const schema = entry.schema || {};
     const required = schema.required || [];
     const fields = Object.keys(schema.properties || {})
@@ -232,6 +275,9 @@ class Form implements SchemaFormHandle {
 
   private field_(path: string, name: string, schema: Schema, required: boolean, depth: number, rel: boolean, initial?: unknown): string {
     schema = schema || {};
+    if (Array.isArray(schema.type)) {
+      schema = {...schema, type: normType(schema)};
+    }
     const attr = ` ${rel ? 'data-rel' : 'data-path'}="${esc(path)}"`;
     const type = schema.type || (schema.properties ? 'object' : undefined);
     const maxDepth = this.opts_.maxDepth == null ? Infinity : this.opts_.maxDepth;
@@ -253,14 +299,22 @@ class Form implements SchemaFormHandle {
         .join('');
       return `<fieldset><legend>${esc(name)}</legend>${this.hint_(schema)}${children}</fieldset>`;
     }
-    if (type === 'object' && !schema.properties && !rel) {
+    // Dynamic sections work at any nesting: collect resolves data-dynpath
+    // relative to the object it walks (the root, or the enclosing entry).
+    if (type === 'object' && !schema.properties) {
       const valueSchema = typeof schema.additionalProperties === 'object' ? schema.additionalProperties : null;
       return this.dynSection_('map', path, name, schema, valueSchema, initial);
     }
-    if (type === 'array' && !rel) {
-      const items = schema.items || {};
+    if (type === 'array') {
+      let items = schema.items || {};
+      if (Array.isArray(items.type)) {
+        items = {...items, type: normType(items)};
+      }
       if (items.type === 'object' && items.properties) {
         return this.dynSection_('objarr', path, name, schema, items, initial);
+      }
+      if (items.type === 'object' || (!items.type && !items.enum && !isScalar(items))) {
+        return this.dynSection_('maparr', path, name, schema, items, initial);
       }
       if (isScalar(items) || items.enum) {
         return this.dynSection_('arr', path, name, schema, items, initial);
@@ -321,14 +375,15 @@ class Form implements SchemaFormHandle {
     if (value === '' || value == null) {
       return undefined;
     }
-    if (schema && (schema.type === 'integer' || schema.type === 'number')) {
+    const type = normType(schema);
+    if (type === 'integer' || type === 'number') {
       const parsed = Number(value);
       if (isNaN(parsed)) {
         throw new Error(`Invalid number: ${value}`);
       }
       return parsed;
     }
-    if (schema && schema.type === 'boolean') {
+    if (type === 'boolean') {
       return value === 'true';
     }
     if (schema) {
@@ -366,6 +421,23 @@ class Form implements SchemaFormHandle {
         const value = this.scalarValue_(input as HTMLInputElement, entry.schema);
         if (value !== undefined) {
           list.push(value);
+        }
+      });
+      return list.length ? list : undefined;
+    }
+    if (entry.kind === 'maparr') {
+      const list: Array<{[k: string]: unknown}> = [];
+      box.querySelectorAll(':scope > .kdf-rows > .kdf-entry').forEach(entryEl => {
+        const obj: {[k: string]: unknown} = {};
+        entryEl.querySelectorAll(':scope > .kdf-rows > .kdf-row').forEach(row => {
+          const key = (row.querySelector('.kdf-k') as HTMLInputElement).value.trim();
+          const value = this.scalarValue_(row.querySelector('.kdf-v') as HTMLInputElement, null);
+          if (key && value !== undefined) {
+            obj[key] = value;
+          }
+        });
+        if (Object.keys(obj).length) {
+          list.push(obj);
         }
       });
       return list.length ? list : undefined;
@@ -410,9 +482,18 @@ export function renderSchemaForm(container: HTMLElement, schema: {}, opts?: Sche
 
 // Publish for plugin bundles and FormPlugin scripts. Additive evolution only;
 // bump version when the surface grows so consumers can feature-detect.
+// v2: nested dynamic sections, maparr (arrays of free-form objects as
+// key/value entries), window.kdYaml.
 export function installKdSchemaForm(): void {
   (window as unknown as {kdSchemaForm: {}}).kdSchemaForm = {
-    version: 1,
+    version: 2,
     render: renderSchemaForm,
+  };
+  // The dashboard bundles js-yaml anyway (resource editors); share it so
+  // plugins can offer YAML editing without shipping a parser of their own.
+  (window as unknown as {kdYaml: {}}).kdYaml = {
+    version: 1,
+    dump: toYaml,
+    load: fromYaml,
   };
 }

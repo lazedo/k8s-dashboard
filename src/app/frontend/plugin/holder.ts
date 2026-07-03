@@ -12,7 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Injector, Input, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
+import {
+  Component,
+  Injector,
+  Input,
+  NgModuleRef,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 
 import {PluginLoaderService} from '@common/services/pluginloader/pluginloader.service';
 
@@ -28,10 +39,13 @@ import {PluginLoaderService} from '@common/services/pluginloader/pluginloader.se
   `,
     standalone: false
 })
-export class PluginHolderComponent implements OnInit {
+export class PluginHolderComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('pluginViewRef', {read: ViewContainerRef, static: true}) vcRef: ViewContainerRef;
   @Input('pluginName') private pluginName: string;
   entryError = false;
+
+  private moduleRef_: NgModuleRef<unknown> | null = null;
+  private loadToken_ = 0;
 
   constructor(private injector: Injector, private pluginLoader: PluginLoaderService) {}
 
@@ -43,17 +57,47 @@ export class PluginHolderComponent implements OnInit {
     }
   }
 
+  // Router reuses this view when navigating plugin → plugin (only the route
+  // param changes): swap the mounted plugin instead of keeping the old one.
+  ngOnChanges(changes: SimpleChanges) {
+    const change = changes['pluginName'];
+    if (change && !change.firstChange && change.currentValue !== change.previousValue) {
+      this.loadPlugin(change.currentValue);
+    }
+  }
+
+  ngOnDestroy() {
+    this.loadToken_++;
+    this.teardown_();
+  }
+
   loadPlugin(pluginName: string) {
+    const token = ++this.loadToken_;
+    this.teardown_();
+    this.entryError = false;
     this.pluginLoader.load(pluginName).then(moduleFactory => {
+      if (token !== this.loadToken_) {
+        // A newer navigation superseded this load.
+        return;
+      }
       const moduleRef = moduleFactory.create(this.injector);
       const entryComponent = (moduleFactory.moduleType as any).entry;
       try {
         // ComponentFactoryResolver is gone in Angular 22; createComponent takes
         // the type plus the plugin module's injector/ngModuleRef directly.
         this.vcRef.createComponent(entryComponent, {ngModuleRef: moduleRef});
+        this.moduleRef_ = moduleRef;
       } catch (e) {
         this.entryError = true;
       }
     });
+  }
+
+  private teardown_(): void {
+    this.vcRef.clear();
+    if (this.moduleRef_) {
+      this.moduleRef_.destroy();
+      this.moduleRef_ = null;
+    }
   }
 }
