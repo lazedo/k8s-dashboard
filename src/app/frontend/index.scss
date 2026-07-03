@@ -737,3 +737,15 @@ kd-logs {
 .mat-mdc-icon-button.cdk-keyboard-focused .mat-mdc-button-persistent-ripple::before {
   opacity: 0.12;
 }
+
+// Plugin actionbar buttons may use emoji as icons; render them as white
+// silhouettes so they sit beside the toolbar's white material icons instead
+// of shouting in color.
+.kd-plugin-action mat-icon {
+  filter: grayscale(1) brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.kd-plugin-action:hover mat-icon {
+  opacity: 1;
+}

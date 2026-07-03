@@ -90,7 +90,15 @@ export class PinnerService {
     return this.isInitialized_;
   }
 
+  // The detail actionbar reports cluster-scoped plugins as kind
+  // 'globalplugin' (that is what the verber needs for edit/delete), but pins
+  // have always been stored as 'plugin' with no namespace — keep that.
+  private aliasKind_(kind: string): string {
+    return kind === 'globalplugin' ? 'plugin' : kind;
+  }
+
   pin(kind: string, name: string, namespace: string, displayName: string, namespaced?: boolean): void {
+    kind = this.aliasKind_(kind);
     // Optimistically update the local cache so OnPush views (e.g. the plugin
     // cards) reflect the new state immediately, before the PUT + reload round
     // trips. The server response reconciles via load(); errors revert it.
@@ -105,6 +113,7 @@ export class PinnerService {
   }
 
   unpin(kind: string, name: string, namespace: string): void {
+    kind = this.aliasKind_(kind);
     let url = `${this.endpoint_}/${kind}`;
     if (namespace !== undefined) {
       url += `/${namespace}`;
@@ -126,6 +135,7 @@ export class PinnerService {
   }
 
   isPinned(kind: string, name: string, namespace?: string): boolean {
+    kind = this.aliasKind_(kind);
     for (const pinnedResource of this.pinnedResources_) {
       if (pinnedResource.name === name && pinnedResource.kind === kind && pinnedResource.namespace === namespace) {
         return true;

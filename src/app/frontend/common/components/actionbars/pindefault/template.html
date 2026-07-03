@@ -19,12 +19,14 @@ limitations under the License.
   <ng-container *ngFor="let button of plugin.buttons">
     <button *ngIf="button.icon"
             mat-icon-button
+            class="kd-plugin-action"
             [matTooltip]="button.title || button.label"
             (click)="runPluginAction(button)">
       <mat-icon>{{ button.icon }}</mat-icon>
     </button>
     <button *ngIf="!button.icon"
             mat-button
+            class="kd-plugin-action"
             [matTooltip]="button.title"
             (click)="runPluginAction(button)">{{ button.label }}</button>
   </ng-container>
