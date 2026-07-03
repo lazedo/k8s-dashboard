@@ -146,6 +146,7 @@ const (
 	ResourceKindRole                     = "role"
 	ResourceKindRoleBinding              = "rolebinding"
 	ResourceKindPlugin                   = "plugin"
+	ResourceKindGlobalPlugin             = "globalplugin"
 	ResourceKindEndpoint                 = "endpoint"
 	ResourceKindNetworkPolicy            = "networkpolicy"
 	ResourceKindIngressClass             = "ingressclass"
@@ -272,6 +273,7 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindRole:                     {"roles", ClientTypeRbacClient, true},
 	ResourceKindRoleBinding:              {"rolebindings", ClientTypeRbacClient, true},
 	ResourceKindPlugin:                   {"plugins", ClientTypePluginsClient, true},
+	ResourceKindGlobalPlugin:             {"globalplugins", ClientTypePluginsClient, false},
 }
 
 // IsSelectorMatching returns true when an object with the given selector targets the same

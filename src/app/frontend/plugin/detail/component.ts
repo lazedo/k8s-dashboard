@@ -58,8 +58,10 @@ export class PluginDetailComponent implements OnInit, OnDestroy {
   // namespaced — this keeps the "N" indicator off its actionbar pin.
   private emitActionbar_(name: string, namespace: string | undefined): void {
     const objectMeta = {name, namespace} as ObjectMeta;
-    const typeMeta = {kind: 'plugin'} as TypeMeta;
     const namespaced = !!namespace;
+    // GlobalPlugins are cluster-scoped: their own kind keeps the verber from
+    // demanding a namespace on edit/delete.
+    const typeMeta = {kind: namespaced ? 'plugin' : 'globalplugin'} as TypeMeta;
     // Defer to a microtask: PinDefaultActionbar (named outlet) subscribes to
     // onInit in its own ngOnInit, which may run after this one. CRDs avoid the
     // race because they emit from an async HTTP subscribe; we have no fetch, so
