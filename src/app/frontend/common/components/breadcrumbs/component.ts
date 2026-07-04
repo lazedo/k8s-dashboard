@@ -17,6 +17,7 @@ import {ActivatedRoute, NavigationEnd, Params, Route, Router} from '@angular/rou
 import {Breadcrumb, IMessage} from '@api/root.ui';
 import {distinctUntilChanged, filter} from 'rxjs/operators';
 import {MESSAGES_DI_TOKEN} from '../../../index.messages';
+import {pluginActionbarState} from '@common/services/global/pluginactionbar';
 import {POD_DETAIL_ROUTE} from '../../../resource/workloads/pod/routing';
 import {REPLICASET_DETAIL_ROUTE} from '../../../resource/workloads/replicaset/routing';
 import {REPLICATIONCONTROLLER_DETAIL_ROUTE} from '../../../resource/workloads/replicationcontroller/routing';
@@ -34,6 +35,7 @@ export const SEARCH_BREADCRUMB_PLACEHOLDER = '___SEARCH_BREADCRUMB_PLACEHOLDER__
 })
 export class BreadcrumbsComponent implements OnInit {
   breadcrumbs: Breadcrumb[];
+  private pluginTrail_: string[] | null = null;
 
   constructor(
     private readonly _cdr: ChangeDetectorRef,
@@ -45,6 +47,13 @@ export class BreadcrumbsComponent implements OnInit {
   ngOnInit(): void {
     this._initBreadcrumbs();
     this._registerNavigationHook();
+    // Plugins that own a nav section (kdActionbar breadcrumb) replace the
+    // Plugins > name trail with their own.
+    pluginActionbarState.subscribe(state => {
+      this.pluginTrail_ = state.breadcrumb;
+      this._initBreadcrumbs();
+      this._cdr.markForCheck();
+    });
   }
 
   private _registerNavigationHook(): void {
@@ -61,6 +70,10 @@ export class BreadcrumbsComponent implements OnInit {
   }
 
   private _initBreadcrumbs(): void {
+    if (this.pluginTrail_) {
+      this.breadcrumbs = this.pluginTrail_.map(label => ({label, stateLink: []}) as Breadcrumb);
+      return;
+    }
     const currentRoute = this._getCurrentRoute();
     const url = this._router.url.includes('?') ? this._router.url.split('?')[0] : '';
     let urlArray = url.split('/');

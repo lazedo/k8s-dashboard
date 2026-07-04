@@ -32,11 +32,15 @@ export interface PluginStockActions {
 export interface PluginActionbarState {
   buttons: PluginActionButton[];
   stock: PluginStockActions;
+  // When set, replaces the breadcrumb trail (e.g. ['Cluster API', 'Classes'])
+  // — for plugins that own a nav section instead of living under Plugins.
+  breadcrumb: string[] | null;
 }
 
 const DEFAULT_STATE: PluginActionbarState = {
   buttons: [],
   stock: {pin: true, edit: true, delete: true},
+  breadcrumb: null,
 };
 
 export const pluginActionbarState = new BehaviorSubject<PluginActionbarState>(DEFAULT_STATE);
@@ -48,11 +52,12 @@ export function resetPluginActionbar(): void {
 export function installKdActionbar(): void {
   (window as unknown as {kdActionbar: {}}).kdActionbar = {
     version: 1,
-    set(opts: {buttons?: PluginActionButton[]; stock?: Partial<PluginStockActions>}): void {
+    set(opts: {buttons?: PluginActionButton[]; stock?: Partial<PluginStockActions>; breadcrumb?: string[]}): void {
       opts = opts || {};
       pluginActionbarState.next({
         buttons: opts.buttons || [],
         stock: {...DEFAULT_STATE.stock, ...(opts.stock || {})},
+        breadcrumb: opts.breadcrumb && opts.breadcrumb.length ? opts.breadcrumb : null,
       });
     },
     reset: resetPluginActionbar,
