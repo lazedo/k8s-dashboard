@@ -12,4 +12,4 @@ images:
   # The base already rewrites kubernetesui/dashboard → k8s-dashboard-plugins;
   # overlays transform the base's OUTPUT, so match the rewritten name.
   - name: k8s-dashboard-plugins
-    newTag: ng22-58
+    newTag: ng22-59

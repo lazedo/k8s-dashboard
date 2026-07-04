@@ -212,6 +212,12 @@ limitations under the License.
                        id="nav-capi-providers"
                        i18n>Providers
           </kd-nav-item>
+          <kd-nav-item class="kd-nav-item"
+                       state="/plugin/capi"
+                       [queryParams]="{view: 'credentials'}"
+                       id="nav-capi-credentials"
+                       i18n>Credentials
+          </kd-nav-item>
         </ng-container>
         <kd-nav-item *ngIf="hasCrd('machinedeployments.cluster.x-k8s.io')"
                      class="kd-nav-item"
