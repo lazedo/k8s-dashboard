@@ -1,0 +1,18 @@
+# Dashboard on the kz-eu GKE clusterset. Same stack as kind/, but: image from
+# ghcr (GKE cannot see kind-loaded images), auth against the kz-eu dex/oauth2
+# stack, certs from the public Let's Encrypt issuer, and a per-region host
+# supplied by the tiny region overlays (kz-eu-west1/, ...).
+#   kubectl --kubeconfig <kc> apply -k aio/deploy/kz-eu-west1
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../kind
+patches:
+  - path: ingress-auth.yaml
+    target: {kind: Ingress, name: kubernetes-dashboard}
+  - path: pull-secret.yaml
+    target: {kind: Deployment, name: kubernetes-dashboard}
+images:
+  - name: k8s-dashboard-plugins
+    newName: ghcr.io/lazedo/k8s-dashboard-plugins
+    newTag: ng22-59
