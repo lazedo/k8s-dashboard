@@ -7,7 +7,7 @@
 #   kind load docker-image k8s-dashboard-plugins:dev --name <cluster>
 
 # ---- frontend (Angular 20+, Node 22) ----
-FROM node:22-bookworm AS frontend
+FROM --platform=$BUILDPLATFORM node:22-bookworm AS frontend
 WORKDIR /src
 COPY package.json package-lock.json ./
 # --ignore-scripts: the postinstall is `make ensure-version && ngcc`, which needs
@@ -28,12 +28,13 @@ RUN printf "%s\n" \
 RUN printf '{"version":"v2.7.0","defaultLocale":"en","supportedLocales":["en"],"translations":["en"]}' > /frontend/locale_conf.json
 
 # ---- backend (Go 1.19) ----
-FROM golang:1.26-bookworm AS backend
+FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS backend
+ARG TARGETARCH
 WORKDIR /go/src/github.com/kubernetes/dashboard
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -a -installsuffix cgo \
       -ldflags "-X github.com/kubernetes/dashboard/src/app/backend/client.Version=v2.7.0-plugins" \
       -o /dashboard ./src/app/backend
 
