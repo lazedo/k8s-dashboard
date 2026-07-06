@@ -171,60 +171,23 @@ limitations under the License.
                    i18n>Service Accounts
       </kd-nav-item>
 
-      <!-- Cluster API (hidden entirely when Cluster API is not installed) -->
-      <ng-container *ngIf="hasAnyCrd(['machinedeployments.cluster.x-k8s.io', 'machinesets.cluster.x-k8s.io', 'machines.cluster.x-k8s.io'])">
-        <!-- The group header opens the navigator's map when the plugin's
-             CRDs are around; otherwise it stays the plain group label. -->
-        <kd-nav-item *ngIf="hasCrd('clusters.cluster.x-k8s.io')"
-                     class="kd-nav-group-item"
-                     state="/plugin/capi"
-                     [queryParams]="{view: 'map'}"
-                     id="nav-clusterapi"
-                     i18n>Cluster API </kd-nav-item>
-        <kd-nav-item *ngIf="!hasCrd('clusters.cluster.x-k8s.io')"
-                     class="kd-nav-group-item"
-                     state="/clusterapi"
-                     id="nav-clusterapi-plain"
-                     i18n>Cluster API </kd-nav-item>
-        <!-- Navigator plugin views (deep links; the plugin reacts to ?view=) -->
-        <ng-container *ngIf="hasCrd('clusters.cluster.x-k8s.io')">
-          <kd-nav-item class="kd-nav-item"
-                       state="/plugin/capi"
-                       [queryParams]="{view: 'clusters'}"
-                       id="nav-capi-clusters"
-                       i18n>Clusters
-          </kd-nav-item>
-          <kd-nav-item class="kd-nav-item"
-                       state="/plugin/capi"
-                       [queryParams]="{view: 'clustersets'}"
-                       id="nav-capi-clustersets"
-                       i18n>Cluster Sets
-          </kd-nav-item>
-          <kd-nav-item class="kd-nav-item"
-                       state="/plugin/capi"
-                       [queryParams]="{view: 'classes'}"
-                       id="nav-capi-classes"
-                       i18n>Classes
-          </kd-nav-item>
-          <kd-nav-item class="kd-nav-item"
-                       state="/plugin/capi"
-                       [queryParams]="{view: 'providers'}"
-                       id="nav-capi-providers"
-                       i18n>Providers
-          </kd-nav-item>
-          <kd-nav-item class="kd-nav-item"
-                       state="/plugin/capi"
-                       [queryParams]="{view: 'credentials'}"
-                       id="nav-capi-credentials"
-                       i18n>Credentials
-          </kd-nav-item>
-          <kd-nav-item class="kd-nav-item"
-                       state="/plugin/capi"
-                       [queryParams]="{view: 'addons'}"
-                       id="nav-capi-addons"
-                       i18n>Addons
-          </kd-nav-item>
-        </ng-container>
+      <!-- Plugin-declared nav groups (GlobalPlugin/Plugin spec.nav): the
+           header opens the plugin at headerView; each item deep-links a
+           ?view=. requiresCrd gates the group on subsystem presence. -->
+      <ng-container *ngFor="let p of pluginNavGroups()">
+        <kd-nav-item class="kd-nav-group-item"
+                     [state]="pluginState(p)"
+                     [queryParams]="{view: p.nav.headerView || (p.nav.items && p.nav.items.length ? p.nav.items[0].view : '')}"
+                     [id]="'nav-plugin-' + p.name">{{p.nav.group}}
+        </kd-nav-item>
+        <kd-nav-item *ngFor="let item of (p.nav.items || [])"
+                     class="kd-nav-item"
+                     [state]="pluginState(p)"
+                     [queryParams]="{view: item.view}"
+                     [id]="'nav-plugin-' + p.name + '-' + item.view">{{item.title}}
+        </kd-nav-item>
+      </ng-container>
+
         <kd-nav-item *ngIf="hasCrd('machinedeployments.cluster.x-k8s.io')"
                      class="kd-nav-item"
                      state="/machinedeployment"
@@ -246,7 +209,6 @@ limitations under the License.
                      [namespaced]="true"
                      i18n>Machines
         </kd-nav-item>
-      </ng-container>
 
       <!-- Scaling & Availability -->
       <kd-nav-item class="kd-nav-group-item"

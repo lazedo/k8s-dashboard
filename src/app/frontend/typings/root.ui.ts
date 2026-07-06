@@ -117,6 +117,18 @@ export interface StateError {
   error: KdError;
 }
 
+export interface PluginNavItem {
+  title: string;
+  view: string;
+}
+
+export interface PluginNav {
+  group: string;
+  headerView?: string;
+  requiresCrd?: string;
+  items?: PluginNavItem[];
+}
+
 export interface PluginMetadata {
   name: string;
   path: string;
@@ -124,6 +136,7 @@ export interface PluginMetadata {
   namespace?: string;
   global?: boolean;
   navHidden?: boolean;
+  nav?: PluginNav;
 }
 
 export interface PluginsConfig {

@@ -15,4 +15,4 @@ patches:
 images:
   - name: k8s-dashboard-plugins
     newName: ghcr.io/lazedo/k8s-dashboard-plugins
-    newTag: ng22-59
+    newTag: ng22-60

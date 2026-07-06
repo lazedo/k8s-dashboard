@@ -19,6 +19,7 @@ import {takeUntil} from 'rxjs/operators';
 
 import {NavService} from '@common/services/nav/service';
 import {PluginsConfigService} from '@common/services/global/plugin';
+import {PluginMetadata} from '@api/root.ui';
 import {CrdAvailabilityService} from '@common/services/global/crd';
 import {VerberService} from '@common/services/global/verber';
 
@@ -64,6 +65,17 @@ export class NavComponent implements OnInit, OnDestroy {
   // (namespaced anywhere, or global) actually exists.
   showPlugin(): boolean {
     return this.pluginsConfigService_.status() === 200 && this.pluginsConfigService_.anyPlugins();
+  }
+
+  // Plugin-declared nav groups (spec.nav): a header entry that opens the
+  // plugin plus one entry per item, optionally gated on a CRD. This is how a
+  // plugin claims a first-class spot in the side nav without a rebuild.
+  pluginNavGroups(): PluginMetadata[] {
+    return this.pluginsConfigService_.navGroups().filter(p => !p.nav.requiresCrd || this.hasCrd(p.nav.requiresCrd));
+  }
+
+  pluginState(p: PluginMetadata): string {
+    return '/plugin/' + p.name;
   }
 
   // hasCrd hides nav items for optional CRD-backed resources that are not

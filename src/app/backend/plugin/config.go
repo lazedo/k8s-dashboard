@@ -19,6 +19,7 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 	"github.com/kubernetes/dashboard/src/app/backend/handler/parser"
+	"github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -39,6 +40,7 @@ type Metadata struct {
 	Description  string   `json:"description,omitempty"`
 	Icon         string   `json:"icon,omitempty"`
 	NavHidden    bool     `json:"navHidden,omitempty"`
+	Nav          *v1alpha1.PluginNav `json:"nav,omitempty"`
 }
 
 func toPluginMetadata(vs []Plugin, f func(plugin Plugin) Metadata) []Metadata {
@@ -94,6 +96,7 @@ func (h *Handler) handleConfig(request *restful.Request, response *restful.Respo
 			Description:  plugin.Description,
 			Icon:         plugin.Icon,
 			NavHidden:    plugin.NavHidden,
+			Nav:          plugin.Nav,
 		}
 	})
 	cfg.Errors = result.Errors

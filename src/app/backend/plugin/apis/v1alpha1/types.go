@@ -43,6 +43,12 @@ type PluginSpec struct {
 	// NavHidden keeps the plugin out of the side navigation (pinned plugin
 	// entries) — for plugins that bring their own nav section.
 	NavHidden bool `json:"navHidden,omitempty"`
+
+	// Nav lets the plugin declare its own side-navigation group: a header
+	// that opens the plugin (with HeaderView as ?view=) and one entry per
+	// item. RequiresCrd gates the whole group on a CRD being present, so a
+	// plugin for an uninstalled subsystem stays out of the menu.
+	Nav *PluginNav `json:"nav,omitempty"`
 }
 
 // Source holds the information about the plugin's source code origin. Exactly one
@@ -72,4 +78,19 @@ type PluginList struct {
 	metav1.ListMeta `json:"metadata"`
 
 	Items []Plugin `json:"items"`
+}
+
+
+// PluginNav declares a plugin-owned navigation group.
+type PluginNav struct {
+	Group       string          `json:"group"`
+	HeaderView  string          `json:"headerView,omitempty"`
+	RequiresCrd string          `json:"requiresCrd,omitempty"`
+	Items       []PluginNavItem `json:"items,omitempty"`
+}
+
+// PluginNavItem is one entry: Title shown in the nav, View passed as ?view=.
+type PluginNavItem struct {
+	Title string `json:"title"`
+	View  string `json:"view"`
 }

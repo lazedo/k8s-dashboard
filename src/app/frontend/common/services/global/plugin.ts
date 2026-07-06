@@ -58,6 +58,11 @@ export class PluginsConfigService {
     return this.config_.plugins;
   }
 
+  // Plugin-declared side-nav groups (spec.nav), for the chrome nav to render.
+  navGroups(): PluginMetadata[] {
+    return this.config_.plugins.filter(p => !!p.nav && !!p.nav.group);
+  }
+
   status(): number {
     return this.config_.status;
   }

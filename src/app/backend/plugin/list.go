@@ -46,6 +46,7 @@ type Plugin struct {
 	Description  string         `json:"description,omitempty"`
 	Icon         string         `json:"icon,omitempty"`
 	NavHidden    bool           `json:"navHidden,omitempty"`
+	Nav          *v1alpha1.PluginNav `json:"nav,omitempty"`
 }
 
 type PluginCell v1alpha1.Plugin
@@ -105,6 +106,7 @@ func toPlugin(plugin v1alpha1.Plugin) Plugin {
 		Description:  plugin.Spec.Description,
 		Icon:         plugin.Spec.Icon,
 		NavHidden:    plugin.Spec.NavHidden,
+		Nav:          plugin.Spec.Nav,
 	}
 }
 

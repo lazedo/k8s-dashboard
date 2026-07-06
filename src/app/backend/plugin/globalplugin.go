@@ -74,6 +74,7 @@ func GetGlobalPlugins(client dynamic.Interface) ([]Plugin, error) {
 			Description:  spec.Description,
 			Icon:         spec.Icon,
 			NavHidden:    spec.NavHidden,
+			Nav:          spec.Nav,
 		})
 	}
 	return result, nil
