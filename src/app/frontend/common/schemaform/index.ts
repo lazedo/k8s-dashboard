@@ -14,6 +14,7 @@
 // via the global .kd-schema-form rules (index.scss).
 
 import {dump as toYaml, load as fromYaml} from 'js-yaml';
+import {config as aceConfig, edit as aceEdit} from 'ace-builds';
 
 interface Schema {
   // JSON Schema allows union types ("type": ["boolean","null"]); normType_
@@ -495,5 +496,15 @@ export function installKdSchemaForm(): void {
     version: 1,
     dump: toYaml,
     load: fromYaml,
+  };
+  // The bundled ace editor (same one kd-text-input uses), for plugins that
+  // edit YAML/JSON. basePath 'ace' is where angular.json publishes the
+  // ace-builds assets (modes/themes load lazily from there).
+  (window as unknown as {kdAce: {}}).kdAce = {
+    version: 1,
+    edit: (el: HTMLElement) => {
+      aceConfig.set('basePath', 'ace');
+      return aceEdit(el);
+    },
   };
 }
