@@ -72,7 +72,7 @@ func toCustomResourceDefinition(crd *apiextensionsv1.CustomResourceDefinition) t
 	return types.CustomResourceDefinition{
 		ObjectMeta:  api.NewObjectMeta(crd.ObjectMeta),
 		TypeMeta:    api.NewTypeMeta(api.ResourceKindCustomResourceDefinition),
-		Version:     crd.Spec.Versions[0].Name,
+		Version:     getCustomResourceDefinitionGroupVersion(crd).Version,
 		Group:       crd.Spec.Group,
 		Scope:       toCustomResourceDefinitionScope(crd.Spec.Scope),
 		Names:       toCustomResourceDefinitionAcceptedNames(crd.Status.AcceptedNames),

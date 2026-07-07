@@ -88,12 +88,27 @@ func fromObjectCells(cells []dataselect.DataCell) []types.CustomResourceObject {
 	return std
 }
 
-// getCustomResourceDefinitionGroupVersion returns first group version of custom resource definition.
-// It's also known as preferredVersion.
+// getCustomResourceDefinitionGroupVersion returns the group version a CRD is
+// addressable by: the storage version, else the first served one. Versions[0]
+// is NOT safe — providers list deprecated served:false versions first (e.g.
+// CAPA's v1beta1) and requests against those 404.
 func getCustomResourceDefinitionGroupVersion(crd *apiextensions.CustomResourceDefinition) schema.GroupVersion {
+	version := ""
+	for _, v := range crd.Spec.Versions {
+		if v.Storage {
+			version = v.Name
+			break
+		}
+		if version == "" && v.Served {
+			version = v.Name
+		}
+	}
+	if version == "" && len(crd.Spec.Versions) > 0 {
+		version = crd.Spec.Versions[0].Name
+	}
 	return schema.GroupVersion{
 		Group:   crd.Spec.Group,
-		Version: crd.Spec.Versions[0].Name,
+		Version: version,
 	}
 }
 
