@@ -85,6 +85,11 @@ limitations under the License.
   </div>
 </kd-card>
 
+<kd-scheduling [initialized]="isInitialized"
+               [nodeSelector]="cronJob?.nodeSelector"
+               [tolerations]="cronJob?.tolerations"
+               [affinity]="cronJob?.affinity"></kd-scheduling>
+
 <kd-job-list [endpoint]="activeJobsEndpoint"
              i18n-title
              title="Active Jobs"></kd-job-list>

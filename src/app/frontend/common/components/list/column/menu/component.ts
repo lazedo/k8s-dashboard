@@ -33,6 +33,7 @@ const loggableResources: string[] = [
 const pinnableResources: string[] = [Resource.crdFull, Resource.plugin];
 const executableResources: string[] = [Resource.pod];
 const triggerableResources: string[] = [Resource.cronJob];
+const rerunnableResources: string[] = [Resource.job];
 const drainableResources: string[] = [Resource.node];
 
 @Component({
@@ -91,6 +92,14 @@ export class MenuComponent implements ActionColumn {
 
   onTrigger(): void {
     this.verber_.showTriggerDialog(this.typeMeta.kind, this.typeMeta, this.objectMeta);
+  }
+
+  isRerunEnabled(): boolean {
+    return rerunnableResources.includes(this.typeMeta.kind);
+  }
+
+  onRerun(): void {
+    this.verber_.showRerunDialog(this.typeMeta.kind, this.typeMeta, this.objectMeta);
   }
 
   isScaleEnabled(): boolean {

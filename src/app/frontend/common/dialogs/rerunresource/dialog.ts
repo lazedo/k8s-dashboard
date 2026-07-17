@@ -12,31 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@use '../../../variables' as *;
-@use '../../../mixins' as *;
+import {Component, Inject} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {ResourceMeta} from '../../services/global/actionbar';
 
-.kd-env-variable-icon {
-  @include kd-icon-size($caption-font-size-base);
+@Component({
+    selector: 'kd-rerun-resource-dialog',
+    templateUrl: 'template.html',
+    standalone: false
+})
+export class RerunResourceDialog {
+  constructor(
+    public dialogRef: MatDialogRef<RerunResourceDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: ResourceMeta
+  ) {}
 
-  align-self: baseline;
-  margin-left: $baseline-grid * 0.5;
-}
-
-.kd-volume-mounts {
-  border-radius: $baseline-grid * 0.25;
-  margin-right: $baseline-grid;
-  margin-top: $baseline-grid * 0.5;
-}
-
-.kd-env-source-unresolved {
-  font-style: italic;
-}
-
-.container-status-icon {
-  vertical-align: middle;
-}
-
-.section-header {
-  font-size: $subhead-font-size-base-lg;
-  margin: (2 * $baseline-grid) 0;
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
 }

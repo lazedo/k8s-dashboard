@@ -17,6 +17,7 @@ limitations under the License.
 <kd-card [expandable]="false"
          role="inner-content">
   <div title
+       class="kd-logs-toolbar"
        fxLayout="row"
        fxLayoutAlign="start center"
        fxLayoutGap="8px"
@@ -24,6 +25,7 @@ limitations under the License.
     <span i18n>Logs from</span>
     <mat-form-field>
       <mat-select [(ngModel)]="container"
+                  [panelWidth]="null"
                   (selectionChange)="onContainerChange()">
         <mat-optgroup label="Containers"
                       i18n-label
@@ -43,11 +45,24 @@ limitations under the License.
     <span i18n>in</span>
     <mat-form-field>
       <mat-select [(ngModel)]="pod"
-                  (selectionChange)="loadNewest()">
+                  [panelWidth]="null"
+                  (selectionChange)="onPodChange()">
+        <mat-option *ngIf="isController() && logSources?.podNames?.length > 1"
+                    [value]="allPods"
+                    i18n>All pods ({{ logSources.podNames.length }})</mat-option>
         <mat-option *ngFor="let item of logSources?.podNames"
                     [value]="item"> {{ item }} </mat-option>
       </mat-select>
     </mat-form-field>
+
+    <mat-slide-toggle *ngIf="isController()"
+                      class="kd-logs-auto-toggle"
+                      [checked]="autoMode"
+                      (change)="toggleAutoMode()"
+                      i18n-matTooltip
+                      matTooltip="Automatically follow new pods of this workload">
+      <span i18n>Auto</span>
+    </mat-slide-toggle>
 
     <div fxFlex></div>
 
@@ -55,6 +70,7 @@ limitations under the License.
             mat-icon-button
             i18n-matTooltip
             matTooltip="Download logs"
+            [disabled]="isAllPods()"
             (click)="downloadLog()">
       <mat-icon>file_download</mat-icon>
     </button>
@@ -105,14 +121,17 @@ limitations under the License.
 
     <div>
       <button mat-icon-button
+              [disabled]="isAllPods()"
               (click)="loadOldest()">
         <mat-icon>first_page</mat-icon>
       </button>
       <button mat-icon-button
+              [disabled]="isAllPods()"
               (click)="loadOlder()">
         <mat-icon>chevron_left</mat-icon>
       </button>
       <button mat-icon-button
+              [disabled]="isAllPods()"
               (click)="loadNewer()">
         <mat-icon>chevron_right</mat-icon>
       </button>

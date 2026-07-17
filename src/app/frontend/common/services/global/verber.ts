@@ -22,6 +22,7 @@ import {AlertDialog, AlertDialogConfig} from '../../dialogs/alert/dialog';
 import {ConfirmDialog, ConfirmDialogConfig} from '../../dialogs/config/dialog';
 import {DeleteResourceDialog} from '../../dialogs/deleteresource/dialog';
 import {EditResourceDialog} from '../../dialogs/editresource/dialog';
+import {RerunResourceDialog} from '../../dialogs/rerunresource/dialog';
 import {RestartResourceDialog} from '../../dialogs/restartresource/dialog';
 import {ScaleResourceDialog} from '../../dialogs/scaleresource/dialog';
 import {TriggerResourceDialog} from '../../dialogs/triggerresource/dialog';
@@ -36,6 +37,7 @@ export class VerberService {
   onScale = new EventEmitter<boolean>();
   onTrigger = new EventEmitter<boolean>();
   onRestart = new EventEmitter<boolean>();
+  onRerun = new EventEmitter<boolean>();
   onDrain = new EventEmitter<boolean>();
 
   constructor(private readonly dialog_: MatDialog, private readonly http_: HttpClient) {}
@@ -125,6 +127,21 @@ export class VerberService {
         })
       )
       .subscribe(_ => this.onScale.emit(true), this.handleErrorResponse_.bind(this));
+  }
+
+  showRerunDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(RerunResourceDialog, dialogConfig)
+      .afterClosed()
+      .pipe(filter(result => result))
+      .pipe(
+        switchMap(_ => {
+          const url = `api/v1/${typeMeta.kind}/${objectMeta.namespace}/${objectMeta.name}/rerun`;
+          return this.http_.put(url, {}, {responseType: 'text'});
+        })
+      )
+      .subscribe(_ => this.onRerun.emit(true), this.handleErrorResponse_.bind(this));
   }
 
   showTriggerDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {

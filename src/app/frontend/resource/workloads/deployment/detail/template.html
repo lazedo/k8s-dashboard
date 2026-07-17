@@ -77,6 +77,11 @@ limitations under the License.
   </div>
 </kd-card>
 
+<kd-scheduling [initialized]="isInitialized"
+               [nodeSelector]="deployment?.nodeSelector"
+               [tolerations]="deployment?.tolerations"
+               [affinity]="deployment?.affinity"></kd-scheduling>
+
 <kd-card [initialized]="isInitialized">
   <div title
        i18n>Rolling update strategy</div>

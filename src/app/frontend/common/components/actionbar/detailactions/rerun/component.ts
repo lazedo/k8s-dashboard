@@ -12,31 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@use '../../../variables' as *;
-@use '../../../mixins' as *;
+import {Component, Input} from '@angular/core';
+import {ObjectMeta, TypeMeta} from '@api/root.api';
 
-.kd-env-variable-icon {
-  @include kd-icon-size($caption-font-size-base);
+import {VerberService} from '@common/services/global/verber';
 
-  align-self: baseline;
-  margin-left: $baseline-grid * 0.5;
-}
+@Component({
+    selector: 'kd-actionbar-detail-rerun',
+    templateUrl: './template.html',
+    standalone: false
+})
+export class ActionbarDetailRerunComponent {
+  @Input() objectMeta: ObjectMeta;
+  @Input() typeMeta: TypeMeta;
+  @Input() displayName: string;
 
-.kd-volume-mounts {
-  border-radius: $baseline-grid * 0.25;
-  margin-right: $baseline-grid;
-  margin-top: $baseline-grid * 0.5;
-}
+  constructor(private readonly verber_: VerberService) {}
 
-.kd-env-source-unresolved {
-  font-style: italic;
-}
-
-.container-status-icon {
-  vertical-align: middle;
-}
-
-.section-header {
-  font-size: $subhead-font-size-base-lg;
-  margin: (2 * $baseline-grid) 0;
+  onClick(): void {
+    this.verber_.showRerunDialog(this.displayName, this.typeMeta, this.objectMeta);
+  }
 }

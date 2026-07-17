@@ -22,6 +22,7 @@ import (
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	apps "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -30,6 +31,11 @@ import (
 type StatefulSetDetail struct {
 	// Extends list item structure.
 	StatefulSet `json:",inline"`
+
+	// Scheduling constraints of the pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -57,7 +63,10 @@ func GetStatefulSetDetail(client kubernetes.Interface, metricClient metricapi.Me
 
 func getStatefulSetDetail(statefulSet *apps.StatefulSet, podInfo *common.PodInfo, nonCriticalErrors []error) StatefulSetDetail {
 	return StatefulSetDetail{
-		StatefulSet: toStatefulSet(statefulSet, podInfo),
-		Errors:      nonCriticalErrors,
+		StatefulSet:  toStatefulSet(statefulSet, podInfo),
+		NodeSelector: statefulSet.Spec.Template.Spec.NodeSelector,
+		Tolerations:  statefulSet.Spec.Template.Spec.Tolerations,
+		Affinity:     statefulSet.Spec.Template.Spec.Affinity,
+		Errors:       nonCriticalErrors,
 	}
 }

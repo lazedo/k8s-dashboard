@@ -385,6 +385,9 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/job/{namespace}/{name}/event").
 			To(apiHandler.handleGetJobEvents).
 			Writes(common.EventList{}))
+	apiV1Ws.Route(
+		apiV1Ws.PUT("/job/{namespace}/{name}/rerun").
+			To(apiHandler.handleRerunJob))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/cronjob").
@@ -3032,6 +3035,23 @@ func (apiHandler *APIHandler) handleGetCronJobEvents(request *restful.Request, r
 		return
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleRerunJob(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("name")
+	err = job.RerunJob(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
 }
 
 func (apiHandler *APIHandler) handleTriggerCronJob(request *restful.Request, response *restful.Response) {

@@ -21,6 +21,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	apps "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	client "k8s.io/client-go/kubernetes"
@@ -74,6 +75,11 @@ type DeploymentDetail struct {
 
 	// Optional field that specifies the number of old Replica Sets to retain to allow rollback.
 	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit"`
+
+	// Scheduling constraints of the pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -143,6 +149,9 @@ func GetDeploymentDetail(client client.Interface, namespace string, deploymentNa
 		MinReadySeconds:       deployment.Spec.MinReadySeconds,
 		RollingUpdateStrategy: rollingUpdateStrategy,
 		RevisionHistoryLimit:  deployment.Spec.RevisionHistoryLimit,
+		NodeSelector:          deployment.Spec.Template.Spec.NodeSelector,
+		Tolerations:           deployment.Spec.Template.Spec.Tolerations,
+		Affinity:              deployment.Spec.Template.Spec.Affinity,
 		Errors:                nonCriticalErrors,
 	}, nil
 }

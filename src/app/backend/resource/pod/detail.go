@@ -22,12 +22,9 @@ import (
 	"math"
 	"strconv"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	v1 "k8s.io/api/core/v1"
 	res "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/kubernetes/dashboard/src/app/backend/api"
@@ -59,6 +56,11 @@ type PodDetail struct {
 	EventList                 common.EventList                                `json:"eventList"`
 	PersistentvolumeclaimList persistentvolumeclaim.PersistentVolumeClaimList `json:"persistentVolumeClaimList"`
 	SecurityContext           *v1.PodSecurityContext                          `json:"securityContext"`
+
+	// Scheduling constraints of the pod.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -303,6 +305,9 @@ func toPodDetail(pod *v1.Pod, metrics []metricapi.Metric, configMaps *v1.ConfigM
 		EventList:                 *events,
 		PersistentvolumeclaimList: *persistentVolumeClaimList,
 		SecurityContext:           pod.Spec.SecurityContext,
+		NodeSelector:              pod.Spec.NodeSelector,
+		Tolerations:               pod.Spec.Tolerations,
+		Affinity:                  pod.Spec.Affinity,
 		Errors:                    nonCriticalErrors,
 	}
 }
@@ -393,18 +398,7 @@ func evalValueFrom(src *v1.EnvVarSource, container *v1.Container, pod *v1.Pod,
 		}
 		return valueFrom
 	case src.FieldRef != nil:
-		gv, err := schema.ParseGroupVersion(src.FieldRef.APIVersion)
-		if err != nil {
-			log.Println(err)
-			return ""
-		}
-		gvk := gv.WithKind("Pod")
-		internalFieldPath, _, err := runtime.NewScheme().ConvertFieldLabel(gvk, src.FieldRef.FieldPath, "")
-		if err != nil {
-			log.Println(err)
-			return ""
-		}
-		valueFrom, err := ExtractFieldPathAsString(pod, internalFieldPath)
+		valueFrom, err := extractPodFieldPathAsString(pod, src.FieldRef.FieldPath)
 		if err != nil {
 			log.Println(err)
 			return ""
@@ -437,6 +431,12 @@ func extractContainerResourceValue(fs *v1.ResourceFieldSelector, container *v1.C
 	case "requests.memory":
 		return strconv.FormatInt(int64(math.Ceil(float64(container.Resources.Requests.
 			Memory().Value())/float64(divisor.Value()))), 10), nil
+	case "limits.ephemeral-storage":
+		return strconv.FormatInt(int64(math.Ceil(float64(container.Resources.Limits.
+			StorageEphemeral().Value())/float64(divisor.Value()))), 10), nil
+	case "requests.ephemeral-storage":
+		return strconv.FormatInt(int64(math.Ceil(float64(container.Resources.Requests.
+			StorageEphemeral().Value())/float64(divisor.Value()))), 10), nil
 	}
 
 	return "", fmt.Errorf("Unsupported container resource : %v", fs.Resource)

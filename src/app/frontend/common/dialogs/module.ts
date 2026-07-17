@@ -22,6 +22,7 @@ import {AlertDialog} from './alert/dialog';
 import {DeleteResourceDialog} from './deleteresource/dialog';
 import {LogsDownloadDialog} from './download/dialog';
 import {EditResourceDialog} from './editresource/dialog';
+import {RerunResourceDialog} from './rerunresource/dialog';
 import {RestartResourceDialog} from './restartresource/dialog';
 import {ScaleResourceDialog} from './scaleresource/dialog';
 import {TriggerResourceDialog} from './triggerresource/dialog';
@@ -34,6 +35,7 @@ import {PreviewDeploymentDialog} from './previewdeployment/dialog';
         EditResourceDialog,
         DeleteResourceDialog,
         LogsDownloadDialog,
+        RerunResourceDialog,
         RestartResourceDialog,
         ScaleResourceDialog,
         TriggerResourceDialog,
@@ -45,6 +47,7 @@ import {PreviewDeploymentDialog} from './previewdeployment/dialog';
         EditResourceDialog,
         DeleteResourceDialog,
         LogsDownloadDialog,
+        RerunResourceDialog,
         RestartResourceDialog,
         ScaleResourceDialog,
         TriggerResourceDialog,

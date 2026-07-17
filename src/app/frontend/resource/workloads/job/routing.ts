@@ -14,7 +14,7 @@
 
 import {NgModule} from '@angular/core';
 import {Route, RouterModule} from '@angular/router';
-import {LOGS_DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
+import {LOGS_RERUN_DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
 import {BREADCRUMBS} from '../../../index.messages';
 import {WORKLOADS_ROUTE} from '../routing';
 
@@ -40,7 +40,7 @@ const JOB_DETAIL_ROUTE: Route = {
 };
 
 @NgModule({
-  imports: [RouterModule.forChild([JOB_LIST_ROUTE, JOB_DETAIL_ROUTE, LOGS_DEFAULT_ACTIONBAR])],
+  imports: [RouterModule.forChild([JOB_LIST_ROUTE, JOB_DETAIL_ROUTE, LOGS_RERUN_DEFAULT_ACTIONBAR])],
   exports: [RouterModule],
 })
 export class JobRoutingModule {}

@@ -1,0 +1,165 @@
+<!--
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<kd-card *ngIf="hasScheduling()"
+         [initialized]="initialized">
+  <div title
+       i18n>Scheduling</div>
+
+  <div content
+       *ngIf="initialized"
+       fxLayout="column">
+    <div *ngIf="hasNodeSelector()"
+         fxLayout="row wrap">
+      <kd-property fxFlex="100">
+        <div key
+             i18n>Node Selector</div>
+        <div value>
+          <kd-chips [map]="nodeSelector"
+                    [displayAll]="true"></kd-chips>
+        </div>
+      </kd-property>
+    </div>
+
+    <div *ngIf="hasTolerations()"
+         fxLayout="column">
+      <div class="kd-muted section-header"
+           i18n>Tolerations</div>
+
+      <mat-table [dataSource]="getTolerationsDataSource()">
+        <ng-container matColumnDef="key">
+          <mat-header-cell *matHeaderCellDef
+                           i18n>Key</mat-header-cell>
+          <mat-cell *matCellDef="let toleration">
+            <ng-container *ngIf="toleration.key">{{ toleration.key }}</ng-container>
+            <span class="kd-muted"
+                  *ngIf="!toleration.key"
+                  i18n>(any taint)</span>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="operator">
+          <mat-header-cell *matHeaderCellDef
+                           i18n>Operator</mat-header-cell>
+          <mat-cell *matCellDef="let toleration">
+            <ng-container *ngIf="toleration.operator">{{ toleration.operator }}</ng-container>
+            <ng-container *ngIf="!toleration.operator">Equal</ng-container>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="value">
+          <mat-header-cell *matHeaderCellDef
+                           i18n>Value</mat-header-cell>
+          <mat-cell *matCellDef="let toleration">
+            <ng-container *ngIf="toleration.value">{{ toleration.value }}</ng-container>
+            <ng-container *ngIf="!toleration.value">-</ng-container>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="effect">
+          <mat-header-cell *matHeaderCellDef
+                           i18n>Effect</mat-header-cell>
+          <mat-cell *matCellDef="let toleration">
+            <ng-container *ngIf="toleration.effect">{{ toleration.effect }}</ng-container>
+            <span class="kd-muted"
+                  *ngIf="!toleration.effect"
+                  i18n>(all effects)</span>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="tolerationSeconds">
+          <mat-header-cell *matHeaderCellDef
+                           i18n>Seconds</mat-header-cell>
+          <mat-cell *matCellDef="let toleration">
+            <ng-container *ngIf="toleration.tolerationSeconds !== undefined && toleration.tolerationSeconds !== null">{{ toleration.tolerationSeconds }}</ng-container>
+            <ng-container *ngIf="toleration.tolerationSeconds === undefined || toleration.tolerationSeconds === null">-</ng-container>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="getTolerationColumns()"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: getTolerationColumns()"></mat-row>
+      </mat-table>
+    </div>
+
+    <div *ngIf="affinityRules.length"
+         fxLayout="column">
+      <div fxLayout="row"
+           fxLayoutAlign=" center"
+           class="kd-muted section-header">
+        <span i18n>Affinity</span>
+        <button mat-icon-button
+                class="kd-affinity-yaml-toggle"
+                (click)="toggleAffinityYaml()"
+                i18n-matTooltip
+                matTooltip="Toggle full affinity YAML">
+          <mat-icon>{{ isShowingAffinityYaml ? 'code_off' : 'code' }}</mat-icon>
+        </button>
+      </div>
+
+      <div *ngIf="!isShowingAffinityYaml"
+           fxLayout="column">
+        <div *ngFor="let rule of affinityRules; trackBy: trackByAffinityRule"
+             class="kd-affinity-rule">
+          <div class="kd-affinity-rule-header"
+               fxLayout="row wrap"
+               fxLayoutAlign=" center">
+            <span class="kd-affinity-rule-type">{{ rule.type }}</span>
+
+            <span *ngIf="rule.required"
+                  class="kd-affinity-badge kd-affinity-badge-required"
+                  i18n>required</span>
+            <span *ngIf="!rule.required"
+                  class="kd-affinity-badge kd-affinity-badge-preferred"
+                  i18n>preferred</span>
+            <span *ngIf="rule.weight !== undefined"
+                  class="kd-affinity-badge kd-affinity-badge-weight"
+                  i18n>weight {{ rule.weight }}</span>
+
+            <span *ngIf="rule.topologyLabel"
+                  class="kd-affinity-topology"
+                  [matTooltip]="rule.topologyKey">
+              <mat-icon class="kd-affinity-topology-icon"
+                        [inline]="true">workspaces</mat-icon>
+              <span i18n>per</span>&nbsp;{{ rule.topologyLabel }}
+            </span>
+          </div>
+
+          <div *ngIf="rule.onePodPerNode"
+               class="kd-affinity-summary"
+               i18n>One pod per node &mdash; for pods matching:</div>
+
+          <kd-chips *ngIf="rule.chips.length"
+                    [map]="rule.chips"
+                    [displayAll]="true"></kd-chips>
+          <div *ngIf="!rule.chips.length && rule.isNode"
+               class="kd-muted kd-affinity-empty"
+               i18n>(any node)</div>
+          <div *ngIf="!rule.chips.length && !rule.isNode"
+               class="kd-muted kd-affinity-empty"
+               i18n>(all pods)</div>
+
+          <div *ngIf="rule.namespaceChips.length"
+               class="kd-affinity-namespaces"
+               fxLayout="row wrap"
+               fxLayoutAlign=" center">
+            <span class="kd-muted"
+                  i18n>Namespaces:&nbsp;</span>
+            <kd-chips [map]="rule.namespaceChips"
+                      [displayAll]="true"></kd-chips>
+          </div>
+        </div>
+      </div>
+
+      <pre *ngIf="isShowingAffinityYaml"
+           class="kd-affinity-yaml">{{ affinityYaml }}</pre>
+    </div>
+  </div>
+</kd-card>

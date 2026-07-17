@@ -73,6 +73,11 @@ limitations under the License.
   </div>
 </kd-card>
 
+<kd-scheduling [initialized]="isInitialized"
+               [nodeSelector]="job?.nodeSelector"
+               [tolerations]="job?.tolerations"
+               [affinity]="job?.affinity"></kd-scheduling>
+
 <kd-condition-list [conditions]="job?.jobStatus?.conditions"
                    [initialized]="isInitialized"></kd-condition-list>
 

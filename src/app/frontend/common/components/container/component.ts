@@ -76,6 +76,44 @@ export class ContainerCardComponent implements OnChanges {
     return !!envVar.valueFrom && !!envVar.valueFrom.configMapKeyRef;
   }
 
+  isFieldRef(envVar: EnvVar): boolean {
+    return !!envVar.valueFrom && !!envVar.valueFrom.fieldRef;
+  }
+
+  isResourceFieldRef(envVar: EnvVar): boolean {
+    return !!envVar.valueFrom && !!envVar.valueFrom.resourceFieldRef;
+  }
+
+  isDownwardAPI(envVar: EnvVar): boolean {
+    return this.isFieldRef(envVar) || this.isResourceFieldRef(envVar);
+  }
+
+  getEnvSourceHint(envVar: EnvVar): string {
+    if (this.isFieldRef(envVar)) {
+      return `fieldRef: ${envVar.valueFrom.fieldRef.fieldPath}`;
+    }
+
+    if (this.isResourceFieldRef(envVar)) {
+      const ref = envVar.valueFrom.resourceFieldRef;
+      const divisor = ref.divisor && ref.divisor !== '0' && ref.divisor !== '1' ? `, divisor: ${ref.divisor}` : '';
+      return `resourceFieldRef: ${ref.resource}${divisor}`;
+    }
+
+    return '';
+  }
+
+  getEnvSourcePath(envVar: EnvVar): string {
+    if (this.isFieldRef(envVar)) {
+      return envVar.valueFrom.fieldRef.fieldPath;
+    }
+
+    if (this.isResourceFieldRef(envVar)) {
+      return envVar.valueFrom.resourceFieldRef.resource;
+    }
+
+    return '';
+  }
+
   getEnvConfigMapHref(configMapKeyRef: ConfigMapKeyRef): string {
     return this.state_.href('configmap', configMapKeyRef.name, this.namespace);
   }

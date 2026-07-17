@@ -1,0 +1,99 @@
+// Copyright 2017 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+@use 'sass:math';
+@use '../../../variables' as *;
+
+.section-header {
+  font-size: $subhead-font-size-base-lg;
+  margin: (2 * $baseline-grid) 0;
+}
+
+.kd-affinity-yaml-toggle {
+  margin-left: $baseline-grid;
+}
+
+.kd-affinity-rule {
+  border-bottom: 1px solid rgb(0 0 0 / 12%);
+  padding: $baseline-grid 0;
+  word-break: break-word;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.kd-affinity-rule-header {
+  margin-bottom: math.div($baseline-grid, 2);
+}
+
+.kd-affinity-rule-type {
+  font-weight: 500;
+  margin-right: $baseline-grid;
+}
+
+.kd-affinity-badge {
+  border: 1px solid rgb(0 0 0 / 24%);
+  border-radius: 2 * $baseline-grid;
+  font-size: $caption-font-size-base;
+  line-height: 1;
+  margin-right: math.div($baseline-grid, 2);
+  padding: math.div($baseline-grid, 2) $baseline-grid;
+}
+
+.kd-affinity-badge-required {
+  border-style: solid;
+}
+
+.kd-affinity-badge-preferred,
+.kd-affinity-badge-weight {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.kd-affinity-topology {
+  align-items: center;
+  display: inline-flex;
+  font-size: $caption-font-size-base;
+  margin-left: math.div($baseline-grid, 2);
+  opacity: 0.75;
+}
+
+.kd-affinity-topology-icon {
+  font-size: $caption-font-size-base;
+  height: auto;
+  margin-right: math.div($baseline-grid, 4);
+  width: auto;
+}
+
+.kd-affinity-summary {
+  font-style: italic;
+  margin-bottom: math.div($baseline-grid, 2);
+}
+
+.kd-affinity-empty {
+  font-size: $body-font-size-base;
+}
+
+.kd-affinity-namespaces {
+  margin-top: math.div($baseline-grid, 2);
+}
+
+.kd-affinity-yaml {
+  font-family: $font-family-monospace;
+  font-size: $body-font-size-base;
+  margin: 0 0 (2 * $baseline-grid);
+  overflow-x: auto;
+  white-space: pre;
+}

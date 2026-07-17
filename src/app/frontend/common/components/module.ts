@@ -25,11 +25,13 @@ import {ActionbarDetailEditComponent} from './actionbar/detailactions/edit/compo
 import {ActionbarDetailExecComponent} from './actionbar/detailactions/exec/component';
 import {ActionbarDetailLogsComponent} from './actionbar/detailactions/logs/component';
 import {ActionbarDetailPinComponent} from './actionbar/detailactions/pin/component';
+import {ActionbarDetailRerunComponent} from './actionbar/detailactions/rerun/component';
 import {ActionbarDetailRestartComponent} from './actionbar/detailactions/restart/component';
 import {ActionbarDetailScaleComponent} from './actionbar/detailactions/scale/component';
 import {ActionbarDetailTriggerComponent} from './actionbar/detailactions/trigger/component';
 import {DefaultActionbar} from './actionbars/default/component';
 import {LogsDefaultActionbar} from './actionbars/logsdefault/component';
+import {LogsRerunDefaultActionbar} from './actionbars/logsrerundefault/component';
 import {LogsExecDefaultActionbar} from './actionbars/logsexecdefault/component';
 import {LogsScaleDefaultActionbar} from './actionbars/logsscaledefault/component';
 import {PinDefaultActionbar} from './actionbars/pindefault/component';
@@ -106,6 +108,7 @@ import {ServiceListComponent} from './resourcelist/service/component';
 import {ServiceAccountListComponent} from './resourcelist/serviceaccount/component';
 import {StatefulSetListComponent} from './resourcelist/statefulset/component';
 import {StorageClassListComponent} from './resourcelist/storageclass/component';
+import {SchedulingComponent} from './scheduling/component';
 import {SecurityContextComponent} from './securitycontext/component';
 import {CpuSparklineComponent} from './sparkline/cpu/component';
 import {MemorySparklineComponent} from './sparkline/memory/component';
@@ -124,6 +127,7 @@ const components = [
   ActionbarDetailLogsComponent,
   ActionbarDetailExecComponent,
   ActionbarDetailPinComponent,
+  ActionbarDetailRerunComponent,
   ActionbarDetailRestartComponent,
   ActionbarComponent,
   ActionbarDetailTriggerComponent,
@@ -166,6 +170,7 @@ const components = [
   LogsScaleDefaultActionbar,
   LogsExecDefaultActionbar,
   LogsDefaultActionbar,
+  LogsRerunDefaultActionbar,
   MenuComponent,
   NamespaceListComponent,
   NodeListComponent,
@@ -177,6 +182,7 @@ const components = [
   PropertyComponent,
   ProxyComponent,
   PodListComponent,
+  SchedulingComponent,
   SecurityContextComponent,
   PersistentVolumeListComponent,
   PersistentVolumeClaimListComponent,

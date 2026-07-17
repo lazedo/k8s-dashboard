@@ -65,6 +65,64 @@ export interface ResourceOwner extends Resource {
 
 export interface LabelSelector {
   matchLabels: StringMap;
+  matchExpressions?: SelectorRequirement[];
+}
+
+// Requirement of a label/field selector (metav1.LabelSelectorRequirement /
+// v1.NodeSelectorRequirement wire format).
+export interface SelectorRequirement {
+  key: string;
+  operator: string;
+  values?: string[];
+}
+
+// Scheduling types (v1.Toleration / v1.Affinity wire format).
+export interface Toleration {
+  key?: string;
+  operator?: string;
+  value?: string;
+  effect?: string;
+  tolerationSeconds?: number;
+}
+
+export interface NodeSelectorTerm {
+  matchExpressions?: SelectorRequirement[];
+  matchFields?: SelectorRequirement[];
+}
+
+export interface PreferredSchedulingTerm {
+  weight: number;
+  preference: NodeSelectorTerm;
+}
+
+export interface NodeAffinity {
+  requiredDuringSchedulingIgnoredDuringExecution?: {nodeSelectorTerms: NodeSelectorTerm[]};
+  preferredDuringSchedulingIgnoredDuringExecution?: PreferredSchedulingTerm[];
+}
+
+export interface PodAffinityTerm {
+  labelSelector?: LabelSelector;
+  namespaceSelector?: LabelSelector;
+  namespaces?: string[];
+  topologyKey: string;
+  matchLabelKeys?: string[];
+  mismatchLabelKeys?: string[];
+}
+
+export interface WeightedPodAffinityTerm {
+  weight: number;
+  podAffinityTerm: PodAffinityTerm;
+}
+
+export interface PodAffinity {
+  requiredDuringSchedulingIgnoredDuringExecution?: PodAffinityTerm[];
+  preferredDuringSchedulingIgnoredDuringExecution?: WeightedPodAffinityTerm[];
+}
+
+export interface Affinity {
+  nodeAffinity?: NodeAffinity;
+  podAffinity?: PodAffinity;
+  podAntiAffinity?: PodAffinity;
 }
 
 export interface CapacityItem {
@@ -495,6 +553,9 @@ export interface ReplicaSetDetail extends ResourceDetail {
   containerImages: string[];
   initContainerImages: string[];
   eventList: EventList;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface ResourceQuotaDetail extends ResourceDetail {
@@ -511,6 +572,9 @@ export interface DeploymentDetail extends ResourceDetail {
   revisionHistoryLimit?: number;
   rollingUpdateStrategy?: RollingUpdateStrategy;
   events: EventList;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface ReplicationControllerDetail extends ResourceDetail {
@@ -522,6 +586,9 @@ export interface ReplicationControllerDetail extends ResourceDetail {
   serviceList: ServiceList;
   eventList: EventList;
   hasMetrics: boolean;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface ServiceDetail extends ResourceDetail {
@@ -540,6 +607,9 @@ export interface DaemonSetDetail extends ResourceDetail {
   containerImages: string[];
   initContainerImages: string[];
   podInfo: PodInfo;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface NamespaceDetail extends ResourceDetail {
@@ -774,6 +844,9 @@ export interface JobDetail extends ResourceDetail {
   parallelism: number;
   completions: number;
   jobStatus: JobStatus;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface CronJobDetail extends ResourceDetail {
@@ -783,6 +856,9 @@ export interface CronJobDetail extends ResourceDetail {
   lastSchedule: string;
   concurrencyPolicy: string;
   startingDeadlineSeconds: number;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface StatefulSetDetail extends ResourceDetail {
@@ -791,6 +867,9 @@ export interface StatefulSetDetail extends ResourceDetail {
   containerImages: string[];
   initContainerImages: string[];
   eventList: EventList;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface PersistentVolumeDetail extends ResourceDetail {
@@ -822,6 +901,9 @@ export interface PodDetail extends ResourceDetail {
   eventList: EventList;
   persistentVolumeClaimList: PersistentVolumeClaimList;
   securityContext: PodSecurityContext;
+  nodeSelector?: StringMap;
+  tolerations?: Toleration[];
+  affinity?: Affinity;
 }
 
 export interface PodAllocatedResources {
@@ -1057,9 +1139,22 @@ export interface EnvVar {
   valueFrom: EnvVarSource;
 }
 
+export interface FieldRef {
+  apiVersion: string;
+  fieldPath: string;
+}
+
+export interface ResourceFieldRef {
+  containerName: string;
+  resource: string;
+  divisor: string;
+}
+
 export interface EnvVarSource {
   configMapKeyRef: ConfigMapKeyRef;
   secretKeyRef: SecretKeyRef;
+  fieldRef: FieldRef;
+  resourceFieldRef: ResourceFieldRef;
 }
 
 export interface Container {

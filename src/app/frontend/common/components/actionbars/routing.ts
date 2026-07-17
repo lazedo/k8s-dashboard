@@ -14,6 +14,7 @@
 
 import {DefaultActionbar} from './default/component';
 import {LogsDefaultActionbar} from './logsdefault/component';
+import {LogsRerunDefaultActionbar} from './logsrerundefault/component';
 import {LogsExecDefaultActionbar} from './logsexecdefault/component';
 import {LogsScaleDefaultActionbar} from './logsscaledefault/component';
 import {ScaleDefaultActionbar} from './scaledefault/component';
@@ -29,6 +30,12 @@ export const DEFAULT_ACTIONBAR = {
 export const LOGS_DEFAULT_ACTIONBAR = {
   path: '',
   component: LogsDefaultActionbar,
+  outlet: 'actionbar',
+};
+
+export const LOGS_RERUN_DEFAULT_ACTIONBAR = {
+  path: '',
+  component: LogsRerunDefaultActionbar,
   outlet: 'actionbar',
 };
 

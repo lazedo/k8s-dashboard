@@ -108,7 +108,7 @@ limitations under the License.
     </div>
 
     <div *ngFor="let env of container?.env; trackBy: getEnvVarID">
-      <ng-container *ngIf="!isSecret(env) && !isConfigMap(env)">
+      <ng-container *ngIf="!isSecret(env) && !isConfigMap(env) && !isDownwardAPI(env)">
         <kd-property>
           <div key
                fxLayout>
@@ -118,6 +118,24 @@ limitations under the License.
                       class="kd-env-variable-icon">public </mat-icon>
           </div>
           <div value>{{ env.value || '-' }}</div>
+        </kd-property>
+      </ng-container>
+
+      <ng-container *ngIf="isDownwardAPI(env)">
+        <kd-property>
+          <div key
+               fxLayout>
+            {{ env.name }}
+            <mat-icon [matTooltip]="getEnvSourceHint(env)"
+                      class="kd-env-variable-icon">public </mat-icon>
+          </div>
+          <div value
+               [matTooltip]="getEnvSourceHint(env)">
+            <ng-container *ngIf="env.value; else unresolvedEnvSource">{{ env.value }}</ng-container>
+            <ng-template #unresolvedEnvSource>
+              <span class="kd-muted kd-env-source-unresolved">{{ getEnvSourcePath(env) }}</span>
+            </ng-template>
+          </div>
         </kd-property>
       </ng-container>
 

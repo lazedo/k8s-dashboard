@@ -28,7 +28,11 @@ limitations under the License.
   <button mat-menu-item
           *ngIf="isTriggerEnabled()"
           (click)="onTrigger()"
-          i18n>Trigger</button>
+          i18n>Run now</button>
+  <button mat-menu-item
+          *ngIf="isRerunEnabled()"
+          (click)="onRerun()"
+          i18n>Run again</button>
   <button mat-menu-item
           *ngIf="isScaleEnabled()"
           (click)="onScale()"

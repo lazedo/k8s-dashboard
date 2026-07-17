@@ -39,7 +39,7 @@ func TestExtractFieldPathAsString(t *testing.T) {
 			name:                    "not an API object",
 			fieldPath:               "metadata.name",
 			obj:                     "",
-			expectedMessageFragment: "expected struct",
+			expectedMessageFragment: "object does not implement",
 		},
 		{
 			name:      "ok - namespace",
@@ -93,6 +93,56 @@ func TestExtractFieldPathAsString(t *testing.T) {
 		},
 
 		{
+			name:      "ok - uid",
+			fieldPath: "metadata.uid",
+			obj: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					UID: "b415a578-b3b6-4123-91ca-8f0a4a3a1e10",
+				},
+			},
+			expectedValue: "b415a578-b3b6-4123-91ca-8f0a4a3a1e10",
+		},
+		{
+			name:      "ok - annotation subscript",
+			fieldPath: "metadata.annotations['kazoo.io/zone']",
+			obj: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{"kazoo.io/zone": "west1"},
+				},
+			},
+			expectedValue: "west1",
+		},
+		{
+			name:      "ok - label subscript",
+			fieldPath: "metadata.labels['app.kubernetes.io/name']",
+			obj: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"app.kubernetes.io/name": "kazoo"},
+				},
+			},
+			expectedValue: "kazoo",
+		},
+		{
+			name:      "missing annotation subscript",
+			fieldPath: "metadata.annotations['nope']",
+			obj: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{"kazoo.io/zone": "west1"},
+				},
+			},
+			expectedMessageFragment: "not found",
+		},
+		{
+			name:      "invalid subscript path",
+			fieldPath: "metadata.name['foo']",
+			obj: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "object-name",
+				},
+			},
+			expectedMessageFragment: "does not support subscript",
+		},
+		{
 			name:      "invalid expression",
 			fieldPath: "metadata.whoops",
 			obj: &v1.Pod{
@@ -106,6 +156,55 @@ func TestExtractFieldPathAsString(t *testing.T) {
 
 	for _, tc := range cases {
 		actual, err := ExtractFieldPathAsString(tc.obj, tc.fieldPath)
+		if err != nil {
+			if tc.expectedMessageFragment != "" {
+				if !strings.Contains(err.Error(), tc.expectedMessageFragment) {
+					t.Errorf("%v: unexpected error message: %q, expected to contain %q", tc.name, err, tc.expectedMessageFragment)
+				}
+			} else {
+				t.Errorf("%v: unexpected error: %v", tc.name, err)
+			}
+		} else if e := tc.expectedValue; e != "" && e != actual {
+			t.Errorf("%v: unexpected result; got %q, expected %q", tc.name, actual, e)
+		}
+	}
+}
+
+func TestExtractPodFieldPathAsString(t *testing.T) {
+	pod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "test-pod",
+			Namespace:   "test-namespace",
+			Annotations: map[string]string{"kazoo.io/zone": "west1"},
+		},
+		Spec: v1.PodSpec{
+			NodeName:           "node-1",
+			ServiceAccountName: "kazoo-sa",
+		},
+		Status: v1.PodStatus{
+			HostIP: "10.0.0.1",
+			PodIP:  "192.168.1.10",
+			PodIPs: []v1.PodIP{{IP: "192.168.1.10"}, {IP: "fd00::10"}},
+		},
+	}
+
+	cases := []struct {
+		name                    string
+		fieldPath               string
+		expectedValue           string
+		expectedMessageFragment string
+	}{
+		{name: "spec.nodeName", fieldPath: "spec.nodeName", expectedValue: "node-1"},
+		{name: "spec.serviceAccountName", fieldPath: "spec.serviceAccountName", expectedValue: "kazoo-sa"},
+		{name: "status.hostIP", fieldPath: "status.hostIP", expectedValue: "10.0.0.1"},
+		{name: "status.podIP", fieldPath: "status.podIP", expectedValue: "192.168.1.10"},
+		{name: "status.podIPs", fieldPath: "status.podIPs", expectedValue: "192.168.1.10,fd00::10"},
+		{name: "metadata fallthrough", fieldPath: "metadata.annotations['kazoo.io/zone']", expectedValue: "west1"},
+		{name: "unsupported", fieldPath: "spec.whoops", expectedMessageFragment: "unsupported fieldPath"},
+	}
+
+	for _, tc := range cases {
+		actual, err := extractPodFieldPathAsString(pod, tc.fieldPath)
 		if err != nil {
 			if tc.expectedMessageFragment != "" {
 				if !strings.Contains(err.Error(), tc.expectedMessageFragment) {

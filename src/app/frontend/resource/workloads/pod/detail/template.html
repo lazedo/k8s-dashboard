@@ -107,6 +107,11 @@ limitations under the License.
   </div>
 </kd-card>
 
+<kd-scheduling [initialized]="isInitialized"
+               [nodeSelector]="pod?.nodeSelector"
+               [tolerations]="pod?.tolerations"
+               [affinity]="pod?.affinity"></kd-scheduling>
+
 <kd-card *ngIf="hasAllocatedResources()"
          [initialized]="isInitialized">
   <div title

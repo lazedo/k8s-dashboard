@@ -32,6 +32,11 @@ type ReplicationControllerDetail struct {
 
 	LabelSelector map[string]string `json:"labelSelector"`
 
+	// Scheduling constraints of the pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
+
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
 }
@@ -86,9 +91,17 @@ func UpdateReplicasCount(client k8sClient.Interface, namespace, name string, spe
 }
 
 func toReplicationControllerDetail(replicationController *v1.ReplicationController, podInfo *common.PodInfo, nonCriticalErrors []error) ReplicationControllerDetail {
-	return ReplicationControllerDetail{
+	detail := ReplicationControllerDetail{
 		ReplicationController: ToReplicationController(replicationController, podInfo),
 		LabelSelector:         replicationController.Spec.Selector,
 		Errors:                nonCriticalErrors,
 	}
+
+	if template := replicationController.Spec.Template; template != nil {
+		detail.NodeSelector = template.Spec.NodeSelector
+		detail.Tolerations = template.Spec.Tolerations
+		detail.Affinity = template.Spec.Affinity
+	}
+
+	return detail
 }

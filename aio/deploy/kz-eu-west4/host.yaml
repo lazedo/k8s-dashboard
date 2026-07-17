@@ -4,10 +4,10 @@ metadata:
   name: kubernetes-dashboard
 spec:
   tls:
-    - hosts: [dash.west4.kz-eu.k8s.2600hz.dev]
+    - hosts: [dashboard.west4.kz-eu.k8s.2600hz.dev]
       secretName: dashboard-tls
   rules:
-    - host: dash.west4.kz-eu.k8s.2600hz.dev
+    - host: dashboard.west4.kz-eu.k8s.2600hz.dev
       http:
         paths:
           - path: /

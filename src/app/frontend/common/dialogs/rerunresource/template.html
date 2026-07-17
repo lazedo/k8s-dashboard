@@ -15,14 +15,14 @@ limitations under the License.
 -->
 
 <h2 mat-dialog-title
-    i18n>Run {{ data.displayName }} now</h2>
+    i18n>Run {{ data.displayName }} again</h2>
 <mat-dialog-content class="kd-dialog-text"
-                    i18n>A new job will be created from {{ data.displayName }} {{ data.objectMeta.name }}.</mat-dialog-content>
+                    i18n>A new {{ data.displayName }} will be created from the spec of {{ data.objectMeta.name }}.</mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button
           color="primary"
           [mat-dialog-close]="true"
-          i18n>Run now</button>
+          i18n>Run again</button>
   <button mat-button
           color="primary"
           [mat-dialog-close]="false"

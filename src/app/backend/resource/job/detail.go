@@ -20,6 +20,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	batch "k8s.io/api/batch/v1"
+	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"
 )
@@ -31,6 +32,11 @@ type JobDetail struct {
 
 	// Completions specifies the desired number of successfully finished pods the job should be run with.
 	Completions *int32 `json:"completions"`
+
+	// Scheduling constraints of the pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -55,8 +61,11 @@ func GetJobDetail(client k8sClient.Interface, namespace, name string) (*JobDetai
 
 func toJobDetail(job *batch.Job, podInfo common.PodInfo, nonCriticalErrors []error) JobDetail {
 	return JobDetail{
-		Job:         toJob(job, &podInfo),
-		Completions: job.Spec.Completions,
-		Errors:      nonCriticalErrors,
+		Job:          toJob(job, &podInfo),
+		Completions:  job.Spec.Completions,
+		NodeSelector: job.Spec.Template.Spec.NodeSelector,
+		Tolerations:  job.Spec.Template.Spec.Tolerations,
+		Affinity:     job.Spec.Template.Spec.Affinity,
+		Errors:       nonCriticalErrors,
 	}
 }

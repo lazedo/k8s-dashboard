@@ -23,6 +23,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	hpa "github.com/kubernetes/dashboard/src/app/backend/resource/horizontalpodautoscaler"
 	apps "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"
 )
@@ -39,6 +40,11 @@ type ReplicaSetDetail struct {
 
 	// List of Horizontal Pod Autoscalers targeting this Replica Set.
 	HorizontalPodAutoscalerList hpa.HorizontalPodAutoscalerList `json:"horizontalPodAutoscalerList"`
+
+	// Scheduling constraints of the pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -75,6 +81,9 @@ func toReplicaSetDetail(rs *apps.ReplicaSet, podInfo common.PodInfo, hpas hpa.Ho
 		ReplicaSet:                  ToReplicaSet(rs, &podInfo),
 		Selector:                    rs.Spec.Selector,
 		HorizontalPodAutoscalerList: hpas,
+		NodeSelector:                rs.Spec.Template.Spec.NodeSelector,
+		Tolerations:                 rs.Spec.Template.Spec.Tolerations,
+		Affinity:                    rs.Spec.Template.Spec.Affinity,
 		Errors:                      nonCriticalErrors,
 	}
 }

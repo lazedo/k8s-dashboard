@@ -20,6 +20,7 @@ import (
 
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
+	core "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"
@@ -31,6 +32,11 @@ type DaemonSetDetail struct {
 	DaemonSet `json:",inline"`
 
 	LabelSelector *v1.LabelSelector `json:"labelSelector,omitempty"`
+
+	// Scheduling constraints of the pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []core.Toleration `json:"tolerations,omitempty"`
+	Affinity     *core.Affinity    `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -64,6 +70,9 @@ func GetDaemonSetDetail(client k8sClient.Interface, metricClient metricapi.Metri
 	return &DaemonSetDetail{
 		DaemonSet:     toDaemonSet(*daemonSet, podList.Items, eventList.Items),
 		LabelSelector: daemonSet.Spec.Selector,
+		NodeSelector:  daemonSet.Spec.Template.Spec.NodeSelector,
+		Tolerations:   daemonSet.Spec.Template.Spec.Tolerations,
+		Affinity:      daemonSet.Spec.Template.Spec.Affinity,
 		Errors:        []error{},
 	}, nil
 }

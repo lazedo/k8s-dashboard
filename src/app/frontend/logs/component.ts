@@ -22,13 +22,25 @@ import {LogsDownloadDialog} from '@common/dialogs/download/dialog';
 import {GlobalSettingsService} from 'common/services/global/globalsettings';
 import {LogService} from 'common/services/global/logs';
 import {NotificationSeverity, NotificationsService} from 'common/services/global/notifications';
-import {merge, Observable, of, Subject, timer} from 'rxjs';
-import {switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {EMPTY, forkJoin, merge, Observable, of, Subject, timer} from 'rxjs';
+import {catchError, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 
 const i18n = {
   MSG_LOGS_ZEROSTATE_TEXT: 'The selected container has not logged any messages yet.',
   MSG_LOGS_TRUNCATED_WARNING: 'The middle part of the log file cannot be loaded, because it is too big.',
 };
+
+// Sentinel value used by the pod selector to aggregate logs from all pods of the owner.
+const ALL_PODS = '__kd-all-pods__';
+
+// Minimum interval (seconds) used to watch the owner for new/removed pods in auto mode.
+const MIN_AUTO_WATCH_INTERVAL = 5;
+
+// A log line paired with the pod it came from (aggregated "All pods" view).
+interface PodLogLine {
+  pod: string;
+  line: LogLine;
+}
 
 @Component({
     selector: 'kd-logs',
@@ -38,6 +50,7 @@ const i18n = {
 })
 export class LogsComponent implements OnDestroy {
   @ViewChild('logViewContainer', {static: true}) logViewContainer_: ElementRef;
+  readonly allPods = ALL_PODS;
   refreshInterval: number;
   podLogs: LogDetails;
   logsSet: string[];
@@ -48,10 +61,19 @@ export class LogsComponent implements OnDestroy {
   itemsPerPage = 10;
   currentSelection: LogSelection;
   isLoading: boolean;
+  // Follows pods of the owner automatically: switches to (or, in the aggregated
+  // view, includes) newly created pods without manual re-selection.
+  autoMode = false;
 
   private readonly refreshUnsubscribe_ = new Subject<void>();
+  private readonly autoWatchUnsubscribe_ = new Subject<void>();
   private readonly logsPerView = 100;
   private readonly maxLogSize = 2e9;
+  private readonly namespace_: string;
+  private readonly resourceType_: string;
+  private readonly resourceName_: string;
+  // Source lines of the aggregated view, kept for re-formatting (e.g. timestamp toggle).
+  private allPodsLogs_: PodLogLine[] = [];
 
   constructor(
     readonly logService: LogService,
@@ -65,13 +87,17 @@ export class LogsComponent implements OnDestroy {
     this.isLoading = true;
     this.refreshInterval = this.settingsService_.getLogsAutoRefreshTimeInterval();
 
-    const namespace = this.activatedRoute_.snapshot.params.resourceNamespace;
-    const resourceType = this.activatedRoute_.snapshot.params.resourceType;
-    const resourceName = this.activatedRoute_.snapshot.params.resourceName;
+    this.namespace_ = this.activatedRoute_.snapshot.params.resourceNamespace;
+    this.resourceType_ = this.activatedRoute_.snapshot.params.resourceType;
+    this.resourceName_ = this.activatedRoute_.snapshot.params.resourceName;
     const containerName = this.activatedRoute_.snapshot.queryParams.container;
 
+    // Jobs (e.g. indexed jobs with many short-lived workers) benefit the most from
+    // following pods automatically, so auto mode is on by default for them.
+    this.autoMode = this.resourceType_ === 'job';
+
     logService
-      .getResource<LogSources>(`source/${namespace}/${resourceName}/${resourceType}`)
+      .getResource<LogSources>(`source/${this.namespace_}/${this.resourceName_}/${this.resourceType_}`)
       .pipe(
         switchMap<LogSources, Observable<LogDetails>>(data => {
           this.logSources = data;
@@ -80,7 +106,7 @@ export class LogsComponent implements OnDestroy {
           this.container = containerName ? containerName : data.containerNames[0]; // Pick from URL or first.
           this.appendContainerParam_();
 
-          return this.logService.getResource(`${namespace}/${this.pod}/${this.container}`);
+          return this.logService.getResource(`${this.namespace_}/${this.pod}/${this.container}`);
         })
       )
       .pipe(tap(_ => (this.logService.getAutoRefresh() ? this.toggleIntervalFunction_() : undefined)))
@@ -88,6 +114,7 @@ export class LogsComponent implements OnDestroy {
       .subscribe(data => {
         this.updateUiModel_(data);
         this.isLoading = false;
+        this.updateAutoWatch_();
         // Zoneless: the sources+logs chain resolves after the first render;
         // without a mark the spinner never leaves.
         this.cdr_.markForCheck();
@@ -102,11 +129,49 @@ export class LogsComponent implements OnDestroy {
 
     this.refreshUnsubscribe_.next();
     this.refreshUnsubscribe_.complete();
+    this.autoWatchUnsubscribe_.next();
+    this.autoWatchUnsubscribe_.complete();
   }
 
   onContainerChange() {
     this.appendContainerParam_();
     this.loadNewest();
+  }
+
+  /**
+   * Whether the logs were opened from a controller (Job/Deployment/etc.) rather
+   * than a single pod, i.e. the owner may have multiple pods.
+   */
+  isController(): boolean {
+    return this.resourceType_ !== 'pod';
+  }
+
+  /**
+   * Whether the aggregated "All pods" option is selected.
+   */
+  isAllPods(): boolean {
+    return this.pod === ALL_PODS;
+  }
+
+  /**
+   * Executed when the user changes the selected pod. Picking a specific pod is an
+   * explicit choice, so it disables automatic pod following; the aggregated
+   * "All pods" option keeps it untouched.
+   */
+  onPodChange(): void {
+    if (!this.isAllPods()) {
+      this.autoMode = false;
+      this.updateAutoWatch_();
+    }
+    this.loadNewest();
+  }
+
+  /**
+   * Toggles automatic following of new/removed pods of the owner.
+   */
+  toggleAutoMode(): void {
+    this.autoMode = !this.autoMode;
+    this.updateAutoWatch_();
   }
 
   /**
@@ -127,6 +192,11 @@ export class LogsComponent implements OnDestroy {
    * Loads maxLogSize newest lines of logs.
    */
   loadNewest(): void {
+    if (this.isAllPods()) {
+      this.loadAllPodsNewest_(this.scrollToBottom_.bind(this));
+      return;
+    }
+
     this.loadView_(
       LogControl.LoadEnd,
       LogControl.TimestampNewest,
@@ -175,7 +245,11 @@ export class LogsComponent implements OnDestroy {
 
   onShowTimestamp(): void {
     this.logService.toggleShowTimestamp();
-    this.logsSet = this.formatAllLogs_(this.podLogs.logs);
+    if (this.isAllPods()) {
+      this.logsSet = this.formatAllPodsLogs_(this.allPodsLogs_);
+    } else {
+      this.logsSet = this.formatAllLogs_(this.podLogs.logs);
+    }
   }
 
   /**
@@ -240,10 +314,12 @@ export class LogsComponent implements OnDestroy {
     return logs.map(line => this.formatLine_(line));
   }
 
-  private formatLine_(line: LogLine): string {
+  private formatLine_(line: LogLine, podPrefix?: string): string {
     // add timestamp if needed
     const showTimestamp = this.logService.getShowTimestamp();
-    return showTimestamp ? `${new Date(line.timestamp).toISOString()} | ${line.content}` : line.content;
+    const prefix = podPrefix ? `[${podPrefix}] ` : '';
+    const content = `${prefix}${line.content}`;
+    return showTimestamp ? `${new Date(line.timestamp).toISOString()} | ${content}` : content;
   }
 
   private appendContainerParam_() {
@@ -290,6 +366,162 @@ export class LogsComponent implements OnDestroy {
   }
 
   /**
+   * Fetches the newest logs of every pod of the owner (one request per pod, the
+   * same follow/poll mechanism as the single pod view) and merges them into a
+   * single view, each line prefixed with a short pod identifier. Ordering is
+   * approximate: lines are sorted by their timestamps across pods.
+   */
+  private loadAllPodsNewest_(onLoad?: Function): void {
+    const pods = (this.logSources && this.logSources.podNames) || [];
+    if (pods.length === 0) {
+      return;
+    }
+
+    const params = new HttpParams()
+      .set('logFilePosition', LogControl.LoadEnd)
+      .set('referenceTimestamp', LogControl.TimestampNewest)
+      .set('referenceLineNum', '0')
+      .set('offsetFrom', `${this.maxLogSize}`)
+      .set('offsetTo', `${this.maxLogSize + this.logsPerView}`)
+      .set('previous', `${this.logService.getPrevious()}`);
+
+    forkJoin(
+      pods.map(pod =>
+        this.logService.getResource<LogDetails>(`${this.namespace_}/${pod}/${this.container}`, params).pipe(
+          // A pod may not have the selected container (or may be gone already) - skip it.
+          catchError(() => of(null as LogDetails))
+        )
+      )
+    )
+      .pipe(take(1))
+      .subscribe(results => {
+        const merged: PodLogLine[] = [];
+        let fromDate = '';
+        let toDate = '';
+        let truncated = false;
+
+        results.forEach((podLogs, index) => {
+          if (!podLogs) {
+            return;
+          }
+          for (const line of podLogs.logs) {
+            merged.push({pod: pods[index], line});
+          }
+          if (podLogs.info) {
+            if (!fromDate || podLogs.info.fromDate < fromDate) {
+              fromDate = podLogs.info.fromDate;
+            }
+            if (!toDate || podLogs.info.toDate > toDate) {
+              toDate = podLogs.info.toDate;
+            }
+            truncated = truncated || podLogs.info.truncated;
+          }
+        });
+
+        // RFC3339 timestamps compare correctly as strings; the sort is stable, so
+        // lines without a proper timestamp keep their per-pod order.
+        merged.sort((a, b) => (a.line.timestamp < b.line.timestamp ? -1 : a.line.timestamp > b.line.timestamp ? 1 : 0));
+
+        this.allPodsLogs_ = merged;
+        this.podLogs = {
+          info: {
+            podName: '',
+            containerName: this.container,
+            initContainerName: '',
+            fromDate,
+            toDate,
+            truncated,
+          },
+          logs: [],
+          selection: this.currentSelection,
+        };
+        this.logsSet = this.formatAllPodsLogs_(merged);
+        this.isLoading = false;
+
+        if (this.logService.getFollowing()) {
+          setTimeout(() => {
+            this.scrollToBottom_();
+          });
+        }
+        if (onLoad) {
+          onLoad();
+        }
+        this.cdr_.markForCheck();
+      });
+  }
+
+  private formatAllPodsLogs_(logs: PodLogLine[]): string[] {
+    if (logs.length === 0) {
+      return [this.formatLine_({timestamp: '0', content: i18n.MSG_LOGS_ZEROSTATE_TEXT})];
+    }
+    return logs.map(entry => this.formatLine_(entry.line, this.shortPodName_(entry.pod)));
+  }
+
+  /**
+   * Short display identifier of a pod: the pod name minus the owner's name prefix
+   * (e.g. "provision-0-5jqb6" -> "0-5jqb6"), or the trailing segments as fallback.
+   */
+  private shortPodName_(pod: string): string {
+    const prefix = `${this.resourceName_}-`;
+    if (pod.startsWith(prefix) && pod.length > prefix.length) {
+      return pod.slice(prefix.length);
+    }
+    const segments = pod.split('-');
+    return segments.length > 2 ? segments.slice(-2).join('-') : pod;
+  }
+
+  /**
+   * (Re)starts the owner watch used by auto mode: periodically re-reads the log
+   * sources and reacts to pod churn - a newly created pod (index retry, rolling
+   * update) is switched to (single pod view) or included (aggregated view), and a
+   * selection pointing at a pod that no longer exists falls back to the newest one.
+   */
+  private updateAutoWatch_(): void {
+    this.autoWatchUnsubscribe_.next();
+    if (!this.autoMode || !this.isController()) {
+      return;
+    }
+
+    const interval = Math.max(this.settingsService_.getLogsAutoRefreshTimeInterval(), MIN_AUTO_WATCH_INTERVAL) * 1000;
+    timer(interval, interval)
+      .pipe(
+        switchMap(() =>
+          this.logService
+            .getResource<LogSources>(`source/${this.namespace_}/${this.resourceName_}/${this.resourceType_}`)
+            .pipe(catchError(() => EMPTY))
+        )
+      )
+      .pipe(takeUntil(this.autoWatchUnsubscribe_))
+      .subscribe(sources => {
+        this.onSourcesUpdate_(sources);
+        this.cdr_.markForCheck();
+      });
+  }
+
+  private onSourcesUpdate_(sources: LogSources): void {
+    const previousPods = (this.logSources && this.logSources.podNames) || [];
+    const freshPods = sources.podNames.filter(pod => previousPods.indexOf(pod) < 0);
+    this.logSources = sources;
+
+    if (this.isAllPods()) {
+      if (freshPods.length > 0) {
+        this.loadAllPodsNewest_();
+      }
+      return;
+    }
+
+    if (freshPods.length > 0) {
+      // A new pod of the owner appeared (index retry, rolling update) - follow it.
+      this.pod = freshPods[freshPods.length - 1];
+      this.loadNewest();
+    } else if (sources.podNames.indexOf(this.pod) < 0 && sources.podNames.length > 0) {
+      // The selected pod is gone - fall back to the newest one still listed.
+      this.pod = sources.podNames[sources.podNames.length - 1];
+      this.loadNewest();
+    }
+  }
+
+  /**
    * Starts and stops interval function used to automatically refresh logs.
    */
   private toggleIntervalFunction_(): void {
@@ -307,15 +539,20 @@ export class LogsComponent implements OnDestroy {
         })
       )
       .pipe(takeUntil(this.refreshUnsubscribe_))
-      .subscribe(_ =>
+      .subscribe(_ => {
+        if (this.isAllPods()) {
+          this.loadAllPodsNewest_();
+          return;
+        }
+
         this.loadView_(
           LogControl.LoadEnd,
           LogControl.TimestampNewest,
           0,
           this.maxLogSize,
           this.maxLogSize + this.logsPerView
-        )
-      );
+        );
+      });
   }
 
   /**

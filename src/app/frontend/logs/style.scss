@@ -56,3 +56,33 @@ kd-card {
   font-size: $body-font-size-base;
   padding: 0 (2 * $baseline-grid);
 }
+
+// Container/pod selectors: size to the selected value instead of the fixed MDC
+// infix width, so long pod names ("qubicle-provisioner-3-x7k2v") are not
+// truncated while there is free space in the toolbar. Floor keeps short names
+// from collapsing the field; ceiling (~40ch + ellipsis) keeps pathological
+// names from eating the toolbar. The select panel follows its own content via
+// [panelWidth]="null" in the template.
+.kd-logs-toolbar {
+  mat-form-field {
+    min-width: 180px;
+    width: auto;
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      width: auto;
+    }
+
+    ::ng-deep .mat-mdc-select {
+      width: auto;
+    }
+
+    ::ng-deep .mat-mdc-select-value {
+      max-width: 40ch;
+      width: auto;
+    }
+  }
+}
+
+.kd-logs-auto-toggle {
+  margin-left: $baseline-grid;
+}

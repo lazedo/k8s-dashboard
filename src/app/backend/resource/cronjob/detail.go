@@ -18,6 +18,7 @@ import (
 	"context"
 
 	batch "k8s.io/api/batch/v1"
+	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"
 )
@@ -29,6 +30,11 @@ type CronJobDetail struct {
 
 	ConcurrencyPolicy       string `json:"concurrencyPolicy"`
 	StartingDeadLineSeconds *int64 `json:"startingDeadlineSeconds"`
+
+	// Scheduling constraints of the job template's pod template.
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []v1.Toleration   `json:"tolerations,omitempty"`
+	Affinity     *v1.Affinity      `json:"affinity,omitempty"`
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
@@ -51,5 +57,8 @@ func toCronJobDetail(cj *batch.CronJob) CronJobDetail {
 		CronJob:                 toCronJob(cj),
 		ConcurrencyPolicy:       string(cj.Spec.ConcurrencyPolicy),
 		StartingDeadLineSeconds: cj.Spec.StartingDeadlineSeconds,
+		NodeSelector:            cj.Spec.JobTemplate.Spec.Template.Spec.NodeSelector,
+		Tolerations:             cj.Spec.JobTemplate.Spec.Template.Spec.Tolerations,
+		Affinity:                cj.Spec.JobTemplate.Spec.Template.Spec.Affinity,
 	}
 }

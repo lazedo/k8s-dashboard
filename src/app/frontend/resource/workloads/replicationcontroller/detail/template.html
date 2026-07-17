@@ -54,6 +54,11 @@ limitations under the License.
   </div>
 </kd-card>
 
+<kd-scheduling [initialized]="isInitialized"
+               [nodeSelector]="replicationController?.nodeSelector"
+               [tolerations]="replicationController?.tolerations"
+               [affinity]="replicationController?.affinity"></kd-scheduling>
+
 <kd-pod-status-card [podInfo]="replicationController?.podInfo"
                     [initialized]="isInitialized"></kd-pod-status-card>
 
