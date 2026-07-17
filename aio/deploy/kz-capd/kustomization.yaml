@@ -1,0 +1,15 @@
+# Dashboard on the kz-capd lab fleet (CAPD): same stack as kind/, image from
+# ghcr (CAPD nodes cannot see kind-loaded images), NO dex/oauth (lab keeps
+# token login) and no public certs — the ingress from the base stays as-is.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dashboard
+resources:
+  - ../kind
+patches:
+  - path: pull-secret.yaml
+    target: {kind: Deployment, name: kubernetes-dashboard}
+images:
+  - name: k8s-dashboard-plugins
+    newName: ghcr.io/lazedo/k8s-dashboard
+    newTag: ng22-62
