@@ -65,6 +65,11 @@ type ObjectMeta struct {
 	// don't ONLY use UUIDs, this is an alias to string.  Being a type captures
 	// intent and helps make sure that UIDs and names do not get conflated.
 	UID types.UID `json:"uid,omitempty"`
+
+	// ResourceVersion is the k8s resourceVersion: a cheap change signature so
+	// list consumers (plugins) can detect object changes without a per-object
+	// raw GET fan-out.
+	ResourceVersion string `json:"resourceVersion,omitempty"`
 }
 
 // TypeMeta describes an individual object in an API response or request with strings representing
@@ -99,6 +104,7 @@ func NewObjectMeta(k8SObjectMeta metaV1.ObjectMeta) ObjectMeta {
 		CreationTimestamp: k8SObjectMeta.CreationTimestamp,
 		Annotations:       k8SObjectMeta.Annotations,
 		UID:               k8SObjectMeta.UID,
+		ResourceVersion:   k8SObjectMeta.ResourceVersion,
 	}
 }
 
