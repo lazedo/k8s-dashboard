@@ -38,8 +38,8 @@ import {LoginModule} from './login/module';
             useHash: true,
             onSameUrlNavigation: 'reload',
         })], providers: [
-        // Zone-based CD itself is requested via applicationProviders in
-        // index.ts — in NgModule.providers it would be silently ineffective.
+        // Zoneless CD is requested via applicationProviders in index.ts — in
+        // NgModule.providers it would be silently ineffective.
         // MDC form fields reserve subscript (hint/error) space by default,
         // inflating every field; size it dynamically like the legacy fields.
         { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { subscriptSizing: 'dynamic' } },

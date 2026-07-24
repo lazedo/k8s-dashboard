@@ -23,8 +23,10 @@ import 'core-js/es/reflect';
 // Required to support Web Animations `@angular/platform-browser/animations`:
 import 'web-animations-js';
 
-// Zone JS is required by default for Angular itself.
-import 'zone.js';
+// Zone.js is intentionally NOT imported: the app runs zoneless (see index.ts,
+// provideZonelessChangeDetection). Change detection is driven by signals,
+// markForCheck/OnPush and, during the ongoing migration, a coalesced
+// ApplicationRef.tick() after HTTP responses (see common/services/global/tick).
 
 // Load `$localize` onto the global scope - used if i18n tags appear in Angular templates.
 import '@angular/localize/init';
