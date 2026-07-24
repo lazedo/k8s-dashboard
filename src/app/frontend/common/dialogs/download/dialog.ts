@@ -60,12 +60,16 @@ export class LogsDownloadDialog implements OnDestroy {
 
     this.http_
       .request(
-        new HttpRequest(
-          'GET',
-          logUrl,
-          {},
-          {reportProgress: true, responseType: 'blob', params: new HttpParams({fromObject: this._logOptions})}
-        )
+        // GET takes options as the 3rd argument. The previous 4th-argument form
+        // passed `{}` as a request BODY: harmless on the legacy XHR backend, but
+        // Angular's fetch backend (the default since the v22 upgrade) rejects a
+        // GET/HEAD with a body ("Request with GET/HEAD method cannot have body"),
+        // so the download errored immediately and the dialog hung on "Size 0.00 B".
+        new HttpRequest('GET', logUrl, {
+          reportProgress: true,
+          responseType: 'blob',
+          params: new HttpParams({fromObject: this._logOptions}),
+        })
       )
       .pipe(takeUntil(this._unsubscribe))
       .subscribe(
@@ -75,15 +79,37 @@ export class LogsDownloadDialog implements OnDestroy {
           } else if (event instanceof HttpResponse) {
             this.finished = true;
             this._result = new Blob([event.body as BlobPart], {type: 'text/plan'});
+          } else {
+            // Sent / ResponseHeader and other non-rendering events — nothing to
+            // paint, and touching change detection here is actively harmful (see
+            // renderAsync_).
+            return;
           }
-          // Zoneless: progress/completion land outside any marked view.
-          this.cdr_.markForCheck();
+          this.renderAsync_();
         },
         error => {
           this._error = error.status;
-          this.cdr_.markForCheck();
+          this.renderAsync_();
         }
       );
+  }
+
+  // Zoneless: this dialog is a CDK overlay attached to the ApplicationRef as its
+  // own view, outside the root tree the global HTTP sweep force-checks (see
+  // common/services/global/tick.ts). markForCheck() only flags it dirty for a
+  // traversal that never arrives, so the overlay never repaints; detectChanges()
+  // force-checks this view. But this subscription is created in the constructor
+  // and HttpClient emits its first event (Sent, with reportProgress) synchronously
+  // before the overlay's view exists — a synchronous detectChanges() then hits a
+  // null view and throws, killing the subscription so the response never renders.
+  // Defer to a microtask (the view is initialized by then) and swallow the throw
+  // for a view that is already being checked or has been destroyed (dialog closed).
+  private renderAsync_(): void {
+    queueMicrotask(() => {
+      try {
+        this.cdr_.detectChanges();
+      } catch (_) {}
+    });
   }
 
   ngOnDestroy(): void {

@@ -47,15 +47,25 @@ export class EditResourceDialog implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const url = RawResource.getUrl(this.data.typeMeta, this.data.objectMeta);
+    // Use subscribe(), not the deprecated toPromise(): on Angular's fetch
+    // backend (the default since v22) toPromise() did not deliver the body to
+    // .then(), so this.text stayed empty and the editor rendered blank. The
+    // download dialog's subscribe() path works, so mirror it here.
     this.http_
       .get(url)
-      .toPromise()
-      .then(response => {
+      .pipe(takeUntil(this.unsubscribe_))
+      .subscribe(response => {
         this.text = toYaml(response);
-        // Zoneless: the response lands after the dialog's first render and
-        // nothing else marks this view — without this the editor stays blank
-        // until the YAML/JSON toggle forces a repaint.
-        this.cdr_.markForCheck();
+        // Zoneless: this dialog is a CDK overlay (its own ApplicationRef view,
+        // outside the root tree the global HTTP sweep force-checks). The GET
+        // lands after the dialog's first render; markForCheck() only flags it
+        // dirty for a traversal that never arrives, so the editor stayed blank
+        // until the YAML/JSON toggle forced a repaint. detectChanges()
+        // force-checks this view so the YAML renders immediately. Guard the
+        // destroyed-view case (dialog closed before the response arrived).
+        try {
+          this.cdr_.detectChanges();
+        } catch (_) {}
       });
 
     this.buttonToggleGroup.valueChange.pipe(takeUntil(this.unsubscribe_)).subscribe((selectedMode: EditorMode) => {
