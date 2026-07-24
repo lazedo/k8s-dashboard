@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {
+  afterNextRender,
   AfterViewInit,
   Component,
   ElementRef,
@@ -66,7 +67,15 @@ export class TextInputComponent implements OnInit, AfterViewInit, OnChanges {
     fontFamily: "'Roboto Mono Regular', monospace",
   };
 
-  constructor(private readonly themeService_: ThemeService) {}
+  constructor(private readonly themeService_: ThemeService) {
+    // Ace measures its container once, when edit() runs in ngAfterViewInit.
+    // Inside a Material dialog the panel is still animating/measuring then, so
+    // the editor caches a zero size and paints blank even once content is set —
+    // the classic "Ace in a dialog renders empty" trap, surfaced here because
+    // zoneless no longer happens to tick the editor into a remeasure. Resize
+    // after the next render, when the dialog layout has settled.
+    afterNextRender(() => this.editor?.resize(true));
+  }
 
   ngOnInit(): void {
     this.theme = this.themeService_.isThemeDark() ? EditorTheme.dark : EditorTheme.light;
@@ -120,6 +129,9 @@ export class TextInputComponent implements OnInit, AfterViewInit, OnChanges {
     const point = this.editor.getCursorPosition();
     this.editor.setValue(this.text, -1);
     this.editor.moveCursorToPosition(point);
+    // Content arriving after an async load (e.g. the edit-resource dialog's GET)
+    // lands once the dialog is laid out; remeasure so it actually paints.
+    this.editor.resize(true);
   }
 
   private onEditorTextChange_(): void {
