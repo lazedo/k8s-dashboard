@@ -6,6 +6,10 @@
 # full frontend build finish in CI time while producing the same scratch image
 # layout as upstream's aio/Dockerfile.
 #
+# Published as k8s-dashboard — the name aio/deploy/kz-eu and kz-capd reference.
+# "k8s-dashboard-plugins" is only a LOCAL image name, produced by build-kind.sh
+# for kind load; it never had a registry prefix.
+#
 # Separate from upstream's cd-workflow.yml, which publishes the split (plugin-
 # less) dashboard under its own names and release process.
 #
@@ -28,7 +32,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: k8s-dashboard-plugins
+  IMAGE_NAME: k8s-dashboard
 
 jobs:
   build:
