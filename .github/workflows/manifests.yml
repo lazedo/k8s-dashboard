@@ -59,8 +59,7 @@ jobs:
           SHORT="${{ steps.sha.outputs.short }}"
           mkdir -p /tmp/manifests
           cp -R aio/deploy/. /tmp/manifests/
-          grep -rl "newName: ghcr.io/lazedo/k8s-dashboard" /tmp/manifests --include=kustomization.yaml \\
-            | xargs sed -i -E "s/newTag: .*/newTag: ${SHORT}/"
+          grep -rl "newName: ghcr.io/lazedo/k8s-dashboard" /tmp/manifests --include=kustomization.yaml | xargs sed -i -E "s/newTag: .*/newTag: ${SHORT}/"
           grep -rq "newTag: ${SHORT}" /tmp/manifests
 
       - name: Push OCI artifact
