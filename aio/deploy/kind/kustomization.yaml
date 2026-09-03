@@ -12,7 +12,6 @@ resources:
   - globalplugin-crd-v1.yaml # GlobalPlugin CRD (v1) — cluster-scoped
   - formplugin-crd-v1.yaml   # FormPlugin CRD (v1) — cluster-scoped create-form cards
   - demo-formplugin.yaml     # quick-namespace demo FormPlugin
-  - plugin-rbac.yaml         # plugins + globalplugins + configmaps read access
   - ingress.yaml             # http Service + Ingress (dash.west...)
 patches:
   - path: namespace-arg.yaml

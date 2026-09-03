@@ -131,6 +131,20 @@ rules:
   - apiGroups: ["metrics.k8s.io"]
     resources: ["pods", "nodes"]
     verbs: ["get", "list", "watch"]
+  # Ingress list for the Service detail view (matches the live grant that
+  # fixed the 502 there)
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
+  # Plugin discovery (dashboard.k8s.io) and the ConfigMaps that hold each
+  # plugin's compiled JS source (was a separate kubernetes-dashboard-plugins
+  # ClusterRole; merged here — one role, one binding)
+  - apiGroups: ["dashboard.k8s.io"]
+    resources: ["plugins", "globalplugins", "formplugins"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
 
 ---
 
