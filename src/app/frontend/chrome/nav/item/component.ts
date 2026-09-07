@@ -56,6 +56,10 @@ const rollInOut = trigger('rollInOut', [
 export class NavItemComponent implements OnInit, OnDestroy {
   @Input() state: string;
   @Input() exact = false;
+  // Group headers that merely open a plugin are shortcuts, not states: with
+  // highlight=false the item never receives the active class, so only the
+  // item matching the current view lights up.
+  @Input() highlight = true;
   @Input() namespaced = false;
   // Optional query params (e.g. plugin deep links: /plugin/capi?view=map).
   @Input() queryParams: {[key: string]: string} = null;

@@ -178,6 +178,7 @@ limitations under the License.
         <kd-nav-item class="kd-nav-group-item"
                      [state]="pluginState(p)"
                      [queryParams]="{view: p.nav.headerView || (p.nav.items && p.nav.items.length ? p.nav.items[0].view : '')}"
+                     [highlight]="false"
                      [id]="'nav-plugin-' + p.name">{{p.nav.group}}
         </kd-nav-item>
         <kd-nav-item *ngFor="let item of (p.nav.items || [])"

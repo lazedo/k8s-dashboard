@@ -137,7 +137,12 @@ export class NamespaceSelectorComponent implements OnInit, OnDestroy {
 
   setDefaultQueryParams_() {
     const defaultNamespace = this.settingsService_.getDefaultNamespace() || this.appConfig_.defaultNamespace;
-    this.router_.navigate([this.activatedRoute_.snapshot.url], {
+    // Stay on the current route and only add the namespace param: navigating
+    // to `[snapshot.url]` re-resolved the route from its segments and, for
+    // parameterised routes such as plugin/:pluginName, dropped the parameter
+    // (a plugin link without ?namespace= landed on the plugin list).
+    this.router_.navigate([], {
+      relativeTo: this.activatedRoute_,
       queryParams: {[NAMESPACE_STATE_PARAM]: defaultNamespace},
       queryParamsHandling: 'merge',
     });
