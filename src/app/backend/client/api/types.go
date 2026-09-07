@@ -55,6 +55,23 @@ type ClientManager interface {
 	HasAccess(authInfo api.AuthInfo) (string, error)
 	VerberClient(req *restful.Request, config *rest.Config) (ResourceVerber, error)
 	SetTokenManager(manager authApi.TokenManager)
+	// RemoteClusters lists the remote clusters reachable through the 'cluster' query parameter.
+	RemoteClusters(req *restful.Request) (*RemoteClusterList, error)
+}
+
+// RemoteCluster describes a remote cluster whose kubeconfig is stored in a Secret of the local cluster.
+type RemoteCluster struct {
+	// Name is the value accepted by the 'cluster' query parameter.
+	Name string `json:"name"`
+	// Server is the API server address from the kubeconfig, empty if it could not be parsed.
+	Server string `json:"server"`
+	// Accessible is true when the requesting user may read the kubeconfig Secret, i.e. use the cluster.
+	Accessible bool `json:"accessible"`
+}
+
+// RemoteClusterList is the response of the 'clusters' endpoint.
+type RemoteClusterList struct {
+	Clusters []RemoteCluster `json:"clusters"`
 }
 
 // ResourceVerber is responsible for performing generic CRUD operations on all supported resources.

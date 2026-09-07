@@ -811,6 +811,11 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			To(apiHandler.handleCanI))
 
 	apiV1Ws.Route(
+		apiV1Ws.GET("/clusters").
+			To(apiHandler.handleGetRemoteClusters).
+			Writes(clientapi.RemoteClusterList{}))
+
+	apiV1Ws.Route(
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/raw").
 			To(apiHandler.handleGetCustomResourceObjectRaw))
 
@@ -3285,6 +3290,17 @@ func (apiHandler *APIHandler) handleCanI(request *restful.Request, response *res
 	}
 	allowed := apiHandler.cManager.CanI(request, ssar)
 	response.WriteHeaderAndEntity(http.StatusOK, map[string]bool{"allowed": allowed})
+}
+
+// handleGetRemoteClusters lists the remote clusters the 'cluster' query parameter accepts. Every other
+// endpoint of this API honours that parameter, see client/remote.go.
+func (apiHandler *APIHandler) handleGetRemoteClusters(request *restful.Request, response *restful.Response) {
+	result, err := apiHandler.cManager.RemoteClusters(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
 func (apiHandler *APIHandler) handleGetCustomResourceObjectRaw(request *restful.Request, response *restful.Response) {

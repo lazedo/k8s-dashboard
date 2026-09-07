@@ -137,3 +137,7 @@ func (cm *fakeClientManager) VerberClient(req *restful.Request, config *rest.Con
 func (cm *fakeClientManager) SetTokenManager(manager authApi.TokenManager) {
 	panic("implement me")
 }
+
+func (cm *fakeClientManager) RemoteClusters(req *restful.Request) (*clientapi.RemoteClusterList, error) {
+	panic("implement me")
+}

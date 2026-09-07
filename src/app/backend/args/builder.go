@@ -168,6 +168,12 @@ func (self *holderBuilder) SetLocaleConfig(localeConfig string) *holderBuilder {
 	return self
 }
 
+// SetRemoteKubeconfigNamespace 'remote-kubeconfig-namespace' argument of Dashboard binary.
+func (self *holderBuilder) SetRemoteKubeconfigNamespace(namespace string) *holderBuilder {
+	self.holder.remoteKubeconfigNamespace = namespace
+	return self
+}
+
 // GetHolderBuilder returns singleton instance of argument holder builder.
 func GetHolderBuilder() *holderBuilder {
 	return builder

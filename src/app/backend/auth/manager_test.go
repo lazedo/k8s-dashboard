@@ -98,6 +98,10 @@ func (self *fakeClientManager) CanI(req *restful.Request, ssar *v1.SelfSubjectAc
 	return true
 }
 
+func (self *fakeClientManager) RemoteClusters(req *restful.Request) (*clientapi.RemoteClusterList, error) {
+	return nil, nil
+}
+
 type fakeTokenManager struct {
 	GeneratedToken string
 	Error          error

@@ -46,6 +46,9 @@ type holder struct {
 	apiLogLevel          string
 	namespace            string
 
+	// Namespace holding the kubeconfig Secrets of remote clusters (see client/remote.go).
+	remoteKubeconfigNamespace string
+
 	authenticationMode []string
 
 	autoGenerateCertificates  bool
@@ -183,4 +186,9 @@ func (self *holder) GetNamespace() string {
 // GetLocaleConfig 'locale-config' argument of Dashboard binary.
 func (self *holder) GetLocaleConfig() string {
 	return self.localeConfig
+}
+
+// GetRemoteKubeconfigNamespace 'remote-kubeconfig-namespace' argument of Dashboard binary.
+func (self *holder) GetRemoteKubeconfigNamespace() string {
+	return self.remoteKubeconfigNamespace
 }

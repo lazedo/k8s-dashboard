@@ -92,12 +92,23 @@ type clientManager struct {
 	// to service account used by dashboard or kubeconfig file if it was passed during dashboard
 	// init.
 	insecureConfig *rest.Config
+	// Parsed kubeconfigs of remote clusters, served for requests carrying the 'cluster' query parameter.
+	remoteClusters remoteClusterCache
 }
 
 // Client returns a kubernetes client. In case dashboard login is enabled and option to skip
 // login page is disabled only secure client will be returned, otherwise insecure client will be
-// used.
+// used. Requests carrying the 'cluster' query parameter get a client for that remote cluster instead.
 func (self *clientManager) Client(req *restful.Request) (kubernetes.Interface, error) {
+	if name := remoteClusterName(req); len(name) > 0 {
+		return self.remoteClient(req, name)
+	}
+
+	return self.localClient(req)
+}
+
+// localClient returns a kubernetes client for the local cluster, ignoring the 'cluster' query parameter.
+func (self *clientManager) localClient(req *restful.Request) (kubernetes.Interface, error) {
 	if req == nil {
 		return nil, errors.NewBadRequest("request can not be nil")
 	}
@@ -117,6 +128,15 @@ func (self *clientManager) APIExtensionsClient(req *restful.Request) (apiextensi
 		return nil, errors.NewBadRequest("request can not be nil!")
 	}
 
+	if name := remoteClusterName(req); len(name) > 0 {
+		cfg, err := self.remoteConfig(req, name)
+		if err != nil {
+			return nil, err
+		}
+
+		return apiextensionsclientset.NewForConfig(cfg)
+	}
+
 	if self.isSecureModeEnabled(req) {
 		return self.secureAPIExtensionsClient(req)
 	}
@@ -132,6 +152,15 @@ func (self *clientManager) PluginClient(req *restful.Request) (pluginclientset.I
 		return nil, errors.NewBadRequest("request can not be nil!")
 	}
 
+	if name := remoteClusterName(req); len(name) > 0 {
+		cfg, err := self.remoteConfig(req, name)
+		if err != nil {
+			return nil, err
+		}
+
+		return pluginclientset.NewForConfig(cfg)
+	}
+
 	if self.isSecureModeEnabled(req) {
 		return self.securePluginClient(req)
 	}
@@ -141,10 +170,14 @@ func (self *clientManager) PluginClient(req *restful.Request) (pluginclientset.I
 
 // Config returns a rest config. In case dashboard login is enabled and option to skip
 // login page is disabled only secure config will be returned, otherwise insecure config will be
-// used.
+// used. Requests carrying the 'cluster' query parameter get the config of that remote cluster instead.
 func (self *clientManager) Config(req *restful.Request) (*rest.Config, error) {
 	if req == nil {
 		return nil, errors.NewBadRequest("request can not be nil")
+	}
+
+	if name := remoteClusterName(req); len(name) > 0 {
+		return self.remoteConfig(req, name)
 	}
 
 	if self.isSecureModeEnabled(req) {
@@ -183,13 +216,20 @@ func (self *clientManager) InsecureConfig() *rest.Config {
 
 // CanI returns true when user is allowed to access data provided within SelfSubjectAccessReview, false otherwise.
 func (self *clientManager) CanI(req *restful.Request, ssar *v1.SelfSubjectAccessReview) bool {
+	return self.canI(req, self.Client, ssar)
+}
+
+// canI runs the access review with the client the given getter returns for the request (Client honours the
+// 'cluster' query parameter, localClient always asks the local cluster).
+func (self *clientManager) canI(req *restful.Request, clientFor func(*restful.Request) (kubernetes.Interface, error),
+	ssar *v1.SelfSubjectAccessReview) bool {
 	// In case user is not authenticated (uses skip option) do not allow access.
 	info, _ := self.extractAuthInfo(req)
 	if info == nil && len(args.Holder.GetCertFile()) > 0 && len(args.Holder.GetKeyFile()) > 0 {
 		return false
 	}
 
-	client, err := self.Client(req)
+	client, err := clientFor(req)
 	if err != nil {
 		log.Println(err)
 		return false
@@ -491,6 +531,7 @@ func (self *clientManager) secureConfig(req *restful.Request) (*rest.Config, err
 
 // Initializes client manager
 func (self *clientManager) init() {
+	self.remoteClusters.entries = map[string]remoteClusterEntry{}
 	self.initInClusterConfig()
 	self.initInsecureClients()
 	self.initCSRFKey()
