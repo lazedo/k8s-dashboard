@@ -75,8 +75,16 @@ export class AuthInterceptor implements HttpInterceptor {
 
   // The app uses hash routing, so the query string of the route lives in Location.path(), not in
   // window.location.search.
+  // Only PLUGIN routes may address a remote cluster. The dashboard's own pages (Nodes, Pods,
+  // Namespaces, the CRD object pages, delete/edit dialogs…) always show and act on THIS cluster:
+  // a stray ?cluster=<site> left in the URL by a plugin must never make the hub's Nodes page list
+  // a site's nodes, or a delete on the hub hit a site (that happened: a Kazoo deleted "on the
+  // hub" was the west one). Plugins pass the cluster explicitly in their own calls anyway.
   private routeCluster_(): string {
     const path = this.location_.path();
+    if (!/^\/plugin\//.test(path)) {
+      return '';
+    }
     const query = path.indexOf('?');
     return query < 0 ? '' : new URLSearchParams(path.slice(query + 1)).get('cluster') || '';
   }
