@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {PluginMetadata, PluginsConfig} from '@api/root.ui';
 import {Observable, Subject} from 'rxjs';
@@ -32,8 +32,12 @@ export class PluginsConfigService {
     return this.fetchConfig();
   }
 
-  refreshConfig(): void {
-    this.fetchConfig();
+  // Re-read the registry; resolves once `pluginsMetadata()` is current. The
+  // plugin holder awaits this before loading a module so a re-applied
+  // Plugin/GlobalPlugin (new resourceVersion → new module path) is picked up
+  // without reloading the page.
+  refreshConfig(): Promise<PluginsConfig> {
+    return this.fetchConfig();
   }
 
   anyPlugins(): boolean {

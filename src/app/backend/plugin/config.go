@@ -83,6 +83,9 @@ func (h *Handler) handleConfig(request *restful.Request, response *restful.Respo
 	if dynClient := h.globalPluginClient(request); dynClient != nil {
 		if globals, gErr := GetGlobalPlugins(dynClient); gErr == nil {
 			items = append(items, globals...)
+		} else {
+			// keep the namespaced plugins but say why the globals are missing
+			cfg.Errors = append(cfg.Errors, gErr)
 		}
 	}
 
@@ -99,7 +102,7 @@ func (h *Handler) handleConfig(request *restful.Request, response *restful.Respo
 			Nav:          plugin.Nav,
 		}
 	})
-	cfg.Errors = result.Errors
+	cfg.Errors = append(cfg.Errors, result.Errors...)
 	response.WriteHeaderAndEntity(http.StatusOK, cfg)
 }
 

@@ -13,12 +13,32 @@
 // limitations under the License.
 
 import {Location} from '@angular/common';
-import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
+import {HttpContextToken, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Inject, Injectable} from '@angular/core';
 import {IConfig} from '@api/root.ui';
 import {CookieService} from 'ngx-cookie-service';
 import {Observable} from 'rxjs';
 import {CONFIG_DI_TOKEN} from '../../../index.config';
+
+// Callers that address the dashboard's OWN cluster regardless of the route's
+// ?cluster= (nav gating, plugin registry) set this context token.
+export const HUB_ONLY = new HttpContextToken<boolean>(() => false);
+
+// Backend endpoints that describe this dashboard rather than a cluster's
+// workload: the plugin registry and module sources, settings, auth, the
+// remote-cluster list itself. They are never redirected to a remote cluster,
+// otherwise a page opened with ?cluster=<site> would take its plugin list
+// and nav gating (requiresCrd) from the remote cluster.
+const HUB_ONLY_PREFIXES = [
+  'api/v1/plugin',
+  'api/v1/globalplugin',
+  'api/v1/formplugin',
+  'api/v1/settings',
+  'api/v1/login',
+  'api/v1/csrftoken',
+  'api/v1/systembanner',
+  'api/v1/clusters',
+];
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -45,7 +65,8 @@ export class AuthInterceptor implements HttpInterceptor {
     // Remote clusters: a route opened as '#/...?cluster=west' targets that cluster, so propagate
     // the parameter to backend calls that do not name one themselves (see docs/plugins/README.md).
     const cluster = this.routeCluster_();
-    if (cluster && !req.params.has('cluster') && !/[?&]cluster=/.test(req.url)) {
+    const hubOnly = req.context.get(HUB_ONLY) || HUB_ONLY_PREFIXES.some(p => req.url.startsWith(p));
+    if (cluster && !hubOnly && !req.params.has('cluster') && !/[?&]cluster=/.test(req.url)) {
       req = req.clone({setParams: {cluster}});
     }
 

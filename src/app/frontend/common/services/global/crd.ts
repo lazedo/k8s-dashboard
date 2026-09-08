@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpContext} from '@angular/common/http';
+import {HUB_ONLY} from './interceptor';
 import {Injectable} from '@angular/core';
 
 interface CrdListItem {
@@ -39,7 +40,7 @@ export class CrdAvailabilityService {
 
   init(): Promise<void> {
     return this.http
-      .get<CrdListResponse>(this.crdListPath_)
+      .get<CrdListResponse>(this.crdListPath_, {context: new HttpContext().set(HUB_ONLY, true)})
       .toPromise()
       .then(list => {
         this.installed_ = new Set(

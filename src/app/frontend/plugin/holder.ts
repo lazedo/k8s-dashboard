@@ -26,10 +26,11 @@ import {
 } from '@angular/core';
 
 import {PluginLoaderService} from '@common/services/pluginloader/pluginloader.service';
+import {PluginsConfigService} from '@common/services/global/plugin';
 
 @Component({
-    selector: 'kd-plugin-holder',
-    template: `
+  selector: 'kd-plugin-holder',
+  template: `
     <div>
       <div class="plugin">
         <mat-card appearance="outlined" *ngIf="entryError">This plugin has no entry component</mat-card>
@@ -37,7 +38,7 @@ import {PluginLoaderService} from '@common/services/pluginloader/pluginloader.se
       </div>
     </div>
   `,
-    standalone: false
+  standalone: false,
 })
 export class PluginHolderComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('pluginViewRef', {read: ViewContainerRef, static: true}) vcRef: ViewContainerRef;
@@ -47,7 +48,11 @@ export class PluginHolderComponent implements OnInit, OnChanges, OnDestroy {
   private moduleRef_: NgModuleRef<unknown> | null = null;
   private loadToken_ = 0;
 
-  constructor(private injector: Injector, private pluginLoader: PluginLoaderService) {}
+  constructor(
+    private injector: Injector,
+    private pluginLoader: PluginLoaderService,
+    private pluginsConfig: PluginsConfigService
+  ) {}
 
   ngOnInit() {
     try {
@@ -75,22 +80,28 @@ export class PluginHolderComponent implements OnInit, OnChanges, OnDestroy {
     const token = ++this.loadToken_;
     this.teardown_();
     this.entryError = false;
-    this.pluginLoader.load(pluginName).then(moduleFactory => {
-      if (token !== this.loadToken_) {
-        // A newer navigation superseded this load.
-        return;
-      }
-      const moduleRef = moduleFactory.create(this.injector);
-      const entryComponent = (moduleFactory.moduleType as any).entry;
-      try {
-        // ComponentFactoryResolver is gone in Angular 22; createComponent takes
-        // the type plus the plugin module's injector/ngModuleRef directly.
-        this.vcRef.createComponent(entryComponent, {ngModuleRef: moduleRef});
-        this.moduleRef_ = moduleRef;
-      } catch (e) {
-        this.entryError = true;
-      }
-    });
+    // Fresh registry first: the module path carries the CR's resourceVersion,
+    // so an updated plugin is a new URL for SystemJS instead of a cached module.
+    this.pluginsConfig
+      .refreshConfig()
+      .catch((): void => undefined) // stale registry is better than no plugin
+      .then(() => this.pluginLoader.load<unknown>(pluginName))
+      .then((moduleFactory): void => {
+        if (token !== this.loadToken_) {
+          // A newer navigation superseded this load.
+          return;
+        }
+        const moduleRef = moduleFactory.create(this.injector);
+        const entryComponent = (moduleFactory.moduleType as any).entry;
+        try {
+          // ComponentFactoryResolver is gone in Angular 22; createComponent takes
+          // the type plus the plugin module's injector/ngModuleRef directly.
+          this.vcRef.createComponent(entryComponent, {ngModuleRef: moduleRef});
+          this.moduleRef_ = moduleRef;
+        } catch (e) {
+          this.entryError = true;
+        }
+      });
   }
 
   private teardown_(): void {

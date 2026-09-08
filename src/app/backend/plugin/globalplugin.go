@@ -68,7 +68,9 @@ func GetGlobalPlugins(client dynamic.Interface) ([]Plugin, error) {
 			ObjectMeta:   api.NewObjectMeta(objectMetaFromUnstructured(item)),
 			TypeMeta:     api.NewTypeMeta(api.ResourceKindPlugin),
 			Name:         name,
-			Path:         fmt.Sprintf("/api/v1/globalplugin/%s.js", name),
+			// resourceVersion in the query: the frontend's module loader caches by
+			// URL, so a re-applied plugin becomes a new URL (no page reload).
+			Path:         fmt.Sprintf("/api/v1/globalplugin/%s.js?v=%s", name, item.GetResourceVersion()),
 			Dependencies: append([]string{}, spec.Dependencies...),
 			Global:       true,
 			Description:  spec.Description,
