@@ -175,35 +175,36 @@ func TestFormatRequestLog(t *testing.T) {
 	}
 }
 
-// remoteClustersManager overrides only RemoteClusters; the embedded nil interface is never reached.
-type remoteClustersManager struct {
+// clustersManager overrides only Clusters; the embedded nil interface is never reached.
+type clustersManager struct {
 	clientapi.ClientManager
-	list *clientapi.RemoteClusterList
+	list *clientapi.ClusterList
 	err  error
 }
 
-func (m *remoteClustersManager) RemoteClusters(req *restful.Request) (*clientapi.RemoteClusterList, error) {
+func (m *clustersManager) Clusters(req *restful.Request) (*clientapi.ClusterList, error) {
 	return m.list, m.err
 }
 
-func TestHandleGetRemoteClusters(t *testing.T) {
+func TestHandleGetClusters(t *testing.T) {
 	cases := []struct {
-		manager        *remoteClustersManager
+		manager        *clustersManager
 		expectedStatus int
 	}{
 		{
-			&remoteClustersManager{list: &clientapi.RemoteClusterList{Clusters: []clientapi.RemoteCluster{
+			&clustersManager{list: &clientapi.ClusterList{Clusters: []clientapi.Cluster{
+				{Name: "hub", Local: true, Server: "https://hub.example:6443", Accessible: true},
 				{Name: "west", Server: "https://west.example:6443", Accessible: true},
 				{Name: "east", Server: "https://east.example:6443", Accessible: false},
 			}}},
 			http.StatusOK,
 		},
 		{
-			&remoteClustersManager{list: &clientapi.RemoteClusterList{Clusters: []clientapi.RemoteCluster{}}},
+			&clustersManager{list: &clientapi.ClusterList{Clusters: []clientapi.Cluster{{Name: "local", Local: true, Accessible: true}}}},
 			http.StatusOK,
 		},
 		{
-			&remoteClustersManager{err: errors.NewUnauthorized(errors.MsgLoginUnauthorizedError)},
+			&clustersManager{err: errors.NewUnauthorized(errors.MsgLoginUnauthorizedError)},
 			http.StatusUnauthorized,
 		},
 	}
@@ -216,10 +217,10 @@ func TestHandleGetRemoteClusters(t *testing.T) {
 		response := restful.NewResponse(recorder)
 		response.SetRequestAccepts(restful.MIME_JSON)
 
-		apiHandler.handleGetRemoteClusters(restful.NewRequest(httpReq), response)
+		apiHandler.handleGetClusters(restful.NewRequest(httpReq), response)
 
 		if recorder.Code != c.expectedStatus {
-			t.Errorf("handleGetRemoteClusters(): expected status %d, got %d (%s)", c.expectedStatus, recorder.Code, recorder.Body.String())
+			t.Errorf("handleGetClusters(): expected status %d, got %d (%s)", c.expectedStatus, recorder.Code, recorder.Body.String())
 		}
 
 		if c.manager.err != nil {
@@ -227,16 +228,16 @@ func TestHandleGetRemoteClusters(t *testing.T) {
 		}
 
 		if !strings.Contains(recorder.Body.String(), `"clusters"`) {
-			t.Errorf("handleGetRemoteClusters(): expected a clusters list, got %s", recorder.Body.String())
+			t.Errorf("handleGetClusters(): expected a clusters list, got %s", recorder.Body.String())
 		}
 
-		result := &clientapi.RemoteClusterList{}
+		result := &clientapi.ClusterList{}
 		if err := json.Unmarshal(recorder.Body.Bytes(), result); err != nil {
-			t.Fatalf("handleGetRemoteClusters(): invalid JSON %s: %s", recorder.Body.String(), err.Error())
+			t.Fatalf("handleGetClusters(): invalid JSON %s: %s", recorder.Body.String(), err.Error())
 		}
 
 		if !reflect.DeepEqual(result, c.manager.list) {
-			t.Errorf("handleGetRemoteClusters(): expected %+v, got %+v", c.manager.list, result)
+			t.Errorf("handleGetClusters(): expected %+v, got %+v", c.manager.list, result)
 		}
 	}
 }

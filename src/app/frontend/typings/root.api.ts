@@ -1537,6 +1537,19 @@ export interface Me {
   authenticated: boolean;
 }
 
+// A cluster this dashboard serves: the local one, or a remote one reached through the
+// 'api/v1/cluster/<name>/' route prefix (see docs/plugins/README.md, "Remote clusters").
+export interface Cluster {
+  name: string;
+  local: boolean;
+  server?: string;
+  accessible: boolean;
+}
+
+export interface ClusterList {
+  clusters: Cluster[];
+}
+
 export type AuthenticationMode = string;
 
 export interface EnabledAuthenticationModes {

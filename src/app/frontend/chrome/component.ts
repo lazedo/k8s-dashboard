@@ -14,10 +14,13 @@
 
 
 import { HttpClient } from '@angular/common/http';
-import {Component, Inject, OnInit, DOCUMENT} from '@angular/core';
+import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, DOCUMENT} from '@angular/core';
 import {Router} from '@angular/router';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 import {AssetsService} from '@common/services/global/assets';
+import {ClusterService} from '@common/services/global/cluster';
 import {GlobalSettingsService} from '@common/services/global/globalsettings';
 
 class SystemBanner {
@@ -31,9 +34,10 @@ class SystemBanner {
     styleUrls: ['./style.scss'],
     standalone: false
 })
-export class ChromeComponent implements OnInit {
+export class ChromeComponent implements OnInit, OnDestroy {
   private static readonly systemBannerEndpoint = 'api/v1/systembanner';
   private systemBanner_: SystemBanner;
+  private readonly unsubscribe_ = new Subject<void>();
   loading = false;
 
   constructor(
@@ -41,7 +45,9 @@ export class ChromeComponent implements OnInit {
     private readonly http_: HttpClient,
     private readonly router_: Router,
     @Inject(DOCUMENT) private readonly document_: Document,
-    private readonly globalSettings_: GlobalSettingsService
+    private readonly globalSettings_: GlobalSettingsService,
+    private readonly clusters_: ClusterService,
+    private readonly cdr_: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +58,24 @@ export class ChromeComponent implements OnInit {
         this.systemBanner_ = sb;
       });
 
+    // The toolbar tint and badge follow the selected cluster (zoneless: repaint on change).
+    this.clusters_.changed.pipe(takeUntil(this.unsubscribe_)).subscribe(() => this.cdr_.markForCheck());
     this.registerVisibilityChangeHandler_();
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe_.next();
+    this.unsubscribe_.complete();
+  }
+
+  // True when the dashboard is looking at a cluster other than its own: the top bar is
+  // tinted and badged so a delete on "the hub" can never silently land on a site.
+  isRemoteCluster(): boolean {
+    return !this.clusters_.isLocal();
+  }
+
+  currentCluster(): string {
+    return this.clusters_.current();
   }
 
   getWorkloadsStateName(): string {

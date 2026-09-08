@@ -216,10 +216,12 @@
     color: map.get($colors, primary) !important;
   }
 
-  kd-namespace-selector {
+  kd-namespace-selector,
+  kd-cluster-selector {
     border: 1px solid $border;
 
-    .kd-namespace-select {
+    .kd-namespace-select,
+    .kd-cluster-select {
       color: mat.m2-get-color-from-palette($foreground-palette, secondary-text);
     }
 
@@ -239,7 +241,8 @@
     color: mat.m2-get-color-from-palette($foreground-palette, secondary-text);
   }
 
-  .kd-namespaced-item {
+  .kd-namespaced-item,
+  .kd-cluster-option-local {
     background: $border;
     color: mat.m2-get-color-from-palette($foreground-palette, secondary-text);
   }

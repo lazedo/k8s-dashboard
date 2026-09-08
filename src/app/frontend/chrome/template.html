@@ -17,7 +17,8 @@ limitations under the License.
 <div fxLayout="column"
      fxFill
      fxFlexFill>
-  <mat-toolbar class="kd-toolbar kd-primary-toolbar">
+  <mat-toolbar class="kd-toolbar kd-primary-toolbar"
+               [class.kd-toolbar-remote-cluster]="isRemoteCluster()">
     <div class="kd-toolbar-tools"
          fxLayout="row"
          fxFlex="auto">
@@ -31,6 +32,11 @@ limitations under the License.
                     class="kd-toolbar-logo-text"> </mat-icon>
         </a>
       </div>
+      <kd-cluster-selector id="nav-cluster-selector"> </kd-cluster-selector>
+      <span *ngIf="isRemoteCluster()"
+            class="kd-cluster-badge"
+            i18n-matTooltip
+            matTooltip="Every page and action here is on this remote cluster">{{ currentCluster() }}</span>
       <kd-namespace-selector id="nav-namespace-selector"> </kd-namespace-selector>
 
       <kd-search fxFlex> </kd-search>

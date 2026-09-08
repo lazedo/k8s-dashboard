@@ -48,6 +48,8 @@ type holder struct {
 
 	// Namespace holding the kubeconfig Secrets of remote clusters (see client/remote.go).
 	remoteKubeconfigNamespace string
+	// Name of the local cluster in the 'api/v1/cluster/{cluster}' route prefix and the clusters list.
+	clusterName string
 
 	authenticationMode []string
 
@@ -191,4 +193,9 @@ func (self *holder) GetLocaleConfig() string {
 // GetRemoteKubeconfigNamespace 'remote-kubeconfig-namespace' argument of Dashboard binary.
 func (self *holder) GetRemoteKubeconfigNamespace() string {
 	return self.remoteKubeconfigNamespace
+}
+
+// GetClusterName 'cluster-name' argument of Dashboard binary.
+func (self *holder) GetClusterName() string {
+	return self.clusterName
 }

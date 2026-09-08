@@ -18,6 +18,13 @@
 export const NAMESPACE_STATE_PARAM = 'namespace';
 
 /**
+ * Parameter name of the cluster selection param: absent for the local cluster, the cluster name
+ * otherwise. Dashboard state only, never sent to the API (the interceptor turns it into the
+ * 'api/v1/cluster/<name>/' route prefix).
+ */
+export const CLUSTER_STATE_PARAM = 'cluster';
+
+/**
  * Parameter name of the search query.
  */
 export const SEARCH_QUERY_STATE_PARAM = 'q';

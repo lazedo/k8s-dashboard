@@ -712,6 +712,22 @@ kd-logs {
 // Namespace selector dropdown: the MDC panel inherits the trigger's width —
 // the toolbar trigger is deliberately compact (174px), which cramped the
 // panel and mid-word-wrapped long namespace names.
+.kd-cluster-select-panel.mat-mdc-select-panel {
+  min-width: 20 * $baseline-grid;
+
+  .mat-mdc-option .mdc-list-item__primary-text {
+    letter-spacing: normal;
+    white-space: nowrap;
+  }
+
+  .kd-cluster-option-local {
+    border-radius: $baseline-grid;
+    font-size: $caption-font-size-base;
+    margin-left: $baseline-grid;
+    padding: 0 $baseline-grid;
+  }
+}
+
 .kd-namespace-select-panel.mat-mdc-select-panel {
   min-width: 34 * $baseline-grid;
 

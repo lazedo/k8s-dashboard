@@ -60,6 +60,7 @@ import {CardListFilterComponent} from './list/filter/component';
 import {RowDetailComponent} from './list/rowdetail/component';
 import {LoadingSpinner} from './list/spinner/component';
 import {ListZeroStateComponent} from './list/zerostate/component';
+import {ClusterSelectorComponent} from './cluster/component';
 import {NamespaceChangeDialog} from './namespace/changedialog/dialog';
 import {NamespaceSelectorComponent} from './namespace/component';
 import {ObjectMetaComponent} from './objectmeta/component';
@@ -176,6 +177,7 @@ const components = [
   NodeListComponent,
   NamespaceSelectorComponent,
   NamespaceChangeDialog,
+  ClusterSelectorComponent,
   ObjectMetaComponent,
   PodStatusCardComponent,
   ProbeComponent,

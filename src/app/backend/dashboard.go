@@ -70,7 +70,8 @@ var (
 	argDisableSettingsAuthorizer = pflag.Bool("disable-settings-authorizer", false, "disables settings page user authorizer so anyone can access settings page")
 	argNamespace                 = pflag.String("namespace", getEnv("POD_NAMESPACE", "kube-system"), "if non-default namespace is used encryption key will be created in the specified namespace")
 	localeConfig                 = pflag.String("locale-config", "./locale_conf.json", "path to file containing the locale configuration")
-	argRemoteKubeconfigNamespace = pflag.String("remote-kubeconfig-namespace", "flux-system", "namespace holding the kubeconfig Secrets ('kubeconfig-<name>' or labelled 'dashboard.k8s.io/cluster=<name>') that back the 'cluster' query parameter of the API")
+	argRemoteKubeconfigNamespace = pflag.String("remote-kubeconfig-namespace", "flux-system", "namespace holding the kubeconfig Secrets ('kubeconfig-<name>' or labelled 'dashboard.k8s.io/cluster=<name>') that back the 'api/v1/cluster/<name>/' route prefix of the API")
+	argClusterName               = pflag.String("cluster-name", "local", "name of the local cluster in the 'api/v1/cluster/<name>/' route prefix and in the clusters list; 'local' always names it too")
 )
 
 func main() {
@@ -250,6 +251,7 @@ func initArgHolder() {
 	builder.SetNamespace(*argNamespace)
 	builder.SetLocaleConfig(*localeConfig)
 	builder.SetRemoteKubeconfigNamespace(*argRemoteKubeconfigNamespace)
+	builder.SetClusterName(*argClusterName)
 }
 
 /**

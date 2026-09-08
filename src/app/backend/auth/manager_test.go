@@ -98,7 +98,11 @@ func (self *fakeClientManager) CanI(req *restful.Request, ssar *v1.SelfSubjectAc
 	return true
 }
 
-func (self *fakeClientManager) RemoteClusters(req *restful.Request) (*clientapi.RemoteClusterList, error) {
+func (self *fakeClientManager) Clusters(req *restful.Request) (*clientapi.ClusterList, error) {
+	return nil, nil
+}
+
+func (self *fakeClientManager) RemoteConfig(req *restful.Request, name string) (*rest.Config, error) {
 	return nil, nil
 }
 

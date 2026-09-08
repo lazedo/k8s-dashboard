@@ -812,8 +812,8 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/clusters").
-			To(apiHandler.handleGetRemoteClusters).
-			Writes(clientapi.RemoteClusterList{}))
+			To(apiHandler.handleGetClusters).
+			Writes(clientapi.ClusterList{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/crd/{namespace}/{crd}/{object}/raw").
@@ -873,7 +873,8 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			To(apiHandler.handleLogFile).
 			Writes(logs.LogDetails{}))
 
-	return wsContainer, nil
+	// 'api/v1/cluster/<name>/<rest>' is resolved in front of the container, see cluster.go.
+	return newClusterRouter(cManager, wsContainer), nil
 }
 
 func (apiHandler *APIHandler) handleGetClusterRoleList(request *restful.Request, response *restful.Response) {
@@ -3292,10 +3293,10 @@ func (apiHandler *APIHandler) handleCanI(request *restful.Request, response *res
 	response.WriteHeaderAndEntity(http.StatusOK, map[string]bool{"allowed": allowed})
 }
 
-// handleGetRemoteClusters lists the remote clusters the 'cluster' query parameter accepts. Every other
-// endpoint of this API honours that parameter, see client/remote.go.
-func (apiHandler *APIHandler) handleGetRemoteClusters(request *restful.Request, response *restful.Response) {
-	result, err := apiHandler.cManager.RemoteClusters(request)
+// handleGetClusters lists the clusters the 'api/v1/cluster/{cluster}/' route prefix accepts, the local one
+// first. Every other endpoint of this API is served under that prefix, see cluster.go and client/remote.go.
+func (apiHandler *APIHandler) handleGetClusters(request *restful.Request, response *restful.Response) {
+	result, err := apiHandler.cManager.Clusters(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

@@ -28,6 +28,27 @@
   padding-left: 1.75 * $baseline-grid;
 }
 
+// Remote cluster selected: the whole primary toolbar turns amber and carries the
+// cluster name as a badge, in both themes.
+.kd-primary-toolbar.kd-toolbar-remote-cluster {
+  background-color: #ffb300;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.kd-cluster-badge {
+  background-color: #bf360c;
+  border-radius: $baseline-grid * 0.25;
+  color: #fff;
+  font-size: $body-font-size-base;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 3 * $baseline-grid;
+  margin-right: 2 * $baseline-grid;
+  padding: 0 $baseline-grid;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .kd-toolbar-tools {
   align-items: center;
   height: $secondary-toolbar-height;

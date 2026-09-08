@@ -34,14 +34,15 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 )
 
-// Remote clusters: any API request carrying '?cluster=<name>' is served by a client built from the kubeconfig
-// stored in the local cluster, in the Secret 'kubeconfig-<name>' (or a Secret labelled
-// 'dashboard.k8s.io/cluster=<name>') of the namespace given by --remote-kubeconfig-namespace. This is the layout
-// Flux uses for 'kubeConfig.secretRef', so the same Secrets serve both. The Secret is read with the caller's own
-// credentials, which is the whole authorization model: whoever may read the kubeconfig may use it, nobody else.
+// Remote clusters: an API request routed through the 'api/v1/cluster/<name>/' prefix (see handler/cluster.go)
+// is served by a client built from the kubeconfig stored in the local cluster, in the Secret 'kubeconfig-<name>'
+// (or a Secret labelled 'dashboard.k8s.io/cluster=<name>') of the namespace given by
+// --remote-kubeconfig-namespace. This is the layout Flux uses for 'kubeConfig.secretRef', so the same Secrets
+// serve both. The Secret is read with the caller's own credentials, which is the first half of the
+// authorization model: whoever may read the kubeconfig may use it, nobody else. The second half is
+// impersonation: the router sets the caller's identity on the remote config, so the remote cluster applies its
+// own RBAC to the caller rather than to the service account of the kubeconfig.
 const (
-	// RemoteClusterQueryParam is the query parameter naming the remote cluster a request targets.
-	RemoteClusterQueryParam = "cluster"
 	// RemoteKubeconfigSecretPrefix prefixes the name of the Secret holding the kubeconfig of a remote cluster.
 	RemoteKubeconfigSecretPrefix = "kubeconfig-"
 	// RemoteClusterLabel names a remote cluster on Secrets that do not follow the prefix convention.
@@ -64,18 +65,20 @@ type remoteClusterCache struct {
 	entries map[string]remoteClusterEntry
 }
 
-// remoteClusterName returns the 'cluster' query parameter of the request, empty for the local cluster.
-func remoteClusterName(req *restful.Request) string {
-	if req == nil || req.Request == nil || req.Request.URL == nil {
-		return ""
+// remoteConfigOf returns the rest config the request was routed to by the cluster prefix, nil for the local
+// cluster.
+func remoteConfigOf(req *restful.Request) *rest.Config {
+	if req == nil || req.Request == nil {
+		return nil
 	}
 
-	return req.QueryParameter(RemoteClusterQueryParam)
+	_, cfg := clientapi.RemoteClusterFrom(req.Request.Context())
+	return cfg
 }
 
-// remoteConfig returns the rest config of the named remote cluster, after reading its kubeconfig Secret with
+// RemoteConfig returns the rest config of the named remote cluster, after reading its kubeconfig Secret with
 // the caller's credentials.
-func (self *clientManager) remoteConfig(req *restful.Request, name string) (*rest.Config, error) {
+func (self *clientManager) RemoteConfig(req *restful.Request, name string) (*rest.Config, error) {
 	client, err := self.localClient(req)
 	if err != nil {
 		return nil, err
@@ -95,19 +98,11 @@ func (self *clientManager) remoteConfigFrom(client kubernetes.Interface, name st
 	return self.remoteClusters.config(name, secret, self.initConfig)
 }
 
-func (self *clientManager) remoteClient(req *restful.Request, name string) (kubernetes.Interface, error) {
-	cfg, err := self.remoteConfig(req, name)
-	if err != nil {
-		return nil, err
-	}
-
-	return kubernetes.NewForConfig(cfg)
-}
-
-// RemoteClusters lists the remote clusters whose kubeconfig Secrets live in the configured namespace. The
-// Secrets are listed with the dashboard service account and, when that is not allowed, with the caller's
-// credentials; 'accessible' tells whether the caller may read a Secret, i.e. use that cluster.
-func (self *clientManager) RemoteClusters(req *restful.Request) (*clientapi.RemoteClusterList, error) {
+// Clusters lists the local cluster followed by the remote clusters whose kubeconfig Secrets live in the
+// configured namespace. The Secrets are listed with the dashboard service account and, when that is not
+// allowed, with the caller's credentials; 'accessible' tells whether the caller may read a Secret, i.e. use
+// that cluster.
+func (self *clientManager) Clusters(req *restful.Request) (*clientapi.ClusterList, error) {
 	namespace := args.Holder.GetRemoteKubeconfigNamespace()
 	secrets, err := listRemoteKubeconfigSecrets(self.InsecureClient(), namespace)
 	if err != nil {
@@ -121,7 +116,8 @@ func (self *clientManager) RemoteClusters(req *restful.Request) (*clientapi.Remo
 		}
 	}
 
-	return buildRemoteClusterList(secrets, func(secretName string) bool {
+	local := clientapi.Cluster{Name: clientapi.LocalClusterName(), Local: true, Server: self.insecureConfig.Host, Accessible: true}
+	return buildClusterList(local, secrets, func(secretName string) bool {
 		return self.canI(req, self.localClient, canGetSecret(namespace, secretName))
 	}), nil
 }
@@ -222,18 +218,25 @@ func remoteClusterNameOf(secret *v1.Secret) string {
 	return ""
 }
 
-// buildRemoteClusterList describes the given kubeconfig Secrets; 'accessible' is asked per Secret name.
-func buildRemoteClusterList(secrets []v1.Secret, accessible func(secretName string) bool) *clientapi.RemoteClusterList {
-	result := &clientapi.RemoteClusterList{Clusters: []clientapi.RemoteCluster{}}
+// buildClusterList lists the local cluster first, then the clusters of the given kubeconfig Secrets;
+// 'accessible' is asked per Secret name. A Secret registered under the local cluster's name (or 'local') is
+// skipped: the route prefix resolves those names to the local cluster, never to a Secret.
+func buildClusterList(local clientapi.Cluster, secrets []v1.Secret, accessible func(secretName string) bool) *clientapi.ClusterList {
+	result := &clientapi.ClusterList{Clusters: []clientapi.Cluster{local}}
 	for i := range secrets {
 		secret := &secrets[i]
+		name := remoteClusterNameOf(secret)
+		if clientapi.IsLocalCluster(name) {
+			continue
+		}
+
 		server := ""
 		if cfg, err := remoteConfigFromSecret(secret); err == nil {
 			server = cfg.Host
 		}
 
-		result.Clusters = append(result.Clusters, clientapi.RemoteCluster{
-			Name:       remoteClusterNameOf(secret),
+		result.Clusters = append(result.Clusters, clientapi.Cluster{
+			Name:       name,
 			Server:     server,
 			Accessible: accessible(secret.Name),
 		})

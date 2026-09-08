@@ -15,6 +15,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -27,9 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/kubernetes/dashboard/src/app/backend/args"
+	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 )
 
@@ -63,11 +66,15 @@ func kubeconfigSecret(name, resourceVersion, server string) *v1.Secret {
 	}
 }
 
-func remoteRequest(cluster string) *restful.Request {
-	return restful.NewRequest(&http.Request{
-		Header: http.Header{},
-		URL:    &url.URL{Path: "/api/v1/pod", RawQuery: url.Values{"cluster": {cluster}}.Encode()},
-	})
+// remoteRequest is a request routed to the named remote cluster with the given config (see handler/cluster.go),
+// a plain local request when the name is empty.
+func remoteRequest(cluster string, cfg *rest.Config) *restful.Request {
+	req := &http.Request{Header: http.Header{}, URL: &url.URL{Path: "/api/v1/pod"}}
+	if len(cluster) > 0 {
+		req = req.WithContext(clientapi.WithRemoteCluster(context.Background(), cluster, cfg))
+	}
+
+	return restful.NewRequest(req)
 }
 
 func TestRemoteConfigFromSecret(t *testing.T) {
@@ -222,45 +229,71 @@ func TestRemoteConfigDeniedWithoutSecretAccess(t *testing.T) {
 		t.Errorf("remoteConfigFrom(): expected the remote server, got %s", cfg.Host)
 	}
 
-	// End to end: the local apiserver is unreachable, so the Secret cannot be read and no remote client is built.
-	for _, get := range []func(*restful.Request) (interface{}, error){
-		func(req *restful.Request) (interface{}, error) { return manager.Client(req) },
-		func(req *restful.Request) (interface{}, error) { return manager.Config(req) },
-		func(req *restful.Request) (interface{}, error) { return manager.APIExtensionsClient(req) },
-		func(req *restful.Request) (interface{}, error) { return manager.PluginClient(req) },
+	// End to end: the local apiserver is unreachable, so the Secret cannot be read and no remote config is built.
+	if _, err := manager.RemoteConfig(remoteRequest("", nil), "west"); err == nil {
+		t.Errorf("RemoteConfig(): expected an error when the kubeconfig Secret cannot be read")
+	}
+
+	// A request routed to a remote cluster is served from the config in its context, as a copy.
+	routed := remoteRequest("west", cfg)
+	routedCfg, err := manager.Config(routed)
+	if err != nil {
+		t.Fatalf("Config(): unexpected error for a routed request: %s", err.Error())
+	}
+
+	if routedCfg == cfg || routedCfg.Host != cfg.Host {
+		t.Errorf("Config(): expected a copy of the remote config, got %+v", routedCfg)
+	}
+
+	for name, get := range map[string]func(*restful.Request) (interface{}, error){
+		"Client":              func(req *restful.Request) (interface{}, error) { return manager.Client(req) },
+		"APIExtensionsClient": func(req *restful.Request) (interface{}, error) { return manager.APIExtensionsClient(req) },
+		"PluginClient":        func(req *restful.Request) (interface{}, error) { return manager.PluginClient(req) },
 	} {
-		if _, err := get(remoteRequest("west")); err == nil {
-			t.Errorf("expected an error when the kubeconfig Secret cannot be read")
+		if _, err := get(routed); err != nil {
+			t.Errorf("%s(): unexpected error for a routed request: %s", name, err.Error())
 		}
 	}
 
-	// Without the parameter the local client is served as before.
-	if _, err := manager.Client(remoteRequest("")); err != nil {
-		t.Errorf("Client(): unexpected error without cluster parameter: %s", err.Error())
+	// Without a routed cluster the local client is served as before.
+	if _, err := manager.Client(remoteRequest("", nil)); err != nil {
+		t.Errorf("Client(): unexpected error for a local request: %s", err.Error())
 	}
 }
 
-func TestBuildRemoteClusterList(t *testing.T) {
+func TestBuildClusterList(t *testing.T) {
+	args.GetHolderBuilder().SetClusterName("hub")
+	defer args.GetHolderBuilder().SetClusterName("")
+
 	west := kubeconfigSecret("kubeconfig-west", "1", "https://west.example:6443")
 	east := kubeconfigSecret("east-admin", "1", "https://east.example:6443")
 	east.Labels = map[string]string{RemoteClusterLabel: "east"}
 	broken := &v1.Secret{ObjectMeta: metaV1.ObjectMeta{Name: "kubeconfig-central", Namespace: testRemoteNamespace}}
 	other := &v1.Secret{ObjectMeta: metaV1.ObjectMeta{Name: "sops-age", Namespace: testRemoteNamespace}}
+	// Secrets named after the local cluster are shadowed by it: the prefix never resolves those names to a Secret.
+	shadowedByName := kubeconfigSecret("kubeconfig-hub", "1", "https://elsewhere.example:6443")
+	shadowedByAlias := kubeconfigSecret("kubeconfig-local", "1", "https://elsewhere.example:6443")
 
-	secrets, err := listRemoteKubeconfigSecrets(fake.NewSimpleClientset(west, east, broken, other), testRemoteNamespace)
+	secrets, err := listRemoteKubeconfigSecrets(fake.NewSimpleClientset(west, east, broken, other, shadowedByName, shadowedByAlias), testRemoteNamespace)
 	if err != nil {
 		t.Fatalf("listRemoteKubeconfigSecrets(): unexpected error %s", err.Error())
 	}
 
-	list := buildRemoteClusterList(secrets, func(secretName string) bool { return secretName == "kubeconfig-west" })
-	if len(list.Clusters) != 3 {
-		t.Fatalf("buildRemoteClusterList(): expected 3 clusters, got %+v", list.Clusters)
+	local := clientapi.Cluster{Name: clientapi.LocalClusterName(), Local: true, Server: "https://hub.example:6443", Accessible: true}
+	list := buildClusterList(local, secrets, func(secretName string) bool { return secretName == "kubeconfig-west" })
+	if len(list.Clusters) != 4 {
+		t.Fatalf("buildClusterList(): expected 4 clusters, got %+v", list.Clusters)
+	}
+
+	if first := list.Clusters[0]; first.Name != "hub" || !first.Local || !first.Accessible || first.Server != "https://hub.example:6443" {
+		t.Errorf("buildClusterList(): expected the local cluster first, got %+v", first)
 	}
 
 	expected := map[string]struct {
 		server     string
 		accessible bool
 	}{
+		"hub":     {"https://hub.example:6443", true},
 		"west":    {"https://west.example:6443", true},
 		"east":    {"https://east.example:6443", false},
 		"central": {"", false},
@@ -269,12 +302,12 @@ func TestBuildRemoteClusterList(t *testing.T) {
 	for _, cluster := range list.Clusters {
 		e, ok := expected[cluster.Name]
 		if !ok {
-			t.Errorf("buildRemoteClusterList(): unexpected cluster %+v", cluster)
+			t.Errorf("buildClusterList(): unexpected cluster %+v", cluster)
 			continue
 		}
 
-		if cluster.Server != e.server || cluster.Accessible != e.accessible {
-			t.Errorf("buildRemoteClusterList(): cluster %s: expected %+v, got %+v", cluster.Name, e, cluster)
+		if cluster.Server != e.server || cluster.Accessible != e.accessible || cluster.Local != (cluster.Name == "hub") {
+			t.Errorf("buildClusterList(): cluster %s: expected %+v, got %+v", cluster.Name, e, cluster)
 		}
 	}
 

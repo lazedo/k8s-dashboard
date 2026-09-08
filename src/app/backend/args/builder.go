@@ -174,6 +174,12 @@ func (self *holderBuilder) SetRemoteKubeconfigNamespace(namespace string) *holde
 	return self
 }
 
+// SetClusterName 'cluster-name' argument of Dashboard binary.
+func (self *holderBuilder) SetClusterName(name string) *holderBuilder {
+	self.holder.clusterName = name
+	return self
+}
+
 // GetHolderBuilder returns singleton instance of argument holder builder.
 func GetHolderBuilder() *holderBuilder {
 	return builder

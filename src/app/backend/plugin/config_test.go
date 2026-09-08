@@ -138,6 +138,10 @@ func (cm *fakeClientManager) SetTokenManager(manager authApi.TokenManager) {
 	panic("implement me")
 }
 
-func (cm *fakeClientManager) RemoteClusters(req *restful.Request) (*clientapi.RemoteClusterList, error) {
+func (cm *fakeClientManager) Clusters(req *restful.Request) (*clientapi.ClusterList, error) {
+	panic("implement me")
+}
+
+func (cm *fakeClientManager) RemoteConfig(req *restful.Request, name string) (*rest.Config, error) {
 	panic("implement me")
 }

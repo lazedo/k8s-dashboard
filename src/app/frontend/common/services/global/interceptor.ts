@@ -12,40 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Location} from '@angular/common';
 import {HttpContextToken, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Inject, Injectable} from '@angular/core';
+import {Inject, Injectable, Injector} from '@angular/core';
 import {IConfig} from '@api/root.ui';
 import {CookieService} from 'ngx-cookie-service';
 import {Observable} from 'rxjs';
 import {CONFIG_DI_TOKEN} from '../../../index.config';
+import {ClusterService} from './cluster';
 
-// Callers that address the dashboard's OWN cluster regardless of the route's
-// ?cluster= (nav gating, plugin registry) set this context token.
+// Callers that address the dashboard's OWN cluster whatever cluster is selected
+// (nav gating, plugin registry) set this context token.
 export const HUB_ONLY = new HttpContextToken<boolean>(() => false);
 
 // Backend endpoints that describe this dashboard rather than a cluster's
 // workload: the plugin registry and module sources, settings, auth, the
-// remote-cluster list itself. They are never redirected to a remote cluster,
-// otherwise a page opened with ?cluster=<site> would take its plugin list
-// and nav gating (requiresCrd) from the remote cluster.
+// cluster list itself. They are never sent to a remote cluster (the backend
+// refuses them under the cluster prefix anyway), otherwise a page looking at
+// a remote cluster would take its plugin list and nav gating (requiresCrd)
+// from the remote cluster.
 const HUB_ONLY_PREFIXES = [
   'api/v1/plugin',
   'api/v1/globalplugin',
   'api/v1/formplugin',
   'api/v1/settings',
   'api/v1/login',
+  'api/v1/token',
   'api/v1/csrftoken',
   'api/v1/systembanner',
   'api/v1/clusters',
+  'api/v1/me',
 ];
+
+// Requests already naming a cluster (a plugin addressing one explicitly) are left alone.
+const CLUSTER_PREFIX = 'api/v1/cluster/';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   constructor(
     private readonly cookies_: CookieService,
     @Inject(CONFIG_DI_TOKEN) private readonly appConfig_: IConfig,
-    private readonly location_: Location
+    private readonly injector_: Injector
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -62,30 +68,17 @@ export class AuthInterceptor implements HttpInterceptor {
       });
     }
 
-    // Remote clusters: a route opened as '#/...?cluster=west' targets that cluster, so propagate
-    // the parameter to backend calls that do not name one themselves (see docs/plugins/README.md).
-    const cluster = this.routeCluster_();
+    // Selected cluster: a non-local cluster is addressed by the 'api/v1/cluster/<name>/' route
+    // prefix, never by a query parameter (see docs/plugins/README.md, "Remote clusters").
     const hubOnly = req.context.get(HUB_ONLY) || HUB_ONLY_PREFIXES.some(p => req.url.startsWith(p));
-    if (cluster && !hubOnly && !req.params.has('cluster') && !/[?&]cluster=/.test(req.url)) {
-      req = req.clone({setParams: {cluster}});
+    if (!hubOnly && !req.url.startsWith(CLUSTER_PREFIX)) {
+      // Resolved lazily: the service itself fetches the cluster list through this interceptor.
+      const clusters = this.injector_.get(ClusterService);
+      if (!clusters.isLocal()) {
+        req = req.clone({url: clusters.path(req.url)});
+      }
     }
 
     return next.handle(req);
-  }
-
-  // The app uses hash routing, so the query string of the route lives in Location.path(), not in
-  // window.location.search.
-  // Only PLUGIN routes may address a remote cluster. The dashboard's own pages (Nodes, Pods,
-  // Namespaces, the CRD object pages, delete/edit dialogs…) always show and act on THIS cluster:
-  // a stray ?cluster=<site> left in the URL by a plugin must never make the hub's Nodes page list
-  // a site's nodes, or a delete on the hub hit a site (that happened: a Kazoo deleted "on the
-  // hub" was the west one). Plugins pass the cluster explicitly in their own calls anyway.
-  private routeCluster_(): string {
-    const path = this.location_.path();
-    if (!/^\/plugin\//.test(path)) {
-      return '';
-    }
-    const query = path.indexOf('?');
-    return query < 0 ? '' : new URLSearchParams(path.slice(query + 1)).get('cluster') || '';
   }
 }

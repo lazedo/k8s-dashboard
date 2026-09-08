@@ -81,6 +81,11 @@ func formatRequestLog(request *restful.Request) string {
 		uri = request.Request.URL.RequestURI()
 	}
 
+	// Requests routed to a remote cluster arrive here with the prefix already stripped: name the cluster.
+	if cluster, _ := clientapi.RemoteClusterFrom(request.Request.Context()); len(cluster) > 0 {
+		uri += " (cluster " + cluster + ")"
+	}
+
 	byteArr, err := io.ReadAll(request.Request.Body)
 	if err == nil {
 		content = string(byteArr)

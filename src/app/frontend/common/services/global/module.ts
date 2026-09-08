@@ -42,6 +42,7 @@ import {PinnerService} from './pinner';
 import {MeService} from './me';
 import {CrdAvailabilityService} from './crd';
 import {StatusFilterService} from './statusfilter';
+import {ClusterService} from './cluster';
 
 @NgModule({
   providers: [
@@ -69,6 +70,7 @@ import {StatusFilterService} from './statusfilter';
     DecoderService,
     CrdAvailabilityService,
     StatusFilterService,
+    ClusterService,
     {
       provide: APP_INITIALIZER,
       useFactory: init,
@@ -82,6 +84,7 @@ import {StatusFilterService} from './statusfilter';
         ThemeService,
         LocalConfigLoaderService,
         CrdAvailabilityService,
+        ClusterService,
       ],
       multi: true,
     },
@@ -109,7 +112,8 @@ export function init(
   pluginsConfig: PluginsConfigService,
   theme: ThemeService,
   loader: LocalConfigLoaderService,
-  crd: CrdAvailabilityService
+  crd: CrdAvailabilityService,
+  clusters: ClusterService
 ): Function {
   return () => {
     return loader.init().then(() => {
@@ -118,7 +122,7 @@ export function init(
       config.init();
       history.init();
       theme.init();
-      return globalSettings.init().then(() => Promise.all([pluginsConfig.init(), crd.init()]));
+      return globalSettings.init().then(() => Promise.all([pluginsConfig.init(), crd.init(), clusters.init()]));
     });
   };
 }
