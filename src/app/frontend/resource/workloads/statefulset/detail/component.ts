@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {StatefulSetDetail} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -32,8 +32,20 @@ export class StatefulSetDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.statefulSet, true);
   private readonly unsubscribe_ = new Subject<void>();
 
-  statefulSet: StatefulSetDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `statefulSet`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly statefulSetSig = signal<StatefulSetDetail>(undefined);
+  get statefulSet(): StatefulSetDetail {
+    return this.statefulSetSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
   podListEndpoint: string;
   eventListEndpoint: string;
 
@@ -55,10 +67,10 @@ export class StatefulSetDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: StatefulSetDetail) => {
-        this.statefulSet = d;
+        this.statefulSetSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Stateful Set', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

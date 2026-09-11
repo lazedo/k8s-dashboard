@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DeploymentDetail, ReplicaSet} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -32,9 +32,27 @@ import {NamespacedResourceService} from '@common/services/resource/resource';
 export class DeploymentDetailComponent implements OnInit, OnDestroy {
   private unsubscribe_ = new Subject<void>();
   private readonly endpoint_ = EndpointManager.resource(Resource.deployment, true);
-  deployment: DeploymentDetail;
-  newReplicaSet: ReplicaSet;
-  isInitialized = false;
+  // signal + getter: the template still reads `deployment`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly deploymentSig = signal<DeploymentDetail>(undefined);
+  get deployment(): DeploymentDetail {
+    return this.deploymentSig();
+  }
+  // signal + getter: the template still reads `newReplicaSet`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly newReplicaSetSig = signal<ReplicaSet>(undefined);
+  get newReplicaSet(): ReplicaSet {
+    return this.newReplicaSetSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
   eventListEndpoint: string;
   oldReplicaSetsEndpoint: string;
   newReplicaSetEndpoint: string;
@@ -66,17 +84,17 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: DeploymentDetail) => {
-        this.deployment = d;
+        this.deploymentSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Deployment', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
 
     this.replicaSet_
       .get(this.newReplicaSetEndpoint)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((rs: ReplicaSet) => {
-        this.newReplicaSet = rs;
+        this.newReplicaSetSig.set(rs);
       });
   }
 

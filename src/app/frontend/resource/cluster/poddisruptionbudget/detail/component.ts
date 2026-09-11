@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {PodDisruptionBudgetDetail} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -32,8 +32,20 @@ export class PodDisruptionBudgetDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.podDisruptionBudget, true);
   private readonly unsubscribe_ = new Subject<void>();
 
-  pdb: PodDisruptionBudgetDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `pdb`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly pdbSig = signal<PodDisruptionBudgetDetail>(undefined);
+  get pdb(): PodDisruptionBudgetDetail {
+    return this.pdbSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly pdb_: NamespacedResourceService<PodDisruptionBudgetDetail>,
@@ -50,10 +62,10 @@ export class PodDisruptionBudgetDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: PodDisruptionBudgetDetail) => {
-        this.pdb = d;
+        this.pdbSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Pod Disruption Budget', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

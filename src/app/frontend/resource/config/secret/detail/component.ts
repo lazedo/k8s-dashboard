@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {SecretDetail} from '@api/root.api';
 import {DecoderService} from '@common/services/global/decoder';
@@ -34,8 +34,20 @@ export class SecretDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.secret, true);
   private readonly unsubscribe_ = new Subject<void>();
 
-  secret: SecretDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `secret`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly secretSig = signal<SecretDetail>(undefined);
+  get secret(): SecretDetail {
+    return this.secretSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
   HiddenPropertyMode = HiddenPropertyMode;
 
   constructor(
@@ -54,10 +66,10 @@ export class SecretDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: SecretDetail) => {
-        this.secret = d;
+        this.secretSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Secret', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

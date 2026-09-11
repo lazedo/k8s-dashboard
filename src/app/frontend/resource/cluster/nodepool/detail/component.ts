@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {NodePoolDetail} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -32,8 +32,20 @@ export class NodePoolDetailComponent implements OnInit, OnDestroy {
   private readonly unsubscribe_ = new Subject<void>();
   private readonly endpoint_ = EndpointManager.resource(Resource.nodePool);
 
-  nodePool: NodePoolDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `nodePool`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly nodePoolSig = signal<NodePoolDetail>(undefined);
+  get nodePool(): NodePoolDetail {
+    return this.nodePoolSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly nodePool_: ResourceService<NodePoolDetail>,
@@ -49,10 +61,10 @@ export class NodePoolDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: NodePoolDetail) => {
-        this.nodePool = d;
+        this.nodePoolSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Node Pool', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

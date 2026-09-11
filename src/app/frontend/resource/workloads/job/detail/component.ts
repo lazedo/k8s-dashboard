@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {JobDetail} from '@api/root.api';
 import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
@@ -31,8 +31,20 @@ export class JobDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.job, true);
   private readonly unsubscribe_ = new Subject<void>();
 
-  job: JobDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `job`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly jobSig = signal<JobDetail>(undefined);
+  get job(): JobDetail {
+    return this.jobSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
   eventListEndpoint: string;
   podListEndpoint: string;
 
@@ -54,10 +66,10 @@ export class JobDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: JobDetail) => {
-        this.job = d;
+        this.jobSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Job', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

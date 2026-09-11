@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ServiceAccountDetail} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -34,8 +34,20 @@ export class ServiceAccountDetailComponent implements OnInit, OnDestroy {
 
   secretListEndpoint: string;
   imagePullSecretListEndpoint: string;
-  serviceAccount: ServiceAccountDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `serviceAccount`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly serviceAccountSig = signal<ServiceAccountDetail>(undefined);
+  get serviceAccount(): ServiceAccountDetail {
+    return this.serviceAccountSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly serviceAccount_: NamespacedResourceService<ServiceAccountDetail>,
@@ -55,10 +67,10 @@ export class ServiceAccountDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: ServiceAccountDetail) => {
-        this.serviceAccount = d;
+        this.serviceAccountSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Service Account', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

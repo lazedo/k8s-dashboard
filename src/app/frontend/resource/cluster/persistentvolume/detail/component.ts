@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {MatTableDataSource} from '@angular/material/table';
 import {ActivatedRoute} from '@angular/router';
 import {CapacityItem, PersistentVolumeDetail} from '@api/root.api';
@@ -37,8 +37,20 @@ export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
 
   private readonly kdState_: KdStateService = GlobalServicesModule.injector.get(KdStateService);
 
-  persistentVolume: PersistentVolumeDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `persistentVolume`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly persistentVolumeSig = signal<PersistentVolumeDetail>(undefined);
+  get persistentVolume(): PersistentVolumeDetail {
+    return this.persistentVolumeSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly persistentVolume_: ResourceService<PersistentVolumeDetail>,
@@ -54,10 +66,10 @@ export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: PersistentVolumeDetail) => {
-        this.persistentVolume = d;
+        this.persistentVolumeSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Persistent Volume', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

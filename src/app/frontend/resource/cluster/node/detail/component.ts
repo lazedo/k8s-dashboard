@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {NodeAddress, NodeDetail, NodeTaint} from '@api/root.api';
 import {RatioItem} from '@api/root.ui';
@@ -34,15 +34,39 @@ export class NodeDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.node);
   private readonly unsubscribe_ = new Subject<void>();
 
-  node: NodeDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `node`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly nodeSig = signal<NodeDetail>(undefined);
+  get node(): NodeDetail {
+    return this.nodeSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
   podListEndpoint: string;
   eventListEndpoint: string;
   cpuLabel = 'Cores';
-  cpuCapacity = 0;
+  // signal + getter: the template still reads `cpuCapacity`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly cpuCapacitySig = signal<number>(0);
+  get cpuCapacity(): number {
+    return this.cpuCapacitySig();
+  }
   cpuAllocation: RatioItem[] = [];
   memoryLabel = 'B';
-  memoryCapacity = 0;
+  // signal + getter: the template still reads `memoryCapacity`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly memoryCapacitySig = signal<number>(0);
+  get memoryCapacity(): number {
+    return this.memoryCapacitySig();
+  }
   memoryAllocation: RatioItem[] = [];
   podsAllocation: RatioItem[] = [];
   customColors = [
@@ -68,11 +92,11 @@ export class NodeDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: NodeDetail) => {
-        this.node = d;
+        this.nodeSig.set(d);
         this._getAllocation();
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Node', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 
@@ -118,14 +142,14 @@ export class NodeDetailComponent implements OnInit, OnDestroy {
     }
 
     this.cpuLabel = cpuRequestsValue.suffix.length > 0 ? `${cpuRequestsValue.suffix}cores` : 'Cores';
-    this.cpuCapacity = cpuCapacityValue.value;
+    this.cpuCapacitySig.set(cpuCapacityValue.value);
     this.cpuAllocation = [
       {name: 'Requests', value: cpuRequestsValue.value},
       {name: 'Limits', value: cpuLimitsValue.value},
     ];
 
     this.memoryLabel = memoryRequestsValue.suffix.length > 0 ? `${memoryRequestsValue.suffix}B` : 'B';
-    this.memoryCapacity = memoryCapacityValue.value;
+    this.memoryCapacitySig.set(memoryCapacityValue.value);
     this.memoryAllocation = [
       {name: 'Requests', value: memoryRequestsValue.value},
       {name: 'Limits', value: memoryLimitsValue.value},

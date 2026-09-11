@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {NamespaceDetail} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -32,8 +32,20 @@ export class NamespaceDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.namespace);
   private readonly unsubscribe_ = new Subject<void>();
 
-  namespace: NamespaceDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `namespace`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly namespaceSig = signal<NamespaceDetail>(undefined);
+  get namespace(): NamespaceDetail {
+    return this.namespaceSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
   eventListEndpoint: string;
 
   constructor(
@@ -52,10 +64,10 @@ export class NamespaceDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: NamespaceDetail) => {
-        this.namespace = d;
+        this.namespaceSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Namespace', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

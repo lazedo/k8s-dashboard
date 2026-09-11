@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ScaledObjectDetail} from '@api/root.api';
 import {dump} from 'js-yaml';
@@ -33,8 +33,20 @@ export class ScaledObjectDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.scaledObject, true);
   private readonly unsubscribe_ = new Subject<void>();
 
-  scaledObject: ScaledObjectDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `scaledObject`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly scaledObjectSig = signal<ScaledObjectDetail>(undefined);
+  get scaledObject(): ScaledObjectDetail {
+    return this.scaledObjectSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly scaledObject_: NamespacedResourceService<ScaledObjectDetail>,
@@ -51,10 +63,10 @@ export class ScaledObjectDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: ScaledObjectDetail) => {
-        this.scaledObject = d;
+        this.scaledObjectSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Scaled Object', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

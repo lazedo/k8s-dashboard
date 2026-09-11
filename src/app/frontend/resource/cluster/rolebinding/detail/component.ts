@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {RoleBindingDetail} from '@api/root.api';
 
@@ -32,8 +32,20 @@ import {takeUntil} from 'rxjs/operators';
 export class RoleBingingDetailComponent implements OnInit, OnDestroy {
   private _unsubscribe = new Subject<void>();
   private readonly endpoint_ = EndpointManager.resource(Resource.roleBinding, true);
-  roleBinding: RoleBindingDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `roleBinding`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly roleBindingSig = signal<RoleBindingDetail>(undefined);
+  get roleBinding(): RoleBindingDetail {
+    return this.roleBindingSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly roleBinding_: NamespacedResourceService<RoleBindingDetail>,
@@ -51,10 +63,10 @@ export class RoleBingingDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
       .pipe(takeUntil(this._unsubscribe))
       .subscribe((d: RoleBindingDetail) => {
-        this.roleBinding = d;
+        this.roleBindingSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Role Binding', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

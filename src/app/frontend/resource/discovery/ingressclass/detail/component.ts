@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {IngressClassDetail} from '@api/root.api';
 import {Subject} from 'rxjs';
@@ -33,8 +33,20 @@ export class IngressClassDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.ingressClass);
   private readonly unsubscribe_ = new Subject<void>();
 
-  ingressClass: IngressClassDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `ingressClass`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly ingressClassSig = signal<IngressClassDetail>(undefined);
+  get ingressClass(): IngressClassDetail {
+    return this.ingressClassSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly ingressClass_: ResourceService<IngressClassDetail>,
@@ -50,10 +62,10 @@ export class IngressClassDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: IngressClassDetail) => {
-        this.ingressClass = d;
+        this.ingressClassSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Ingress Class', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 

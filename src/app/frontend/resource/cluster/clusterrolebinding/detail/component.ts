@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ClusterRoleBindingDetail} from '@api/root.api';
 
@@ -33,8 +33,20 @@ export class ClusterRoleBindingDetailComponent implements OnInit, OnDestroy {
   private _unsubscribe = new Subject<void>();
   private clusterRoleSubscription_: Subscription;
   private readonly endpoint_ = EndpointManager.resource(Resource.clusterRoleBinding);
-  clusterRoleBinding: ClusterRoleBindingDetail;
-  isInitialized = false;
+  // signal + getter: the template still reads `clusterRoleBinding`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly clusterRoleBindingSig = signal<ClusterRoleBindingDetail>(undefined);
+  get clusterRoleBinding(): ClusterRoleBindingDetail {
+    return this.clusterRoleBindingSig();
+  }
+  // signal + getter: the template still reads `isInitialized`, but the read now
+  // happens in a reactive context — zoneless has no zone to notice a
+  // plain assignment, so the poll refreshed the data and never the view
+  private readonly isInitializedSig = signal<boolean>(false);
+  get isInitialized(): boolean {
+    return this.isInitializedSig();
+  }
 
   constructor(
     private readonly clusterRoleBinding_: ResourceService<ClusterRoleBindingDetail>,
@@ -51,10 +63,10 @@ export class ClusterRoleBindingDetailComponent implements OnInit, OnDestroy {
       .get(this.endpoint_.detail(), resourceName)
       .pipe(takeUntil(this._unsubscribe))
       .subscribe((d: ClusterRoleBindingDetail) => {
-        this.clusterRoleBinding = d;
+        this.clusterRoleBindingSig.set(d);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Cluster Role Binding', d.objectMeta, d.typeMeta));
-        this.isInitialized = true;
+        this.isInitializedSig.set(true);
       });
   }
 
